@@ -41,6 +41,8 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertIn('Zen CAD doctor: PASS', completed.stdout)
             self.assertIn('[WARN] CoBrA skill sync', completed.stdout)
             self.assertIn('does not register this repository as the active CoBrA workspace', completed.stdout)
+            self.assertIn('In CoBrA/Codex/Claude Code/Cursor, ask:', completed.stdout)
+            self.assertIn('Manual terminal fallback:', completed.stdout)
 
     def test_init_with_cobra_syncs_companion_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

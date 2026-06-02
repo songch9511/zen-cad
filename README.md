@@ -8,7 +8,7 @@ CoBrA, Claude Code, Cursor, Codex 같은 에이전트 환경에서 같은 CAD �
 
 ## 3분 quickstart
 
-처음 실행할 때는 repo-local CLI를 사용하면 됩니다.
+처음 실행할 때는 레포가 정상인지 확인합니다.
 
 ```bash
 git clone https://github.com/songch9511/zen-cad.git
@@ -18,13 +18,21 @@ cd zen-cad
 
 `doctor`는 현재 폴더가 Zen CAD 레포인지, 필수 파일과 JSON/CSV 스키마가 맞는지, CoBrA skill sync 상태가 어떤지 확인합니다.
 
-새 CAD 작업은 자연어 요청으로 milestone을 만듭니다.
+그다음에는 CoBrA, Codex, Claude Code, Cursor 같은 에이전트에서 자연어로 요청합니다.
+
+```text
+기어 박스를 만들고 싶어
+```
+
+에이전트는 이 요청을 Zen CAD milestone 시작으로 해석하고, 레포 안에서 내부적으로 `scripts/new_milestone.py --request "<goal>"`를 실행해야 합니다. 사용자가 milestone id나 title을 직접 고르거나 `zen-cad new`를 외울 필요는 없습니다.
+
+직접 터미널에서 milestone을 만들고 싶을 때만 수동 래퍼를 사용합니다.
 
 ```bash
 ./zen-cad new "기어 박스를 만들고 싶어"
 ```
 
-생성된 milestone의 구조와 evidence 상태를 확인합니다.
+milestone이 생성된 뒤 구조와 evidence 상태를 확인합니다.
 
 ```bash
 ./zen-cad validate milestones/<id>
@@ -109,10 +117,10 @@ CoBrA나 다른 에이전트 세션에서 사용자는 별도 명령을 외울 �
 에이전트는 이것을 새 Zen CAD 작업 요청으로 해석합니다. 사용자가 milestone id나 title을 직접 정하게 하지 않고, 내부적으로 다음 명령을 실행합니다.
 
 ```bash
-./zen-cad new "<goal>"
+python3 scripts/new_milestone.py --request "<goal>"
 ```
 
-내부적으로는 `scripts/new_milestone.py --request "<goal>"`를 호출합니다.
+`./zen-cad new "<goal>"`는 같은 작업을 터미널에서 직접 실행하기 위한 수동 래퍼입니다.
 
 예를 들어 `기어 박스를 만들고 싶어`는 다음 사용 가능한 `*_gearbox` milestone을 만들고, title은 `Gearbox`로 설정합니다.
 

@@ -25,6 +25,8 @@ For manual use, the same flow is available through the repo-local wrapper:
 ./zen-cad validate milestones/002_gearbox
 ```
 
+Use `./zen-cad new` only when you intentionally want to create a milestone from the terminal. In agent-first use, the agent should create the milestone internally after receiving the natural-language prompt.
+
 For automation or scripted startup, `./zen-cad init --milestone-request "<goal>"` and `scripts/setup_zen_cad.py --milestone-request "<goal>"` are both available. When an exact folder name must be pinned, explicit `--milestone-id` and `--milestone-title` still work.
 
 CoBrA-only skill installation is not required in Claude Code or Codex because the skill file is already inside this repository.
