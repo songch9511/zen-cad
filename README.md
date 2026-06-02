@@ -21,7 +21,7 @@ It is designed to make CAD work consistent, inspectable, and portable across age
 ```text
 zen-cad/
 ├─ docs/                  Operating docs for portable use
-├─ skills/agentic-cad/    Embedded `/agentic-cad` skill
+├─ skills/                Embedded `/agentic-cad`, `/spec-to-cad`, and verifier skills
 ├─ prompts/               Kickoff, milestone, validation, and release prompts
 ├─ templates/             Reusable artifact templates
 ├─ schemas/               JSON schemas for machine-checkable artifacts
@@ -39,7 +39,7 @@ From the cloned repo root, run the setup helper first:
 python3 scripts/setup_zen_cad.py
 ```
 
-For CoBrA, sync the embedded `/agentic-cad` skill and run validation in one command:
+For CoBrA, sync the embedded `/agentic-cad`, `/spec-to-cad`, and `/self-evolving-producer-verifier` skills and run validation in one command:
 
 ```bash
 python3 scripts/setup_zen_cad.py --sync-cobra-skill
@@ -80,7 +80,7 @@ Good natural-language starting topics include gearbox, robot arm joint, watch es
 
 ## Manual validation commands
 
-The setup helper runs these checks for you, but they can also be run manually:
+The setup helper runs these checks for you, but they can also be run manually. Required-file and schema checks cover every milestone folder under `milestones/`.
 
 ```bash
 python3 scripts/check_required_files.py .

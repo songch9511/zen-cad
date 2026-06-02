@@ -26,16 +26,22 @@ def run_step(label: str, command: list[str], cwd: Path, capture: bool = False) -
     return completed
 
 
-def sync_cobra_skill(root: Path, skill_dir: Path) -> Path:
-    source = root / 'skills/agentic-cad/SKILL.md'
-    if not source.exists():
-        raise SystemExit(f'ERROR: missing embedded /agentic-cad skill: {source}')
-    target_dir = skill_dir.expanduser().resolve()
-    target_dir.mkdir(parents=True, exist_ok=True)
-    target = target_dir / 'SKILL.md'
-    shutil.copy2(source, target)
-    print(f'Synced /agentic-cad skill to: {target}')
-    return target
+def sync_cobra_skills(root: Path, agentic_cad_dir: Path) -> list[Path]:
+    skills_root = agentic_cad_dir.expanduser().resolve().parent
+    synced = []
+    for source_dir in sorted((root / 'skills').iterdir(), key=lambda path: path.name):
+        source = source_dir / 'SKILL.md'
+        if not source.exists():
+            continue
+        target_dir = skills_root / source_dir.name
+        target_dir.mkdir(parents=True, exist_ok=True)
+        target = target_dir / 'SKILL.md'
+        shutil.copy2(source, target)
+        synced.append(target)
+        print(f'Synced /{source_dir.name} skill to: {target}')
+    if not synced:
+        raise SystemExit(f'ERROR: missing bundled skills under {root / "skills"}')
+    return synced
 
 
 def create_or_reuse_milestone(root: Path, milestone_id: str, title: str) -> Path:
@@ -76,22 +82,32 @@ def create_milestone_from_request(root: Path, request: str) -> Path:
     raise SystemExit('ERROR: milestone creation did not report a created path')
 
 
+def iter_milestone_dirs(root: Path) -> list[Path]:
+    milestones_dir = root / 'milestones'
+    if not milestones_dir.exists():
+        return []
+    return sorted(
+        (child for child in milestones_dir.iterdir() if child.is_dir() and (child / 'milestone.yaml').exists()),
+        key=lambda path: path.name,
+    )
+
+
 def validate(root: Path, extra_milestone: Path | None) -> None:
     run_step('check required files', [sys.executable, str(root / 'scripts/check_required_files.py'), str(root)], root)
     run_step('check JSON schemas', [sys.executable, str(root / 'scripts/check_json_schemas.py'), str(root)], root)
-    run_step('validate milestone template', [sys.executable, str(root / 'scripts/validate_milestone.py'), str(root / 'milestones/_template')], root)
-    reference = root / 'milestones/001_nema17_belt_linear_actuator'
-    if reference.exists():
-        run_step('validate reference milestone', [sys.executable, str(root / 'scripts/validate_milestone.py'), str(reference)], root)
-    if extra_milestone is not None:
-        run_step('validate requested milestone', [sys.executable, str(root / 'scripts/validate_milestone.py'), str(extra_milestone)], root)
+    seen = set()
+    for milestone in iter_milestone_dirs(root):
+        seen.add(milestone.resolve())
+        run_step(f'validate milestone {milestone.name}', [sys.executable, str(root / 'scripts/validate_milestone.py'), str(milestone)], root)
+    if extra_milestone is not None and extra_milestone.resolve() not in seen:
+        run_step(f'validate milestone {extra_milestone.name}', [sys.executable, str(root / 'scripts/validate_milestone.py'), str(extra_milestone)], root)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description='One-command Zen CAD setup helper for any milestone-based CAD job.')
     parser.add_argument('--root', default=None, help='Zen CAD repository root. Defaults to this script\'s parent repository.')
-    parser.add_argument('--sync-cobra-skill', action='store_true', help='Copy skills/agentic-cad/SKILL.md into a CoBrA skills directory.')
-    parser.add_argument('--cobra-skill-dir', default='~/.cobra/workspace/skills/agentic-cad', help='Target directory for CoBrA /agentic-cad skill sync.')
+    parser.add_argument('--sync-cobra-skill', action='store_true', help='Copy bundled Zen CAD skills into a CoBrA skills directory.')
+    parser.add_argument('--cobra-skill-dir', default='~/.cobra/workspace/skills/agentic-cad', help='Target directory for CoBrA /agentic-cad skill sync. Companion skills sync to sibling directories.')
     parser.add_argument('--milestone-id', help='Optional explicit lowercase snake_case milestone id, e.g. 002_gearbox.')
     parser.add_argument('--milestone-title', help='Human-readable title for --milestone-id.')
     parser.add_argument('--milestone-request', help='Optional natural-language first CAD request; derives milestone id/title automatically, e.g. "기어 박스를 만들고 싶어".')
@@ -108,7 +124,7 @@ def main() -> int:
     if bool(args.milestone_id) != bool(args.milestone_title):
         raise SystemExit('ERROR: use --milestone-id and --milestone-title together')
     if args.sync_cobra_skill:
-        sync_cobra_skill(root, Path(args.cobra_skill_dir))
+        sync_cobra_skills(root, Path(args.cobra_skill_dir))
     if args.milestone_request:
         milestone = create_milestone_from_request(root, args.milestone_request)
     elif args.milestone_id and args.milestone_title:

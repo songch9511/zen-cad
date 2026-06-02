@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import sys
@@ -9,6 +10,14 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def copy_repo_fixture(target: Path) -> None:
+    shutil.copytree(
+        ROOT,
+        target,
+        ignore=shutil.ignore_patterns('.git', 'releases', 'tests', '__pycache__'),
+    )
 
 
 class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
@@ -36,11 +45,7 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             work = Path(tmp) / 'zen-cad-kit'
-            shutil.copytree(
-                ROOT,
-                work,
-                ignore=shutil.ignore_patterns('.git', 'releases', 'tests', '__pycache__'),
-            )
+            copy_repo_fixture(work)
             shutil.rmtree(work / 'milestones/002_setup_smoke_robot_gripper', ignore_errors=True)
             completed = subprocess.run(
                 [sys.executable, 'scripts/new_milestone.py', '--request', '기어 박스를 만들고 싶어'],
@@ -69,6 +74,68 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             )
             self.assertIn('Milestone id: 003_custom_fixture', explicit.stdout)
             self.assertIn('Title: Custom fixture', explicit.stdout)
+
+    def test_required_file_check_covers_all_milestones(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+            missing = work / 'milestones/002_setup_smoke_robot_gripper/01_research/research_log.md'
+            missing.unlink()
+
+            completed = subprocess.run(
+                [sys.executable, 'scripts/check_required_files.py', '.'],
+                cwd=work,
+                text=True,
+                capture_output=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0)
+            self.assertIn('milestones/002_setup_smoke_robot_gripper/01_research/research_log.md', completed.stdout)
+
+    def test_schema_check_rejects_actual_schema_violations(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+            manifest = work / 'milestones/002_setup_smoke_robot_gripper/02_parts/selected_parts_manifest.json'
+            data = json.loads(manifest.read_text(encoding='utf-8'))
+            data['unexpected'] = True
+            data['parts'][0]['geometry_match'] = 'false'
+            manifest.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+
+            completed = subprocess.run(
+                [sys.executable, 'scripts/check_json_schemas.py', '.'],
+                cwd=work,
+                text=True,
+                capture_output=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0)
+            self.assertIn('additional property not allowed: unexpected', completed.stdout)
+            self.assertIn('$.parts[0].geometry_match: expected boolean, got string', completed.stdout)
+
+    def test_cobra_sync_installs_companion_skills(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+            skills_root = Path(tmp) / 'cobra-skills'
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    'scripts/setup_zen_cad.py',
+                    '--sync-cobra-skill',
+                    '--cobra-skill-dir',
+                    str(skills_root / 'agentic-cad'),
+                    '--skip-validation',
+                ],
+                cwd=work,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+
+            for skill_name in ['agentic-cad', 'spec-to-cad', 'self-evolving-producer-verifier']:
+                self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
 
 
 if __name__ == '__main__':
