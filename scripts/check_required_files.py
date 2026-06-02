@@ -12,7 +12,8 @@ ROOT_REQUIRED = [
     'templates/PROJECT_MANIFEST.yaml', 'templates/milestone.yaml', 'templates/requirements_brief.md', 'templates/part_classification_table.md', 'templates/selected_parts_manifest.json', 'templates/custom_cad_handoff.yaml', 'templates/contact_map.json', 'templates/connections.json', 'templates/validation_report.json', 'templates/bom.csv', 'templates/final_engineering_report.md',
     'schemas/selected_parts_manifest.schema.json', 'schemas/contact_map.schema.json', 'schemas/connections.schema.json', 'schemas/validation_report.schema.json', 'schemas/bom.schema.json', 'schemas/bom.columns.json',
     'checklists/intake_checklist.md', 'checklists/sourcing_checklist.md', 'checklists/custom_cad_checklist.md', 'checklists/assembly_checklist.md', 'checklists/validation_checklist.md', 'checklists/release_checklist.md',
-    'scripts/setup_zen_cad.py', 'scripts/new_milestone.py', 'scripts/validate_milestone.py', 'scripts/check_json_schemas.py', 'scripts/check_required_files.py', 'scripts/export_release_package.py',
+    'zen-cad',
+    'scripts/setup_zen_cad.py', 'scripts/zen_cad.py', 'scripts/new_milestone.py', 'scripts/validate_milestone.py', 'scripts/check_json_schemas.py', 'scripts/check_required_files.py', 'scripts/export_release_package.py',
     'milestones/_template/milestone.yaml',
     'milestones/001_nema17_belt_linear_actuator/milestone.yaml',
 ]

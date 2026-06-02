@@ -3,10 +3,18 @@
 From the Zen CAD repository root, run setup once:
 
 ```bash
-python3 scripts/setup_zen_cad.py --sync-cobra-skill
+./zen-cad init --with-cobra
 ```
 
-That command copies the embedded `/agentic-cad` skill from `skills/agentic-cad/SKILL.md` to `~/.cobra/workspace/skills/agentic-cad/SKILL.md` and runs the bundled validation checks.
+That command syncs the bundled `/agentic-cad`, `/spec-to-cad`, and `/self-evolving-producer-verifier` skills into the CoBrA skills directory and runs the bundled validation checks.
+
+Important: CoBrA skill sync installs the workflow skills only. It does not register this repository as the active CoBrA workspace. Start the CoBrA daemon or session from the Zen CAD repository root, or explicitly point the agent to this repository path in the prompt.
+
+Use `doctor` whenever the first-run state is unclear:
+
+```bash
+./zen-cad doctor
+```
 
 ## Prompt-first milestone startup
 
@@ -22,6 +30,12 @@ The agent should treat that prompt as the milestone creation request. Do not ask
 python3 scripts/new_milestone.py --request "<goal>"
 ```
 
-For example, `기어 박스를 만들고 싶어` should create the next available milestone such as `002_gearbox` with title `Gearbox`. Then follow `prompts/new_milestone.md`, keep standard parts source-first and custom geometry generate-second, and require `scripts/check_required_files.py`, `scripts/check_json_schemas.py`, and `scripts/validate_milestone.py` evidence before reporting completion.
+The repo-local wrapper is equivalent for manual use:
+
+```bash
+./zen-cad new "<goal>"
+```
+
+For example, `기어 박스를 만들고 싶어` should create the next available milestone such as `002_gearbox` with title `Gearbox`. Then follow `prompts/new_milestone.md`, keep standard parts source-first and custom geometry generate-second, and require `./zen-cad validate milestones/<id>` evidence before reporting completion.
 
 The setup helper still supports `--milestone-request` for automation or smoke tests, and explicit `--milestone-id` plus `--milestone-title` still works when an exact folder name must be pinned.
