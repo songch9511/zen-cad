@@ -6,6 +6,44 @@ Zen CAD는 순수 text-to-CAD 생성기가 아닙니다. 자연어 목표를 받
 
 CoBrA, Claude Code, Cursor, Codex 같은 에이전트 환경에서 같은 CAD 운영 경험을 재현할 수 있도록 스킬, 템플릿, 스키마, 체크리스트, 프롬프트, 검증 스크립트를 함께 제공합니다.
 
+## 3분 quickstart
+
+처음 실행할 때는 repo-local CLI를 사용하면 됩니다.
+
+```bash
+git clone https://github.com/songch9511/zen-cad.git
+cd zen-cad
+./zen-cad doctor
+```
+
+`doctor`는 현재 폴더가 Zen CAD 레포인지, 필수 파일과 JSON/CSV 스키마가 맞는지, CoBrA skill sync 상태가 어떤지 확인합니다.
+
+새 CAD 작업은 자연어 요청으로 milestone을 만듭니다.
+
+```bash
+./zen-cad new "기어 박스를 만들고 싶어"
+```
+
+생성된 milestone의 구조와 evidence 상태를 확인합니다.
+
+```bash
+./zen-cad validate milestones/<id>
+```
+
+검증 출력은 두 층으로 나뉩니다.
+
+- `Zen CAD validation result: PASS`: 필수 파일, schema, BOM header, milestone 구조가 유효합니다.
+- `Completion evidence: BLOCKED`: 아직 CAD source, STEP/STL export, kernel/export checks, 최종 validation evidence가 부족합니다.
+
+Preview는 사람이 보는 리뷰 자료입니다. 완료 선언에는 재현 가능한 evidence가 필요합니다.
+
+- CAD source
+- STEP/STL exports
+- validation JSON
+- CONTACT_MAP / CONNECTIONS
+- BOM
+- final engineering report
+
 ## 핵심 원칙
 
 1. `/agentic-cad`가 최상위 워크플로우이자 source of truth입니다.
@@ -26,23 +64,37 @@ CoBrA, Claude Code, Cursor, Codex 같은 에이전트 환경에서 같은 CAD �
 
 ## 설치
 
-레포를 받은 뒤 루트에서 setup helper를 실행합니다.
+레포를 받은 뒤 루트에서 doctor를 먼저 실행합니다.
 
 ```bash
 git clone https://github.com/songch9511/zen-cad.git
 cd zen-cad
+./zen-cad doctor
+```
+
+초기 검증과 선택적 milestone 생성을 한 번에 하려면 `init`을 사용할 수 있습니다.
+
+```bash
+./zen-cad init
+```
+
+기존 스크립트도 그대로 사용할 수 있습니다.
+
+```bash
 python3 scripts/setup_zen_cad.py
 ```
 
-이 명령은 필수 파일, JSON/CSV 스키마, 모든 milestone skeleton을 검증합니다.
+두 명령 모두 필수 파일, JSON/CSV 스키마, 모든 milestone skeleton을 검증합니다.
 
 CoBrA에서 사용할 경우 bundled skills를 CoBrA skills 디렉터리로 동기화합니다.
 
 ```bash
-python3 scripts/setup_zen_cad.py --sync-cobra-skill
+./zen-cad init --with-cobra
 ```
 
 이때 `/agentic-cad`, `/spec-to-cad`, `/self-evolving-producer-verifier`가 함께 설치됩니다.
+
+중요: CoBrA skill sync는 워크플로우 스킬만 설치합니다. 이 레포를 active CoBrA workspace로 자동 등록하지는 않습니다. CoBrA daemon이나 세션은 `zen-cad` 레포에서 시작하거나, 에이전트 프롬프트에서 이 레포 경로를 명시해야 합니다.
 
 ## 실제 사용 흐름
 
@@ -57,8 +109,10 @@ CoBrA나 다른 에이전트 세션에서 사용자는 별도 명령을 외울 �
 에이전트는 이것을 새 Zen CAD 작업 요청으로 해석합니다. 사용자가 milestone id나 title을 직접 정하게 하지 않고, 내부적으로 다음 명령을 실행합니다.
 
 ```bash
-python3 scripts/new_milestone.py --request "<goal>"
+./zen-cad new "<goal>"
 ```
+
+내부적으로는 `scripts/new_milestone.py --request "<goal>"`를 호출합니다.
 
 예를 들어 `기어 박스를 만들고 싶어`는 다음 사용 가능한 `*_gearbox` milestone을 만들고, title은 `Gearbox`로 설정합니다.
 
@@ -120,24 +174,22 @@ Producer는 CAD 산출물을 만들고, verifier는 원래 요구사항과 검�
 수동으로 검증하려면 다음 명령을 실행합니다.
 
 ```bash
-python3 scripts/check_required_files.py .
-python3 scripts/check_json_schemas.py .
-python3 scripts/validate_milestone.py milestones/<id>
+./zen-cad validate milestones/<id>
 ```
 
-`check_required_files.py`와 `check_json_schemas.py`는 `milestones/` 아래 모든 milestone을 검사합니다.
+내부적으로는 `check_required_files.py`, `check_json_schemas.py`, `validate_milestone.py`를 호출합니다. `check_required_files.py`와 `check_json_schemas.py`는 `milestones/` 아래 모든 milestone을 검사합니다.
 
 ## 자동화용 milestone 생성
 
 ```bash
-python3 scripts/setup_zen_cad.py \
+./zen-cad init \
   --milestone-request "foldable drone landing gear를 만들고 싶어"
 ```
 
 정확한 id/title을 고정해야 할 때는 다음처럼 명시할 수 있습니다.
 
 ```bash
-python3 scripts/setup_zen_cad.py \
+./zen-cad init \
   --milestone-id 002_desktop_cnc_fixture \
   --milestone-title "Desktop CNC workholding fixture"
 ```
@@ -152,6 +204,7 @@ zen-cad/
 ├─ templates/             재사용 가능한 artifact 템플릿
 ├─ schemas/               machine-checkable JSON/CSV 스키마
 ├─ checklists/            intake, sourcing, CAD, assembly, validation, release 체크리스트
+├─ zen-cad                첫 실행용 repo-local CLI wrapper
 ├─ scripts/               setup, milestone 생성, 검증, release export helper
 ├─ milestones/_template/  표준 milestone skeleton
 └─ milestones/001_nema17_belt_linear_actuator/  reference seed milestone
@@ -161,12 +214,15 @@ zen-cad/
 
 전체 CoBrA 흐름은 `docs/cobra_usage.md`를 참고하세요. 짧게는 다음 순서입니다.
 
-1. `python3 scripts/setup_zen_cad.py --sync-cobra-skill`
-2. 새 CoBrA 세션에서 `기어 박스를 만들고 싶어`처럼 CAD 목표를 말합니다.
-3. 에이전트가 내부적으로 `scripts/new_milestone.py --request "<goal>"`를 실행합니다.
-4. 생성된 milestone 안에서 `/agentic-cad` 워크플로우를 진행합니다.
-5. `/spec-to-cad`와 verifier evidence를 통해 CAD 결과를 검증합니다.
-6. 검증 스크립트와 최종 리포트 근거 없이 완료를 선언하지 않습니다.
+1. `./zen-cad init --with-cobra`
+2. CoBrA daemon이나 세션을 이 `zen-cad` 레포에서 시작합니다. 다른 폴더에서 시작한다면 프롬프트에 이 레포 경로를 명시합니다.
+3. 새 CoBrA 세션에서 `기어 박스를 만들고 싶어`처럼 CAD 목표를 말합니다.
+4. 에이전트가 내부적으로 `scripts/new_milestone.py --request "<goal>"`를 실행합니다.
+5. 생성된 milestone 안에서 `/agentic-cad` 워크플로우를 진행합니다.
+6. `/spec-to-cad`와 verifier evidence를 통해 CAD 결과를 검증합니다.
+7. 검증 스크립트와 최종 리포트 근거 없이 완료를 선언하지 않습니다.
+
+`--sync-cobra-skill` 또는 `./zen-cad init --with-cobra`는 CoBrA skill 설치만 수행합니다. 레포 workspace 선택은 CoBrA 실행 위치나 세션 설정에서 별도로 결정됩니다.
 
 ## CoBrA가 아닌 환경
 

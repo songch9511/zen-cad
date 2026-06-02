@@ -10,7 +10,7 @@ def main() -> int:
     version = (root / 'VERSION').read_text(encoding='utf-8').strip()
     out = root / 'releases' / f'zen-cad-v{version}'
     out.mkdir(parents=True, exist_ok=True)
-    for name in ['README.md', 'VERSION', 'CHANGELOG.md', 'docs', 'skills', 'prompts', 'templates', 'schemas', 'checklists', 'scripts', 'milestones/_template', 'milestones/001_nema17_belt_linear_actuator']:
+    for name in ['README.md', 'VERSION', 'CHANGELOG.md', 'zen-cad', 'docs', 'skills', 'prompts', 'templates', 'schemas', 'checklists', 'scripts', 'milestones/_template', 'milestones/001_nema17_belt_linear_actuator']:
         src = root / name
         dst = out / name
         if src.is_dir():
