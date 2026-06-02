@@ -10,13 +10,15 @@ Clone or download the Zen CAD repo, open it as the project root, and run:
 python3 scripts/setup_zen_cad.py
 ```
 
-To create the first CAD job folder immediately:
+To create the first CAD job folder immediately, replace the milestone id and title with your actual target:
 
 ```bash
 python3 scripts/setup_zen_cad.py \
-  --milestone-id 002_robot_gripper \
-  --milestone-title "Small servo-driven robot gripper"
+  --milestone-id 002_foldable_drone_landing_gear \
+  --milestone-title "Foldable drone landing gear"
 ```
+
+The job is not limited to the example shown here. Use any unique lowercase snake_case milestone id, such as `002_gearbox_stage`, `002_watch_escapement`, `002_robot_arm_joint`, `002_camera_mount`, or `002_desktop_cnc_fixture`.
 
 Then tell the agent:
 

@@ -45,22 +45,26 @@ For CoBrA, sync the embedded `/agentic-cad` skill and run validation in one comm
 python3 scripts/setup_zen_cad.py --sync-cobra-skill
 ```
 
-To sync CoBrA, create a first milestone, and validate everything in one command:
+To start your own CAD job, choose any unique milestone id and title. The examples below are placeholders, not defaults.
+
+CoBrA example:
 
 ```bash
 python3 scripts/setup_zen_cad.py \
   --sync-cobra-skill \
-  --milestone-id 002_robot_gripper \
-  --milestone-title "Small servo-driven robot gripper"
+  --milestone-id 002_desktop_cnc_fixture \
+  --milestone-title "Desktop CNC workholding fixture"
 ```
 
-For Claude Code, Codex, Cursor, or other non-CoBrA agents, open this repository as the project root and run:
+Claude Code, Codex, Cursor, or other non-CoBrA agents use the same milestone flags without `--sync-cobra-skill`:
 
 ```bash
 python3 scripts/setup_zen_cad.py \
-  --milestone-id 002_robot_gripper \
-  --milestone-title "Small servo-driven robot gripper"
+  --milestone-id 002_foldable_drone_landing_gear \
+  --milestone-title "Foldable drone landing gear"
 ```
+
+Good starting topics include `002_gearbox_stage`, `002_robot_arm_joint`, `002_watch_escapement`, `002_drone_frame`, `002_camera_mount`, or any other lowercase snake_case id that names the CAD job.
 
 Then ask the agent to read `skills/agentic-cad/SKILL.md` and `prompts/new_milestone.md` before editing the milestone artifacts.
 

@@ -69,11 +69,11 @@ def validate(root: Path, extra_milestone: Path | None) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description='One-command Zen CAD setup helper.')
+    parser = argparse.ArgumentParser(description='One-command Zen CAD setup helper for any milestone-based CAD job.')
     parser.add_argument('--root', default=None, help='Zen CAD repository root. Defaults to this script\'s parent repository.')
     parser.add_argument('--sync-cobra-skill', action='store_true', help='Copy skills/agentic-cad/SKILL.md into a CoBrA skills directory.')
     parser.add_argument('--cobra-skill-dir', default='~/.cobra/workspace/skills/agentic-cad', help='Target directory for CoBrA /agentic-cad skill sync.')
-    parser.add_argument('--milestone-id', help='Optional milestone id to create or reuse, e.g. 002_robot_gripper.')
+    parser.add_argument('--milestone-id', help='Optional unique lowercase snake_case milestone id, e.g. 002_desktop_cnc_fixture.')
     parser.add_argument('--milestone-title', help='Human-readable title for --milestone-id.')
     parser.add_argument('--skip-validation', action='store_true', help='Skip built-in required-file/schema/milestone validation.')
     args = parser.parse_args()
