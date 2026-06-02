@@ -1,0 +1,16 @@
+{
+  "milestone_id": "002_setup_smoke_robot_gripper",
+  "connections": [
+    {
+      "connection_id": "CN-001",
+      "parts": [
+        "P-001",
+        "C-001"
+      ],
+      "type": "fastened_joint",
+      "degrees_of_freedom": "fixed",
+      "fasteners": [],
+      "notes": "example connection"
+    }
+  ]
+}

@@ -86,7 +86,7 @@ def main() -> None:
 
     Zen CAD is a portable, versioned, reproducible agentic mechanical CAD workflow environment.
 
-    It is designed to make CAD work consistent, inspectable, and portable across agentic coding/CAD systems such as CoBrA, Claude Code, Cursor, Codex, or similar environments. Zen CAD is not pure text-to-CAD. It packages a source-first/generate-second workflow, milestone structure, artifact templates, validation schemas, review checklists, and reference prompts so a new environment can reproduce the same CAD operating experience.
+    It is designed to make CAD work consistent, inspectable, and portable across agentic coding/CAD systems such as CoBrA, Claude Code, Cursor, Codex, or similar environments. Zen CAD is not pure text-to-CAD. It packages a source-first/generate-second workflow, milestone structure, artifact templates, validation schemas, review checklists, setup automation, and reference prompts so a new environment can reproduce the same CAD operating experience.
 
     ## Core rules
 
@@ -103,35 +103,68 @@ def main() -> None:
     ## Repository layout
 
     ```text
-    zen-cad-kit/
+    zen-cad/
     ├─ docs/                  Operating docs for portable use
     ├─ skills/agentic-cad/    Embedded `/agentic-cad` skill
     ├─ prompts/               Kickoff, milestone, validation, and release prompts
     ├─ templates/             Reusable artifact templates
     ├─ schemas/               JSON schemas for machine-checkable artifacts
     ├─ checklists/            Intake, sourcing, CAD, assembly, validation, release checks
-    ├─ scripts/               Milestone creation and validation helpers
+    ├─ scripts/               One-command setup, milestone, and validation helpers
     ├─ milestones/_template/  Standard milestone folder skeleton
     └─ milestones/001_nema17_belt_linear_actuator/  Reference seed milestone
     ```
 
-    ## Quick start
+    ## Quick start: one-command setup
+
+    From the cloned repo root, run the setup helper first:
 
     ```bash
-    cd zen-cad-kit
+    python3 scripts/setup_zen_cad.py
+    ```
+
+    For CoBrA, sync the embedded `/agentic-cad` skill and run validation in one command:
+
+    ```bash
+    python3 scripts/setup_zen_cad.py --sync-cobra-skill
+    ```
+
+    To sync CoBrA, create a first milestone, and validate everything in one command:
+
+    ```bash
+    python3 scripts/setup_zen_cad.py \
+      --sync-cobra-skill \
+      --milestone-id 002_robot_gripper \
+      --milestone-title "Small servo-driven robot gripper"
+    ```
+
+    For Claude Code, Codex, Cursor, or other non-CoBrA agents, open this repository as the project root and run:
+
+    ```bash
+    python3 scripts/setup_zen_cad.py \
+      --milestone-id 002_robot_gripper \
+      --milestone-title "Small servo-driven robot gripper"
+    ```
+
+    Then ask the agent to read `skills/agentic-cad/SKILL.md` and `prompts/new_milestone.md` before editing the milestone artifacts.
+
+    ## Manual validation commands
+
+    The setup helper runs these checks for you, but they can also be run manually:
+
+    ```bash
     python3 scripts/check_required_files.py .
     python3 scripts/check_json_schemas.py .
     python3 scripts/validate_milestone.py milestones/001_nema17_belt_linear_actuator
-    python3 scripts/new_milestone.py --id 002_robot_gripper --title "Robot gripper"
+    python3 scripts/validate_milestone.py milestones/_template
     ```
 
     ## CoBrA usage
 
-    Copy or symlink the embedded skill into the CoBrA skills directory if it is not already installed:
+    Use `docs/cobra_usage.md` for the full CoBrA flow. The short version is:
 
     ```bash
-    mkdir -p ~/.cobra/workspace/skills/agentic-cad
-    cp skills/agentic-cad/SKILL.md ~/.cobra/workspace/skills/agentic-cad/SKILL.md
+    python3 scripts/setup_zen_cad.py --sync-cobra-skill
     ```
 
     Then start a project or milestone with `prompts/project_kickoff.md` or `prompts/new_milestone.md` and require evidence from the validation scripts before declaring completion.
@@ -189,19 +222,84 @@ def main() -> None:
         - no required third-party Python package for metadata validation
         - a CAD generator/exporter appropriate to the task
         - optional JSON Schema package for stricter schema checks; the bundled script includes fallback validation for required fields and object structure
+
+        ## One-command setup
+
+        Run this from the Zen CAD repository root:
+
+        ```bash
+        python3 scripts/setup_zen_cad.py
+        ```
+
+        The setup helper validates required files, checks bundled JSON/CSV artifacts, validates the milestone template, and validates the reference milestone.
+
+        To create a first milestone during setup:
+
+        ```bash
+        python3 scripts/setup_zen_cad.py \
+          --milestone-id 002_robot_gripper \
+          --milestone-title "Small servo-driven robot gripper"
+        ```
+
+        For CoBrA, add `--sync-cobra-skill` to copy `skills/agentic-cad/SKILL.md` into `~/.cobra/workspace/skills/agentic-cad/SKILL.md` before validation.
+
+        ```bash
+        python3 scripts/setup_zen_cad.py \
+          --sync-cobra-skill \
+          --milestone-id 002_robot_gripper \
+          --milestone-title "Small servo-driven robot gripper"
+        ```
         ''',
         'docs/cobra_usage.md': '''
         # CoBrA Usage
 
-        1. Ensure `/agentic-cad` is installed from `skills/agentic-cad/SKILL.md`.
-        2. Start from `prompts/project_kickoff.md` for a new workspace or `prompts/new_milestone.md` for a new CAD job.
-        3. Keep standard parts source-first and custom geometry generate-second.
-        4. Require `scripts/check_required_files.py`, `scripts/check_json_schemas.py`, and `scripts/validate_milestone.py` evidence before reporting completion.
+        From the Zen CAD repository root, run:
+
+        ```bash
+        python3 scripts/setup_zen_cad.py --sync-cobra-skill
+        ```
+
+        That command copies the embedded `/agentic-cad` skill from `skills/agentic-cad/SKILL.md` to `~/.cobra/workspace/skills/agentic-cad/SKILL.md` and runs the bundled validation checks.
+
+        To create a new CAD job at the same time:
+
+        ```bash
+        python3 scripts/setup_zen_cad.py \
+          --sync-cobra-skill \
+          --milestone-id 002_robot_gripper \
+          --milestone-title "Small servo-driven robot gripper"
+        ```
+
+        Then start from `prompts/project_kickoff.md` for a new workspace or `prompts/new_milestone.md` for a new CAD job. Keep standard parts source-first and custom geometry generate-second. Require `scripts/check_required_files.py`, `scripts/check_json_schemas.py`, and `scripts/validate_milestone.py` evidence before reporting completion.
         ''',
         'docs/non_cobra_usage.md': '''
         # Non-CoBrA Usage
 
         Zen CAD can be used in any agentic environment that can read Markdown, edit files, run scripts, and create CAD artifacts. Treat `skills/agentic-cad/SKILL.md` as the main operating manual and the files in `prompts/` as task entrypoints.
+
+        ## Claude Code, Codex, Cursor, or similar tools
+
+        Clone or download the Zen CAD repo, open it as the project root, and run:
+
+        ```bash
+        python3 scripts/setup_zen_cad.py
+        ```
+
+        To create the first CAD job folder immediately:
+
+        ```bash
+        python3 scripts/setup_zen_cad.py \
+          --milestone-id 002_robot_gripper \
+          --milestone-title "Small servo-driven robot gripper"
+        ```
+
+        Then tell the agent:
+
+        ```text
+        Use this repository as the Zen CAD workspace. Read README.md and skills/agentic-cad/SKILL.md first. Use prompts/new_milestone.md for the active milestone and keep validation evidence in the milestone folder.
+        ```
+
+        CoBrA-only skill installation is not required in Claude Code or Codex because the skill file is already inside this repository.
         ''',
     }
     for path, content in docs.items():
@@ -476,6 +574,113 @@ def main() -> None:
     for path, items in checklists.items():
         write(path, '# ' + Path(path).stem.replace('_', ' ').title() + '\n\n' + '\n'.join(f'- [ ] {item}' for item in items) + '\n')
 
+    write('scripts/setup_zen_cad.py', r'''
+    #!/usr/bin/env python3
+    from __future__ import annotations
+
+    import argparse
+    import shutil
+    import subprocess
+    import sys
+    from pathlib import Path
+
+
+    def repo_root_from_script() -> Path:
+        return Path(__file__).resolve().parents[1]
+
+
+    def run_step(label: str, command: list[str], cwd: Path) -> None:
+        print(f'\n==> {label}')
+        print('$ ' + ' '.join(command))
+        completed = subprocess.run(command, cwd=cwd)
+        if completed.returncode != 0:
+            raise SystemExit(f'ERROR: {label} failed with exit code {completed.returncode}')
+
+
+    def sync_cobra_skill(root: Path, skill_dir: Path) -> Path:
+        source = root / 'skills/agentic-cad/SKILL.md'
+        if not source.exists():
+            raise SystemExit(f'ERROR: missing embedded /agentic-cad skill: {source}')
+        target_dir = skill_dir.expanduser().resolve()
+        target_dir.mkdir(parents=True, exist_ok=True)
+        target = target_dir / 'SKILL.md'
+        shutil.copy2(source, target)
+        print(f'Synced /agentic-cad skill to: {target}')
+        return target
+
+
+    def create_or_reuse_milestone(root: Path, milestone_id: str, title: str) -> Path:
+        milestones_dir = (root / 'milestones').resolve()
+        target = (milestones_dir / milestone_id).resolve()
+        if target.parent != milestones_dir:
+            raise SystemExit('ERROR: milestone id must name a direct child under milestones/')
+        if target.exists():
+            print(f'Milestone already exists, leaving unchanged: {target}')
+            return target
+        run_step(
+            'create milestone',
+            [
+                sys.executable,
+                str(root / 'scripts/new_milestone.py'),
+                '--root',
+                str(root),
+                '--id',
+                milestone_id,
+                '--title',
+                title,
+            ],
+            root,
+        )
+        return target
+
+
+    def validate(root: Path, extra_milestone: Path | None) -> None:
+        run_step('check required files', [sys.executable, str(root / 'scripts/check_required_files.py'), str(root)], root)
+        run_step('check JSON schemas', [sys.executable, str(root / 'scripts/check_json_schemas.py'), str(root)], root)
+        run_step('validate milestone template', [sys.executable, str(root / 'scripts/validate_milestone.py'), str(root / 'milestones/_template')], root)
+        reference = root / 'milestones/001_nema17_belt_linear_actuator'
+        if reference.exists():
+            run_step('validate reference milestone', [sys.executable, str(root / 'scripts/validate_milestone.py'), str(reference)], root)
+        if extra_milestone is not None:
+            run_step('validate requested milestone', [sys.executable, str(root / 'scripts/validate_milestone.py'), str(extra_milestone)], root)
+
+
+    def main() -> int:
+        parser = argparse.ArgumentParser(description='One-command Zen CAD setup helper.')
+        parser.add_argument('--root', default=None, help='Zen CAD repository root. Defaults to this script\'s parent repository.')
+        parser.add_argument('--sync-cobra-skill', action='store_true', help='Copy skills/agentic-cad/SKILL.md into a CoBrA skills directory.')
+        parser.add_argument('--cobra-skill-dir', default='~/.cobra/workspace/skills/agentic-cad', help='Target directory for CoBrA /agentic-cad skill sync.')
+        parser.add_argument('--milestone-id', help='Optional milestone id to create or reuse, e.g. 002_robot_gripper.')
+        parser.add_argument('--milestone-title', help='Human-readable title for --milestone-id.')
+        parser.add_argument('--skip-validation', action='store_true', help='Skip built-in required-file/schema/milestone validation.')
+        args = parser.parse_args()
+
+        root = Path(args.root).expanduser().resolve() if args.root else repo_root_from_script()
+        if not (root / 'README.md').exists() or not (root / 'scripts/new_milestone.py').exists():
+            raise SystemExit(f'ERROR: not a Zen CAD repository root: {root}')
+
+        milestone = None
+        if bool(args.milestone_id) != bool(args.milestone_title):
+            raise SystemExit('ERROR: use --milestone-id and --milestone-title together')
+        if args.sync_cobra_skill:
+            sync_cobra_skill(root, Path(args.cobra_skill_dir))
+        if args.milestone_id and args.milestone_title:
+            milestone = create_or_reuse_milestone(root, args.milestone_id, args.milestone_title)
+        if not args.skip_validation:
+            validate(root, milestone)
+
+        print('\nZen CAD setup complete.')
+        print(f'Repository root: {root}')
+        if milestone is not None:
+            print(f'Milestone ready: {milestone}')
+        print('Next: open prompts/new_milestone.md and skills/agentic-cad/SKILL.md in your agentic CAD environment.')
+        return 0
+
+
+    if __name__ == '__main__':
+        raise SystemExit(main())
+    ''')
+
     write('scripts/check_required_files.py', r'''
     #!/usr/bin/env python3
     from __future__ import annotations
@@ -491,7 +696,7 @@ def main() -> None:
         'templates/PROJECT_MANIFEST.yaml', 'templates/milestone.yaml', 'templates/requirements_brief.md', 'templates/part_classification_table.md', 'templates/selected_parts_manifest.json', 'templates/custom_cad_handoff.yaml', 'templates/contact_map.json', 'templates/connections.json', 'templates/validation_report.json', 'templates/bom.csv', 'templates/final_engineering_report.md',
         'schemas/selected_parts_manifest.schema.json', 'schemas/contact_map.schema.json', 'schemas/connections.schema.json', 'schemas/validation_report.schema.json', 'schemas/bom.schema.json', 'schemas/bom.columns.json',
         'checklists/intake_checklist.md', 'checklists/sourcing_checklist.md', 'checklists/custom_cad_checklist.md', 'checklists/assembly_checklist.md', 'checklists/validation_checklist.md', 'checklists/release_checklist.md',
-        'scripts/new_milestone.py', 'scripts/validate_milestone.py', 'scripts/check_json_schemas.py', 'scripts/check_required_files.py', 'scripts/export_release_package.py',
+        'scripts/setup_zen_cad.py', 'scripts/new_milestone.py', 'scripts/validate_milestone.py', 'scripts/check_json_schemas.py', 'scripts/check_required_files.py', 'scripts/export_release_package.py',
         'milestones/_template/milestone.yaml',
         'milestones/_template/00_requirements/requirements_brief.md',
         'milestones/_template/02_parts/selected_parts_manifest.json',
@@ -704,7 +909,7 @@ def main() -> None:
         version = (root / 'VERSION').read_text(encoding='utf-8').strip()
         out = root / 'releases' / f'zen-cad-v{version}'
         out.mkdir(parents=True, exist_ok=True)
-        for name in ['README.md', 'VERSION', 'CHANGELOG.md', 'docs', 'skills', 'prompts', 'templates', 'schemas', 'checklists', 'scripts', 'milestones/_template']:
+        for name in ['README.md', 'VERSION', 'CHANGELOG.md', 'docs', 'skills', 'prompts', 'templates', 'schemas', 'checklists', 'scripts', 'milestones/_template', 'milestones/001_nema17_belt_linear_actuator']:
             src = root / name
             dst = out / name
             if src.is_dir():

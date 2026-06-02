@@ -1,0 +1,14 @@
+{
+  "milestone_id": "002_setup_smoke_robot_gripper",
+  "status": "draft",
+  "checks": [
+    {
+      "check_id": "CHK-001",
+      "name": "Required files exist",
+      "result": "not_run",
+      "evidence": "",
+      "limitations": []
+    }
+  ],
+  "summary": "TBD"
+}

@@ -1,0 +1,15 @@
+id: 002_setup_smoke_robot_gripper
+title: Setup smoke robot gripper
+status: draft
+workflow: /agentic-cad
+created_at: 2026-06-02
+deliverables:
+  - requirements_brief
+  - part_classification_table
+  - selected_parts_manifest
+  - custom_cad_handoff
+  - contact_map
+  - connections
+  - validation_report
+  - bom
+  - final_engineering_report

@@ -1,0 +1,13 @@
+{
+  "milestone_id": "002_setup_smoke_robot_gripper",
+  "contacts": [
+    {
+      "contact_id": "CT-001",
+      "part_a": "P-001",
+      "part_b": "C-001",
+      "type": "mounting_surface",
+      "expected_clearance_mm": 0.0,
+      "notes": "example contact"
+    }
+  ]
+}
