@@ -173,7 +173,8 @@ def command_doctor(args: argparse.Namespace) -> int:
 
     print_section('Zen CAD doctor: PASS')
     print('Next:')
-    print('- Create a CAD milestone: ./zen-cad new "기어 박스를 만들고 싶어"')
+    print('- In CoBrA/Codex/Claude Code/Cursor, ask: 기어 박스를 만들고 싶어')
+    print('- Manual terminal fallback: ./zen-cad new "기어 박스를 만들고 싶어"')
     print('- Validate a milestone: ./zen-cad validate milestones/<id>')
     return 0
 
