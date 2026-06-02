@@ -1,0 +1,18 @@
+{
+  "milestone_id": "002_nema17_mount_plate",
+  "connections": [
+    {
+      "connection_id": "CN-001",
+      "parts": [
+        "C-001",
+        "external_nema17_motor_face"
+      ],
+      "type": "fastened_joint",
+      "degrees_of_freedom": "fixed",
+      "fasteners": [
+        "4x M3 clearance holes"
+      ],
+      "notes": "Four 3.4 mm clearance holes define the motor-face fastener pattern."
+    }
+  ]
+}

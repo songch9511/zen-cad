@@ -1,5 +1,6 @@
 {
   "milestone_id": "REPLACE_WITH_MILESTONE_ID",
+  "maturity": "concept",
   "status": "draft",
   "checks": [
     {

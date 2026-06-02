@@ -16,13 +16,13 @@ Then tell the agent what you want to build in natural language, for example:
 기어 박스를 만들고 싶어
 ```
 
-The expected agent behavior is prompt-first milestone startup: do not ask the user to run a milestone command or choose an id/title. The agent should internally run `python3 scripts/new_milestone.py --request "<goal>"`, create the next milestone such as `002_gearbox` titled `Gearbox`, then use `prompts/new_milestone.md` for the active milestone and keep validation evidence in the milestone folder.
+The expected agent behavior is prompt-first milestone startup: do not ask the user to run a milestone command or choose an id/title. The agent should internally run `python3 scripts/new_milestone.py --request "<goal>"`, create the next milestone such as `003_gearbox` titled `Gearbox` in this repository, then use `prompts/new_milestone.md` for the active milestone and keep validation evidence in the milestone folder.
 
 For manual use, the same flow is available through the repo-local wrapper:
 
 ```bash
 ./zen-cad new "기어 박스를 만들고 싶어"
-./zen-cad validate milestones/002_gearbox
+./zen-cad validate milestones/003_gearbox
 ```
 
 Use `./zen-cad new` only when you intentionally want to create a milestone from the terminal. In agent-first use, the agent should create the milestone internally after receiving the natural-language prompt.

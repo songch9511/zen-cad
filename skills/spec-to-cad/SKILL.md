@@ -14,7 +14,7 @@ The central rule: **do not accept visual inspection, metadata-only claims, or wo
 - A target workspace directory is known and writable.
 - The requested CAD scope is inside the user's stated goal.
 - Irreversible, user-facing, or scope-expanding decisions use `ask_to_user` with a safe default.
-- In a Zen CAD repository, `./zen-cad doctor --cad-required` should pass before final CAD/export work. If it does not, stop with `ENV_BLOCKED`.
+- In a Zen CAD repository, `./zen-cad doctor --cad-required` should pass before final CAD/export work. If CoBrA needs a specific venv, use `--python` or `ZEN_CAD_PYTHON`. If the CAD toolchain still does not pass, stop with `ENV_BLOCKED`.
 - In a Zen CAD repository, sourced standard/catalog parts must pass `./zen-cad source-lock milestones/<id>` before they are used as final assembly evidence.
 - At least one CAD implementation stack is available or selectable, e.g. GFL, CadQuery, OpenCascade/OCP, FreeCAD, STEP/STL export, or another kernel-backed toolchain.
 - For mechanical assemblies, acceptance must include kernel-backed checks, not only metadata or screenshots.

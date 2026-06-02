@@ -1,0 +1,13 @@
+{
+  "milestone_id": "002_nema17_mount_plate",
+  "contacts": [
+    {
+      "contact_id": "CT-001",
+      "part_a": "C-001",
+      "part_b": "external_nema17_motor_face",
+      "type": "motor_face_interface",
+      "expected_clearance_mm": 0.0,
+      "notes": "Top face is intended to mate to a NEMA17 motor face around the centered pilot bore."
+    }
+  ]
+}

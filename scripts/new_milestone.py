@@ -81,7 +81,7 @@ def next_milestone_id(root: Path, slug: str) -> str:
     return f'{next_number:03d}_{slug}'
 
 
-def create_milestone(root: Path, milestone_id: str, title: str) -> Path:
+def create_milestone(root: Path, milestone_id: str, title: str, maturity: str) -> Path:
     template = root / 'milestones/_template'
     milestones_dir = (root / 'milestones').resolve()
     target = (milestones_dir / milestone_id).resolve()
@@ -90,13 +90,20 @@ def create_milestone(root: Path, milestone_id: str, title: str) -> Path:
     if target.exists():
         raise SystemExit(f'ERROR: milestone already exists: {target}')
     shutil.copytree(template, target)
-    milestone_file = target / 'milestone.yaml'
-    text = milestone_file.read_text(encoding='utf-8')
-    text = text.replace('REPLACE_WITH_MILESTONE_ID', milestone_id).replace('REPLACE_WITH_TITLE', title).replace('REPLACE_WITH_DATE', date.today().isoformat())
-    milestone_file.write_text(text, encoding='utf-8')
-    for rel in ['02_parts/selected_parts_manifest.json', '04_assembly/contact_map.json', '04_assembly/connections.json', '05_validation/validation_report.json']:
-        path = target / rel
-        path.write_text(path.read_text(encoding='utf-8').replace('REPLACE_WITH_MILESTONE_ID', milestone_id), encoding='utf-8')
+    replacements = {
+        'REPLACE_WITH_MILESTONE_ID': milestone_id,
+        'REPLACE_WITH_TITLE': title,
+        'REPLACE_WITH_DATE': date.today().isoformat(),
+        'REPLACE_WITH_MATURITY': maturity,
+        '"maturity": "concept"': f'"maturity": "{maturity}"',
+    }
+    for path in target.rglob('*'):
+        if not path.is_file() or path.suffix not in {'.md', '.yaml', '.json', '.csv'}:
+            continue
+        text = path.read_text(encoding='utf-8')
+        for needle, replacement in replacements.items():
+            text = text.replace(needle, replacement)
+        path.write_text(text, encoding='utf-8')
     return target
 
 
@@ -107,6 +114,7 @@ def main() -> int:
     parser.add_argument('--id', help='Explicit milestone id, e.g. 002_gearbox')
     parser.add_argument('--title', help='Explicit human-readable milestone title')
     parser.add_argument('--root', default='.', help='Zen CAD repository root')
+    parser.add_argument('--maturity', choices=['concept', 'layout', 'final'], default='concept', help='Initial milestone maturity. Defaults to concept so agents can generate before final evidence gates.')
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
@@ -127,10 +135,11 @@ def main() -> int:
     else:
         raise SystemExit('ERROR: provide --id and --title, or provide a natural-language request with --request "..."')
 
-    target = create_milestone(root, milestone_id, title)
+    target = create_milestone(root, milestone_id, title, args.maturity)
     print(f'Created milestone: {target}')
     print(f'Milestone id: {milestone_id}')
     print(f'Title: {title}')
+    print(f'Maturity: {args.maturity}')
     return 0
 
 

@@ -2,7 +2,7 @@
 
 A Zen CAD milestone is an independently scoped CAD job inside the repository. Each milestone should contain requirements, research, part classification, selected parts, custom CAD handoff, assembly metadata, validation evidence, BOM, and final report. Use `scripts/new_milestone.py` to create new milestones from `milestones/_template`.
 
-0.4.0 milestones are gate-based. Structure validation and completion validation are separate:
+0.5.0 milestones are maturity-aware and gate-based. Structure validation and completion validation are separate:
 
 ```bash
 ./zen-cad validate-structure milestones/<id>
@@ -23,3 +23,5 @@ Completion is blocked until:
 - BOM and final report truthfully match the validation verdict.
 
 When a gate blocks, the final report should say `Verdict: BLOCKED` and list completed evidence, blockers, and the smallest unblock step.
+
+New milestones default to `maturity: concept`. Use `maturity: final` only after the milestone has the source-lock, CAD export, kernel validation, BOM, and final report evidence needed for completion.

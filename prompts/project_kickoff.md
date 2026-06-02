@@ -4,7 +4,9 @@ Use `/agentic-cad` as the top-level workflow. Treat this repository as a portabl
 
 ## Prompt-first milestone startup
 
-If the user starts a new CoBrA/agent session by stating a CAD goal such as `기어 박스를 만들고 싶어`, treat that as a milestone-start request. Do not ask the user to run a Python command or manually choose a milestone id/title. Internally run `python3 scripts/new_milestone.py --request "<goal>"` from the Zen CAD repository root, confirm the created milestone such as `002_gearbox` titled `Gearbox`, then continue with the new milestone artifacts.
+If the user starts a new CoBrA/agent session by stating a CAD goal such as `기어 박스를 만들고 싶어`, treat that as a milestone-start request. Do not ask the user to run a Python command or manually choose a milestone id/title. Internally run `python3 scripts/new_milestone.py --request "<goal>"` from the Zen CAD repository root, confirm the created milestone such as `003_gearbox` titled `Gearbox` in this repository, then continue with the new milestone artifacts.
+
+0.5.0 is generation-first. Start new work at `maturity: concept`, generate useful custom/envelope CAD when possible, and reserve final completion claims for `maturity: final` evidence.
 
 First response requirements:
 

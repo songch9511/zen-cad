@@ -38,7 +38,7 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             'do not ask the user to run',
             'python3 scripts/new_milestone.py --request "<goal>"',
             '기어 박스를 만들고 싶어',
-            '002_gearbox',
+            '003_gearbox',
         ]:
             self.assertIn(phrase.casefold(), searchable_text)
         self.assertNotIn('create the milestone with `--milestone-request` before editing artifacts', searchable_text)
@@ -53,9 +53,9 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
                 capture_output=True,
                 check=True,
             )
-            self.assertIn('Milestone id: 002_gearbox', completed.stdout)
+            self.assertIn('Milestone id: 003_gearbox', completed.stdout)
             self.assertIn('Title: Gearbox', completed.stdout)
-            self.assertTrue((work / 'milestones/002_gearbox/milestone.yaml').exists())
+            self.assertTrue((work / 'milestones/003_gearbox/milestone.yaml').exists())
 
             explicit = subprocess.run(
                 [

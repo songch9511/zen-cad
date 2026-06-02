@@ -66,6 +66,42 @@ class FirstRunCliTest(unittest.TestCase):
             for skill_name in ['agentic-cad', 'spec-to-cad', 'self-evolving-producer-verifier']:
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
 
+            doctor = run_cli(work, 'doctor', '--cobra-skills-root', str(skills_root))
+            self.assertEqual(doctor.returncode, 0, doctor.stderr + doctor.stdout)
+            self.assertIn('installed and fresh', doctor.stdout)
+
+    def test_doctor_accepts_build123d_ocp_python_backend(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+            fake_python = Path(tmp) / 'fake-python'
+            fake_python.write_text(
+                '#!/bin/sh\n'
+                'cat <<\'JSON\'\n'
+                '{"ok": true, "executable": "fake-python", "version": "3.11.0", "in_virtualenv": true, '
+                '"modules": {"numpy": true, "trimesh": true, "build123d": true, "cadquery": false, "OCP": true}, '
+                '"openscad": null, "stl_round_trip": true, "build123d_step_smoke": true}\n'
+                'JSON\n',
+                encoding='utf-8',
+            )
+            fake_python.chmod(0o755)
+
+            completed = run_cli(
+                work,
+                'doctor',
+                '--cad-required',
+                '--python',
+                str(fake_python),
+                '--cobra-skills-root',
+                str(Path(tmp) / 'cobra-skills'),
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
+            self.assertIn('[PASS] build123d import', completed.stdout)
+            self.assertIn('[PASS] OCP import', completed.stdout)
+            self.assertIn('[PASS] build123d STEP/OCP smoke', completed.stdout)
+            self.assertIn('[PASS] CAD kernel/export path', completed.stdout)
+
     def test_new_command_creates_milestone_and_prints_next_steps(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             work = Path(tmp) / 'zen-cad-kit'
@@ -75,9 +111,9 @@ class FirstRunCliTest(unittest.TestCase):
 
             self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
             self.assertIn('Milestone creation: PASS', completed.stdout)
-            self.assertIn('Active milestone: milestones/002_gearbox', completed.stdout)
+            self.assertIn('Active milestone: milestones/003_gearbox', completed.stdout)
             self.assertIn('Continue with /agentic-cad', completed.stdout)
-            self.assertTrue((work / 'milestones/002_gearbox/milestone.yaml').exists())
+            self.assertTrue((work / 'milestones/003_gearbox/milestone.yaml').exists())
 
     def test_validate_splits_structure_pass_from_completion_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -119,6 +155,10 @@ class FirstRunCliTest(unittest.TestCase):
             alias = run_cli(work, 'validate-completion', 'milestones/001_nema17_belt_linear_actuator')
             self.assertEqual(alias.returncode, 2, alias.stderr + alias.stdout)
 
+            demo = run_cli(work, 'validate-completion', 'milestones/002_nema17_mount_plate')
+            self.assertEqual(demo.returncode, 0, demo.stderr + demo.stdout)
+            self.assertIn('Zen CAD completion validation result: PASS', demo.stdout)
+
     def test_source_lock_blocks_proxies_and_unlocked_standard_parts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             work = Path(tmp) / 'zen-cad-kit'
@@ -131,6 +171,14 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertIn('completion_eligible: false', completed.stdout)
             self.assertIn('proxy_only artifacts are completion-ineligible', completed.stdout)
             self.assertIn('status is', completed.stdout)
+
+            concept = run_cli(work, 'source-lock', '--maturity', 'concept', 'milestones/001_nema17_belt_linear_actuator')
+            self.assertEqual(concept.returncode, 0, concept.stderr + concept.stdout)
+            self.assertIn('Source-lock: WARN', concept.stdout)
+
+            demo = run_cli(work, 'source-lock', 'milestones/002_nema17_mount_plate')
+            self.assertEqual(demo.returncode, 0, demo.stderr + demo.stdout)
+            self.assertIn('status: generated_custom', demo.stdout)
 
     def test_blocked_report_writes_truthful_blocked_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

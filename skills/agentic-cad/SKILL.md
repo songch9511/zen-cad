@@ -37,7 +37,7 @@ Instead, from the Zen CAD repository root, internally run:
 python3 scripts/new_milestone.py --request "<goal>"
 ```
 
-Use the created milestone as the active CAD job. For `기어 박스를 만들고 싶어`, the expected derived milestone is the next available `*_gearbox`, such as `002_gearbox`, titled `Gearbox`. After creation, continue this `/agentic-cad` workflow inside that milestone and require validation-script evidence before completion claims.
+Use the created milestone as the active CAD job. For `기어 박스를 만들고 싶어`, the expected derived milestone is the next available `*_gearbox`, such as `003_gearbox` in this repository, titled `Gearbox`. After creation, continue this `/agentic-cad` workflow inside that milestone and require validation-script evidence before completion claims.
 
 ## Execution mode
 
@@ -404,11 +404,13 @@ Expected `/spec-to-cad` outputs:
 
 ## Validation gates
 
-Zen CAD 0.4.0 uses a strict evidence-gated order. Structure validation and completion validation are different. `./zen-cad validate --level structure milestones/<id>` may pass while `./zen-cad validate --level completion milestones/<id>` is blocked. Never present a downstream gate as complete while an upstream gate remains blocked.
+Zen CAD 0.5.0 uses a generation-first, maturity-aware evidence-gated order. Structure validation and completion validation are different. `./zen-cad validate --level structure milestones/<id>` may pass while `./zen-cad validate --level completion milestones/<id>` is blocked. Never present final completion while an upstream final gate remains blocked.
 
 ### Gate 0: Doctor / environment preflight
 
 Pass only when `./zen-cad doctor --cad-required` can run for the CAD/mesh/kernel stack needed by the job, or when the final report truthfully states `ENV_BLOCKED` and stops before CAD completion claims.
+
+Prefer build123d plus OCP when available. If CoBrA workers use a different runtime, run doctor with `--python /path/to/.venv/bin/python` or set `ZEN_CAD_PYTHON`.
 
 ### Gate 1: Requirement normalization
 

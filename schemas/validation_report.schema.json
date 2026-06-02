@@ -12,6 +12,13 @@
     "milestone_id": {
       "type": "string"
     },
+    "maturity": {
+      "enum": [
+        "concept",
+        "layout",
+        "final"
+      ]
+    },
     "status": {
       "enum": [
         "draft",

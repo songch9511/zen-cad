@@ -1,0 +1,20 @@
+{
+  "milestone_id": "002_nema17_mount_plate",
+  "status": "pass",
+  "units": "mm",
+  "standard_parts": [],
+  "custom_exports": [
+    {
+      "part_id": "C-001",
+      "step_file": "03_cad/exports/nema17_mount_plate.step",
+      "stl_file": "03_cad/exports/nema17_mount_plate.stl",
+      "source_file": "03_cad/nema17_mount_plate.py",
+      "bounding_box_mm": [
+        60.0,
+        60.0,
+        4.0
+      ],
+      "validation_backend": "build123d/OCP"
+    }
+  ]
+}

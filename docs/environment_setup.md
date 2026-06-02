@@ -25,6 +25,12 @@ Before final CAD generation or completion validation, use:
 ./zen-cad doctor --cad-required
 ```
 
+When CoBrA workers do not use the same Python as your terminal, pass the working CAD venv explicitly:
+
+```bash
+./zen-cad doctor --cad-required --python /path/to/.venv/bin/python
+```
+
 If this exits `ENV_BLOCKED`, stop CAD generation and resolve the missing toolchain first. A truthful blocked report is preferred over proxy CAD that looks complete.
 
 To run setup explicitly, use:
@@ -43,7 +49,7 @@ For CoBrA, add `--with-cobra` to copy the bundled `/agentic-cad`, `/spec-to-cad`
 
 Skill sync does not register the Zen CAD repository as the active CoBrA workspace. Start CoBrA from the Zen CAD repository root, or explicitly point the agent to this repository path.
 
-After that, milestone startup is prompt-first: the user can type a natural CAD goal such as `기어 박스를 만들고 싶어` in the agent prompt, and the agent should internally run `python3 scripts/new_milestone.py --request "<goal>"` to create the next milestone, for example `002_gearbox` titled `Gearbox`.
+After that, milestone startup is prompt-first: the user can type a natural CAD goal such as `기어 박스를 만들고 싶어` in the agent prompt, and the agent should internally run `python3 scripts/new_milestone.py --request "<goal>"` to create the next milestone, for example `003_gearbox` titled `Gearbox` in this repository.
 
 For automation, CI, or non-interactive setup, the helper can still create a first milestone during setup from a natural-language request:
 

@@ -4,7 +4,7 @@ A milestone is not complete because a screenshot looks plausible. Completion req
 
 - required files exist in the milestone folder;
 - JSON artifacts pass schema validation;
-- `./zen-cad doctor --cad-required` can pass for the CAD/mesh/kernel toolchain needed by the job;
+- `./zen-cad doctor --cad-required` can pass for the CAD/mesh/kernel toolchain needed by the job, using `--python` or `ZEN_CAD_PYTHON` when CoBrA needs a specific venv;
 - standard/catalog parts are source-locked before custom CAD and assembly validation proceed;
 - CAD source and final export paths are recorded;
 - CONTACT_MAP and CONNECTIONS reference known parts;
@@ -16,7 +16,7 @@ A milestone is not complete because a screenshot looks plausible. Completion req
 
 `./zen-cad validate --level structure milestones/<id>` proves only that the required milestone files, JSON schemas, BOM headers, and basic milestone structure are valid.
 
-`./zen-cad validate --level completion milestones/<id>` is the release gate. It checks the 0.4.0 completion gates:
+`./zen-cad validate --level completion milestones/<id>` is the release gate. It checks the 0.5.0 completion gates:
 
 - Gate 0: doctor / environment preflight
 - Gate 1: requirement normalization
@@ -44,3 +44,9 @@ Proxy artifacts are preview/debug only:
 - standard parts need source-backed STEP/STP and source metadata.
 - custom parts need source, final exports, and kernel-backed validation.
 - screenshots, GLB previews, and viewer snapshots are never completion evidence.
+
+## Maturity modes
+
+- `concept`: generate useful CAD early; unresolved source-lock is a warning and final completion remains unavailable.
+- `layout`: allow proxy/envelope assembly work while recording blockers for final evidence.
+- `final`: enforce source-lock, final exports, kernel validation, BOM, and final report consistency.

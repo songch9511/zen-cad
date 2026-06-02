@@ -2,6 +2,7 @@ id: REPLACE_WITH_MILESTONE_ID
 title: REPLACE_WITH_TITLE
 status: draft
 workflow: /agentic-cad
+maturity: REPLACE_WITH_MATURITY
 created_at: REPLACE_WITH_DATE
 deliverables:
   - requirements_brief

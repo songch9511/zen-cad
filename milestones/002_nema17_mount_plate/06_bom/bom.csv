@@ -1,0 +1,2 @@
+part_id,name,classification,quantity,manufacturer,part_number,source_url,step_path,engineering_rating_verified,notes
+C-001,NEMA17 mount plate,custom_design_specific,1,,,03_cad/nema17_mount_plate.py,03_cad/exports/nema17_mount_plate.step,false,custom geometry demo; engineering ratings outside scope

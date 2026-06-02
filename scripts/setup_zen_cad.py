@@ -44,7 +44,7 @@ def sync_cobra_skills(root: Path, agentic_cad_dir: Path) -> list[Path]:
     return synced
 
 
-def create_or_reuse_milestone(root: Path, milestone_id: str, title: str) -> Path:
+def create_or_reuse_milestone(root: Path, milestone_id: str, title: str, maturity: str) -> Path:
     milestones_dir = (root / 'milestones').resolve()
     target = (milestones_dir / milestone_id).resolve()
     if target.parent != milestones_dir:
@@ -63,16 +63,27 @@ def create_or_reuse_milestone(root: Path, milestone_id: str, title: str) -> Path
             milestone_id,
             '--title',
             title,
+            '--maturity',
+            maturity,
         ],
         root,
     )
     return target
 
 
-def create_milestone_from_request(root: Path, request: str) -> Path:
+def create_milestone_from_request(root: Path, request: str, maturity: str) -> Path:
     completed = run_step(
         'create milestone from request',
-        [sys.executable, str(root / 'scripts/new_milestone.py'), '--root', str(root), '--request', request],
+        [
+            sys.executable,
+            str(root / 'scripts/new_milestone.py'),
+            '--root',
+            str(root),
+            '--request',
+            request,
+            '--maturity',
+            maturity,
+        ],
         root,
         capture=True,
     )
@@ -111,6 +122,7 @@ def main() -> int:
     parser.add_argument('--milestone-id', help='Optional explicit lowercase snake_case milestone id, e.g. 002_gearbox.')
     parser.add_argument('--milestone-title', help='Human-readable title for --milestone-id.')
     parser.add_argument('--milestone-request', help='Optional natural-language first CAD request; derives milestone id/title automatically, e.g. "기어 박스를 만들고 싶어".')
+    parser.add_argument('--maturity', choices=['concept', 'layout', 'final'], default='concept', help='Initial maturity for a created milestone. Defaults to concept.')
     parser.add_argument('--skip-validation', action='store_true', help='Skip built-in required-file/schema/milestone validation.')
     args = parser.parse_args()
 
@@ -126,9 +138,9 @@ def main() -> int:
     if args.sync_cobra_skill:
         sync_cobra_skills(root, Path(args.cobra_skill_dir))
     if args.milestone_request:
-        milestone = create_milestone_from_request(root, args.milestone_request)
+        milestone = create_milestone_from_request(root, args.milestone_request, args.maturity)
     elif args.milestone_id and args.milestone_title:
-        milestone = create_or_reuse_milestone(root, args.milestone_id, args.milestone_title)
+        milestone = create_or_reuse_milestone(root, args.milestone_id, args.milestone_title, args.maturity)
     if not args.skip_validation:
         validate(root, milestone)
 

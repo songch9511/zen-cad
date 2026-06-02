@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.5.0
+
+- Shift Zen CAD to a generation-first workflow: concept/layout milestones may use proxy or envelope CAD while final completion remains evidence-gated.
+- Add `concept`, `layout`, and `final` milestone maturity modes across milestone creation, validation, source-lock severity, templates, and schemas.
+- Promote build123d plus OCP to the preferred CAD/export backend in `zen-cad doctor`, with `--python` and `ZEN_CAD_PYTHON` support for CoBrA worker/runtime alignment.
+- Add CoBrA skill freshness checks that compare installed skill files against the repository source and warn when stale skills are in use.
+- Add a final, completion-PASS `002_nema17_mount_plate` demo milestone with build123d source, STEP/STL exports, OCP load evidence, BOM, and final report.
+- Fix milestone template placeholder replacement for all text artifacts created by `scripts/new_milestone.py`.
+
 ## 0.4.0
 
 - Add CAD toolchain preflight to `zen-cad doctor`, including Python/venv, numpy, trimesh, CadQuery/OpenSCAD, artifact/cache write access, and `--cad-required` ENV_BLOCKED behavior.

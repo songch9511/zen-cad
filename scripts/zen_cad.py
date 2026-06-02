@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib
 import importlib.util
 import json
@@ -19,6 +20,8 @@ COMPANION_SKILLS = [
     'spec-to-cad',
     'self-evolving-producer-verifier',
 ]
+
+MATURITY_LEVELS = {'concept', 'layout', 'final'}
 
 MILESTONE_ARTIFACTS = [
     ('Requirements brief', '00_requirements/requirements_brief.md'),
@@ -150,6 +153,119 @@ def has_importable_module(module_name: str) -> bool:
     return importlib.util.find_spec(module_name) is not None
 
 
+def selected_python(explicit: str | None = None) -> str:
+    return explicit or os.environ.get('ZEN_CAD_PYTHON') or sys.executable
+
+
+def resolve_python(value: str) -> str:
+    path = Path(value).expanduser()
+    if path.exists():
+        return str(path.absolute())
+    found = shutil.which(value)
+    return found or value
+
+
+def current_python_probe() -> dict[str, object]:
+    modules = {
+        name: has_importable_module(name)
+        for name in ['numpy', 'trimesh', 'build123d', 'cadquery', 'OCP']
+    }
+    return {
+        'ok': True,
+        'executable': sys.executable,
+        'version': sys.version.split()[0],
+        'in_virtualenv': sys.prefix != getattr(sys, 'base_prefix', sys.prefix),
+        'modules': modules,
+        'openscad': shutil.which('openscad'),
+        'stl_round_trip': sample_stl_round_trip_passes(),
+        'build123d_step_smoke': build123d_step_smoke_passes(),
+    }
+
+
+def external_python_probe(python_executable: str) -> dict[str, object]:
+    probe = r'''
+import importlib
+import importlib.util
+import json
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+
+def has_module(name):
+    return importlib.util.find_spec(name) is not None
+
+def stl_round_trip():
+    if not has_module("trimesh"):
+        return False
+    try:
+        trimesh = importlib.import_module("trimesh")
+        stl_text = """solid sample
+facet normal 0 0 1
+  outer loop
+    vertex 0 0 0
+    vertex 1 0 0
+    vertex 0 1 0
+  endloop
+endfacet
+endsolid sample
+"""
+        with tempfile.NamedTemporaryFile("w", suffix=".stl", encoding="utf-8") as file:
+            file.write(stl_text)
+            file.flush()
+            mesh = trimesh.load(file.name, force="mesh")
+        return len(getattr(mesh, "vertices", [])) > 0 and len(getattr(mesh, "faces", [])) > 0
+    except Exception:
+        return False
+
+def build123d_step_smoke():
+    if not has_module("build123d") or not has_module("OCP"):
+        return False
+    try:
+        build123d = importlib.import_module("build123d")
+        step_control = importlib.import_module("OCP.STEPControl")
+        if_select = importlib.import_module("OCP.IFSelect")
+        with tempfile.NamedTemporaryFile(suffix=".step") as file:
+            build123d.export_step(build123d.Box(10, 20, 2), file.name)
+            if Path(file.name).stat().st_size <= 0:
+                return False
+            reader = step_control.STEPControl_Reader()
+            return reader.ReadFile(file.name) == if_select.IFSelect_RetDone
+    except Exception:
+        return False
+
+modules = {name: has_module(name) for name in ["numpy", "trimesh", "build123d", "cadquery", "OCP"]}
+print(json.dumps({
+    "ok": True,
+    "executable": sys.executable,
+    "version": sys.version.split()[0],
+    "in_virtualenv": sys.prefix != getattr(sys, "base_prefix", sys.prefix),
+    "modules": modules,
+    "openscad": shutil.which("openscad"),
+    "stl_round_trip": stl_round_trip(),
+    "build123d_step_smoke": build123d_step_smoke(),
+}))
+'''
+    completed = subprocess.run(
+        [resolve_python(python_executable), '-c', probe],
+        text=True,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        return {
+            'ok': False,
+            'executable': python_executable,
+            'error': first_line(completed.stderr or completed.stdout) or f'exit code {completed.returncode}',
+        }
+    try:
+        data = json.loads(completed.stdout)
+    except Exception as exc:
+        return {'ok': False, 'executable': python_executable, 'error': f'invalid probe JSON: {exc}'}
+    if isinstance(data, dict):
+        return data
+    return {'ok': False, 'executable': python_executable, 'error': 'probe JSON is not an object'}
+
+
 def local_artifact_exists(milestone: Path, value: object) -> bool:
     if not is_meaningful(value) or not isinstance(value, str):
         return False
@@ -165,6 +281,25 @@ def value_from_any(data: dict[str, object], *keys: str) -> object:
         if is_meaningful(value):
             return value
     return None
+
+
+def milestone_maturity(milestone: Path, explicit: str | None = None) -> str:
+    if explicit:
+        return explicit
+    milestone_file = milestone / 'milestone.yaml'
+    if milestone_file.exists():
+        for line in milestone_file.read_text(encoding='utf-8').splitlines():
+            if line.strip().startswith('maturity:'):
+                value = line.split(':', 1)[1].strip().strip('"\'')
+                if value in MATURITY_LEVELS:
+                    return value
+    validation_report = milestone / '05_validation/validation_report.json'
+    data, _ = read_json_file(validation_report)
+    if data is not None:
+        value = str(data.get('maturity') or '').strip()
+        if value in MATURITY_LEVELS:
+            return value
+    return 'final'
 
 
 def read_json_file(path: Path) -> tuple[dict[str, object] | None, str]:
@@ -211,24 +346,58 @@ endsolid sample
         return False
 
 
-def cad_toolchain_checks(root: Path) -> list[CheckResult]:
-    in_virtualenv = sys.prefix != getattr(sys, 'base_prefix', sys.prefix)
-    cadquery_ready = has_importable_module('cadquery')
-    openscad_ready = shutil.which('openscad') is not None
-    stl_round_trip = sample_stl_round_trip_passes()
+def build123d_step_smoke_passes() -> bool:
+    if not has_importable_module('build123d') or not has_importable_module('OCP'):
+        return False
+    try:
+        build123d = importlib.import_module('build123d')
+        step_control = importlib.import_module('OCP.STEPControl')
+        if_select = importlib.import_module('OCP.IFSelect')
+        with tempfile.NamedTemporaryFile(suffix='.step') as file:
+            build123d.export_step(build123d.Box(10, 20, 2), file.name)
+            if Path(file.name).stat().st_size <= 0:
+                return False
+            reader = step_control.STEPControl_Reader()
+            return reader.ReadFile(file.name) == if_select.IFSelect_RetDone
+    except Exception:
+        return False
+
+
+def cad_toolchain_checks(root: Path, python_executable: str | None = None) -> list[CheckResult]:
+    requested_python = selected_python(python_executable)
+    if Path(resolve_python(requested_python)) != Path(sys.executable):
+        probe = external_python_probe(requested_python)
+    else:
+        probe = current_python_probe()
+    if not probe.get('ok'):
+        return [
+            CheckResult('Python runtime', 'ENV_BLOCKED', f'{requested_python}: {probe.get("error", "probe failed")}'),
+            CheckResult('Artifact/cache write access', 'PASS' if check_writable_directory(root / 'milestones') else 'ENV_BLOCKED', 'milestones directory must be writable'),
+        ]
+
+    modules = probe.get('modules') if isinstance(probe.get('modules'), dict) else {}
+    version = str(probe.get('version') or 'unknown')
+    cadquery_ready = bool(modules.get('cadquery'))
+    openscad_ready = bool(probe.get('openscad'))
+    build123d_ready = bool(modules.get('build123d'))
+    ocp_ready = bool(modules.get('OCP'))
+    build123d_step_smoke = bool(probe.get('build123d_step_smoke'))
+    stl_round_trip = bool(probe.get('stl_round_trip'))
+    kernel_ready = cadquery_ready or openscad_ready or build123d_step_smoke or (build123d_ready and ocp_ready)
     checks = [
-        CheckResult('Python runtime', 'PASS' if sys.version_info >= (3, 10) else 'WARN', f'Python {sys.version.split()[0]}; Python 3.10+ recommended'),
-        CheckResult('Python virtualenv', 'PASS' if in_virtualenv else 'WARN', 'active virtualenv' if in_virtualenv else 'not running inside a virtualenv'),
-        CheckResult('numpy import', 'PASS' if has_importable_module('numpy') else 'ENV_BLOCKED', 'required for many CAD/mesh validation flows'),
-        CheckResult('trimesh import', 'PASS' if has_importable_module('trimesh') else 'ENV_BLOCKED', 'required for STL/mesh loadability checks'),
-        CheckResult('cadquery import', 'PASS' if cadquery_ready else 'ENV_BLOCKED', 'required unless another kernel path is used'),
-        CheckResult('OpenSCAD executable', 'PASS' if openscad_ready else 'ENV_BLOCKED', 'required for SCAD regeneration unless CadQuery/other kernel is used'),
+        CheckResult('Python runtime', 'PASS' if tuple(int(part) for part in version.split('.')[:2] if part.isdigit()) >= (3, 10) else 'WARN', f'{probe.get("executable")} ({version}); Python 3.10+ recommended'),
+        CheckResult('Python virtualenv', 'PASS' if bool(probe.get('in_virtualenv')) else 'WARN', 'active virtualenv' if bool(probe.get('in_virtualenv')) else 'not running inside a virtualenv'),
+        CheckResult('numpy import', 'PASS' if modules.get('numpy') else 'ENV_BLOCKED', 'required for many CAD/mesh validation flows'),
+        CheckResult('trimesh import', 'PASS' if modules.get('trimesh') else 'ENV_BLOCKED', 'required for STL/mesh loadability checks'),
+        CheckResult('build123d import', 'PASS' if build123d_ready else 'WARN', 'preferred Zen CAD 0.5 generation backend'),
+        CheckResult('OCP import', 'PASS' if ocp_ready else 'WARN', 'preferred OpenCascade validation backend for build123d'),
+        CheckResult('cadquery import', 'PASS' if cadquery_ready else 'WARN', 'optional alternate CAD kernel path'),
+        CheckResult('OpenSCAD executable', 'PASS' if openscad_ready else 'WARN', 'optional alternate SCAD regeneration path'),
         CheckResult('Artifact/cache write access', 'PASS' if check_writable_directory(root / 'milestones') else 'ENV_BLOCKED', 'milestones directory must be writable'),
     ]
-
-    kernel_ready = cadquery_ready or openscad_ready
     checks.append(CheckResult('Sample STL round-trip load', 'PASS' if stl_round_trip else 'ENV_BLOCKED', 'writes and loads a tiny STL through trimesh'))
-    checks.append(CheckResult('CAD kernel/export path', 'PASS' if kernel_ready else 'ENV_BLOCKED', 'CadQuery or OpenSCAD must be available before final CAD generation'))
+    checks.append(CheckResult('build123d STEP/OCP smoke', 'PASS' if build123d_step_smoke else 'WARN', 'creates a build123d box, exports STEP, and loads it through OCP'))
+    checks.append(CheckResult('CAD kernel/export path', 'PASS' if kernel_ready else 'ENV_BLOCKED', 'build123d+OCP, CadQuery, or OpenSCAD must be available before final CAD generation'))
     return checks
 
 
@@ -242,7 +411,7 @@ def iter_milestone_dirs(root: Path) -> list[Path]:
     )
 
 
-def check_cobra_skills(skills_root: Path) -> CheckResult:
+def check_cobra_skills(root: Path, skills_root: Path) -> CheckResult:
     missing = [
         skill_name
         for skill_name in COMPANION_SKILLS
@@ -254,25 +423,38 @@ def check_cobra_skills(skills_root: Path) -> CheckResult:
             'WARN',
             f'missing {", ".join(missing)} under {skills_root}; local Zen CAD use still works',
         )
-    return CheckResult('CoBrA skill sync', 'PASS', f'installed under {skills_root}')
+    stale = []
+    for skill_name in COMPANION_SKILLS:
+        source = root / 'skills' / skill_name / 'SKILL.md'
+        target = skills_root / skill_name / 'SKILL.md'
+        if file_hash(source) != file_hash(target):
+            stale.append(skill_name)
+    if stale:
+        return CheckResult('CoBrA skill freshness', 'WARN', f'stale {", ".join(stale)} under {skills_root}; rerun ./zen-cad init --with-cobra')
+    return CheckResult('CoBrA skill sync', 'PASS', f'installed and fresh under {skills_root}')
+
+
+def file_hash(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def command_doctor(args: argparse.Namespace) -> int:
     root = find_repo_root(Path.cwd(), args.root)
     skills_root = Path(args.cobra_skills_root).expanduser() if args.cobra_skills_root else default_cobra_skills_root()
+    python_executable = selected_python(args.python)
 
     print('Zen CAD doctor')
     print(f'Repository root: {root}')
     print(f'Current directory: {Path.cwd().resolve()}')
-    print(f'Python: {sys.version.split()[0]}')
+    print(f'Python: {python_executable}')
 
     repo_checks = [
         CheckResult('Repository root', 'PASS', 'Zen CAD files detected'),
         run_required_file_check(root),
         run_schema_check(root),
-        check_cobra_skills(skills_root),
+        check_cobra_skills(root, skills_root),
     ]
-    env_checks = cad_toolchain_checks(root)
+    env_checks = cad_toolchain_checks(root, python_executable)
 
     print_section('Repository checks')
     for check in repo_checks:
@@ -301,12 +483,13 @@ def command_doctor(args: argparse.Namespace) -> int:
             print(f'- {check.name}: {check.detail}')
         print('Smallest unblock step:')
         print('- Install or expose the missing CAD toolchain before running source-to-CAD/export gates.')
+        print('- If a working venv already exists, rerun with --python /path/to/venv/bin/python or set ZEN_CAD_PYTHON.')
         if args.cad_required:
             return 2
 
     print_section('Zen CAD doctor: PASS')
     print('Next:')
-    print('- In CoBrA/Codex/Claude Code/Cursor, ask: 기어 박스를 만들고 싶어')
+    print('- In CoBrA/Codex/Claude Code/Cursor, ask: NEMA17 mount plate를 만들어줘')
     print('- Manual terminal fallback: ./zen-cad new "기어 박스를 만들고 싶어"')
     print('- Validate structure: ./zen-cad validate --level structure milestones/<id>')
     print('- Validate completion evidence: ./zen-cad validate --level completion milestones/<id>')
@@ -327,6 +510,8 @@ def command_init(args: argparse.Namespace) -> int:
         setup_args.extend(['--milestone-id', args.milestone_id, '--milestone-title', args.milestone_title])
     if args.skip_validation:
         setup_args.append('--skip-validation')
+    if args.maturity:
+        setup_args.extend(['--maturity', args.maturity])
 
     print('Zen CAD init')
     completed = run_python(root, 'scripts/setup_zen_cad.py', setup_args)
@@ -363,6 +548,8 @@ def command_new(args: argparse.Namespace) -> int:
         new_args.extend(['--id', args.milestone_id])
     if args.milestone_title:
         new_args.extend(['--title', args.milestone_title])
+    if args.maturity:
+        new_args.extend(['--maturity', args.maturity])
     if request:
         new_args.extend(['--request', request])
 
@@ -437,6 +624,8 @@ def command_validate(args: argparse.Namespace) -> int:
     targets = resolve_validation_targets(root, args.milestones)
     level = getattr(args, 'level', 'all')
     completion_required = getattr(args, 'completion_required', False)
+    python_executable = selected_python(getattr(args, 'python', None))
+    maturity_override = getattr(args, 'maturity', None)
 
     print('Zen CAD validation')
     root_checks = [
@@ -464,7 +653,7 @@ def command_validate(args: argparse.Namespace) -> int:
             continue
         print_milestone_summary(root, milestone)
         if level in {'all', 'completion'} or completion_required:
-            gates = analyze_completion_gates(root, milestone)
+            gates = analyze_completion_gates(root, milestone, python_executable, maturity_override)
             print_completion_gate_summary(gates)
             if blocking_gates(gates):
                 evidence_blocked.append((milestone, gates))
@@ -525,11 +714,15 @@ def command_validate_completion(args: argparse.Namespace) -> int:
 def command_source_lock(args: argparse.Namespace) -> int:
     root = find_repo_root(Path.cwd(), args.root)
     targets = resolve_validation_targets(root, args.milestones)
+    maturity_override = getattr(args, 'maturity', None)
 
     print('Zen CAD source-lock audit')
     blocked = False
+    final_required = False
     for milestone in targets:
+        maturity = milestone_maturity(milestone, maturity_override)
         print_section(f'Milestone: {milestone.name}')
+        print(f'Maturity: {maturity}')
         audits = audit_source_locks(milestone)
         for audit in audits:
             marker = 'PASS' if not audit.blockers else 'BLOCKED'
@@ -541,8 +734,13 @@ def command_source_lock(args: argparse.Namespace) -> int:
             for blocker in audit.blockers:
                 print(f'  - {blocker}')
             blocked = blocked or bool(audit.blockers)
+        final_required = final_required or maturity == 'final'
 
     if blocked:
+        if not final_required:
+            print_section('Source-lock: WARN')
+            print('Source-lock blockers are allowed for concept/layout generation, but final completion remains ineligible.')
+            return 0
         print_section('Source-lock: BLOCKED')
         print('Smallest unblock step:')
         print('- For every standard part, record status source_locked with supplier, SKU, source URL, datasheet, cached STEP/STP, and verified critical dimensions.')
@@ -600,10 +798,12 @@ def render_blocked_report(root: Path, milestone: Path, gates: list[GateResult]) 
 def command_blocked_report(args: argparse.Namespace) -> int:
     root = find_repo_root(Path.cwd(), args.root)
     targets = resolve_validation_targets(root, args.milestones)
+    python_executable = selected_python(getattr(args, 'python', None))
+    maturity_override = getattr(args, 'maturity', None)
 
     print('Zen CAD blocked report')
     for milestone in targets:
-        gates = analyze_completion_gates(root, milestone)
+        gates = analyze_completion_gates(root, milestone, python_executable, maturity_override)
         report = render_blocked_report(root, milestone, gates)
         print_section(f'Milestone: {milestone.name}')
         print(report)
@@ -722,7 +922,14 @@ def audit_source_locks(milestone: Path) -> list[PartAudit]:
             blockers.append('completion_eligible is false')
             steps.append(f'Mark {part_id} completion_eligible true only after its final evidence is attached.')
 
-        status = 'source_locked' if not blockers else ('proxy_only' if proxy_part else 'blocked')
+        if blockers:
+            status = 'proxy_only' if proxy_part else 'blocked'
+        elif explicit_status:
+            status = explicit_status
+        elif classification == 'custom_design_specific':
+            status = 'generated_custom'
+        else:
+            status = 'source_locked'
         audits.append(
             PartAudit(
                 part_id=part_id,
@@ -781,11 +988,17 @@ def validation_report_status(milestone: Path) -> tuple[str, list[str], str]:
     return str(status), blockers, summary
 
 
-def analyze_completion_gates(root: Path, milestone: Path) -> list[GateResult]:
+def analyze_completion_gates(
+    root: Path,
+    milestone: Path,
+    python_executable: str | None = None,
+    maturity_override: str | None = None,
+) -> list[GateResult]:
     gates: list[GateResult] = []
+    maturity = milestone_maturity(milestone, maturity_override)
     validation_status, validation_blockers, validation_summary = validation_report_status(milestone)
 
-    env_checks = cad_toolchain_checks(root)
+    env_checks = cad_toolchain_checks(root, python_executable)
     env_blockers = [check for check in env_checks if check.status == 'ENV_BLOCKED']
     gate0_pass = validation_status == 'pass' and not validation_blockers
     if gate0_pass or not env_blockers:
@@ -819,10 +1032,13 @@ def analyze_completion_gates(root: Path, milestone: Path) -> list[GateResult]:
 
     audits = audit_source_locks(milestone)
     source_blockers = [audit for audit in audits if audit.blockers]
-    if source_blockers:
+    if source_blockers and maturity == 'final':
         detail = '; '.join(f'{audit.part_id}: {", ".join(audit.blockers[:3])}' for audit in source_blockers[:5])
         steps = [step for audit in source_blockers for step in audit.smallest_unblock_steps]
         gates.append(GateResult('Gate 2', 'standard part source-lock', 'BLOCKED', detail, dedupe_preserving_order(steps)))
+    elif source_blockers:
+        detail = f'{maturity} maturity allows unresolved source-lock only as generation/layout evidence; final completion remains ineligible.'
+        gates.append(GateResult('Gate 2', 'standard part source-lock', 'PASS', detail, []))
     else:
         gates.append(GateResult('Gate 2', 'standard part source-lock', 'PASS', 'all standard parts are source_locked and completion-eligible.', []))
 
@@ -892,14 +1108,16 @@ def analyze_completion_gates(root: Path, milestone: Path) -> list[GateResult]:
         if audit.classification in {'off_the_shelf', 'semi_standard_configurable'}
         and any('STEP/STP file' in blocker for blocker in audit.blockers)
     ]
+    standard_parts_present = any(audit.classification in {'off_the_shelf', 'semi_standard_configurable'} for audit in audits)
+    metadata_required = maturity == 'final' and standard_parts_present
     final_step_exports = nonempty_artifacts(milestone / '03_cad', {'.step', '.stp'})
-    if not metadata_blocked and not standard_step_missing and final_step_exports:
+    if (not metadata_required or (not metadata_blocked and normalized_metadata.exists())) and (maturity != 'final' or not standard_step_missing) and final_step_exports:
         gates.append(GateResult('Gate 5', 'export/cache verification', 'PASS', 'STEP cache/metadata and final exports are present.', []))
     else:
         blockers = []
-        if metadata_blocked or not normalized_metadata.exists():
+        if metadata_required and (metadata_blocked or not normalized_metadata.exists()):
             blockers.append('normalized STEP metadata is missing or blocked')
-        if standard_step_missing:
+        if maturity == 'final' and standard_step_missing:
             blockers.append(f'standard STEP/STP missing for {", ".join(standard_step_missing[:5])}')
         if not final_step_exports:
             blockers.append('final STEP/STP exports are missing')
@@ -937,7 +1155,17 @@ def analyze_completion_gates(root: Path, milestone: Path) -> list[GateResult]:
         except Exception:
             bom_has_rows = False
     report_blocked_language = any(token in (validation_summary + '\n' + report_text).casefold() for token in ['blocked', 'not completion-ready'])
-    if bom_has_rows and final_report.exists() and validation_status == 'pass' and not report_blocked_language:
+    if maturity != 'final':
+        gates.append(
+            GateResult(
+                'Gate 7',
+                'final report / BOM / evidence bundle',
+                'BLOCKED',
+                f'maturity is {maturity!r}, not "final"; concept/layout CAD may be generated but final completion cannot be claimed',
+                ['Switch milestone maturity to final only after source-lock, exports, kernel validation, BOM, and report evidence are ready.'],
+            )
+        )
+    elif bom_has_rows and final_report.exists() and validation_status == 'pass' and not report_blocked_language:
         gates.append(GateResult('Gate 7', 'final report / BOM / evidence bundle', 'PASS', 'BOM and final report align with pass evidence.', []))
     else:
         blockers = []
@@ -1018,6 +1246,7 @@ def build_parser() -> argparse.ArgumentParser:
     doctor = subparsers.add_parser('doctor', help='Check repo health, schema validation, CoBrA skill sync, and CAD toolchain state.')
     add_root_argument(doctor)
     doctor.add_argument('--cobra-skills-root', help='CoBrA skills root. Defaults to COBRA_SKILLS_ROOT, COBRA_WORKSPACE/skills, or ~/.cobra/workspace/skills.')
+    doctor.add_argument('--python', help='Python interpreter to probe. Defaults to ZEN_CAD_PYTHON or the current interpreter.')
     doctor.add_argument('--cad-required', action='store_true', help='Return ENV_BLOCKED when CAD/mesh/kernel tooling is missing.')
     doctor.set_defaults(func=command_doctor)
 
@@ -1028,6 +1257,7 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument('--milestone-request', help='Create a milestone from a natural-language request during init.')
     init.add_argument('--milestone-id', help='Explicit milestone id, e.g. 002_gearbox.')
     init.add_argument('--milestone-title', help='Human-readable title for --milestone-id.')
+    init.add_argument('--maturity', choices=sorted(MATURITY_LEVELS), help='Initial maturity for a created milestone. Defaults to concept in scripts/new_milestone.py.')
     init.add_argument('--skip-validation', action='store_true', help='Skip built-in validation during init.')
     init.set_defaults(func=command_init)
 
@@ -1037,12 +1267,15 @@ def build_parser() -> argparse.ArgumentParser:
     new.add_argument('--wizard', action='store_true', help='Ask guided first-milestone intake questions.')
     new.add_argument('--id', dest='milestone_id', help='Explicit milestone id, e.g. 002_gearbox.')
     new.add_argument('--title', dest='milestone_title', help='Human-readable title for --id.')
+    new.add_argument('--maturity', choices=sorted(MATURITY_LEVELS), default='concept', help='Milestone maturity. concept/layout can generate proxy/layout CAD; final requires completion evidence.')
     new.set_defaults(func=command_new)
 
     validate = subparsers.add_parser('validate', help='Validate repo/milestone structure and optional completion evidence gates.')
     add_root_argument(validate)
     validate.add_argument('milestones', nargs='*', help='Milestone paths to validate. Defaults to all milestones.')
     validate.add_argument('--level', choices=['all', 'structure', 'completion'], default='all', help='Validation level. all keeps structure exit-code compatibility while printing completion gates.')
+    validate.add_argument('--maturity', choices=sorted(MATURITY_LEVELS), help='Override milestone maturity for gate interpretation.')
+    validate.add_argument('--python', help='Python interpreter to probe for completion gates. Defaults to ZEN_CAD_PYTHON or the current interpreter.')
     validate.add_argument('--completion-required', action='store_true', help='Return non-zero when validation_report.json does not show completion evidence pass.')
     validate.set_defaults(func=command_validate)
 
@@ -1054,17 +1287,22 @@ def build_parser() -> argparse.ArgumentParser:
     validate_completion = subparsers.add_parser('validate-completion', help='Validate completion evidence gates and return non-zero when blocked.')
     add_root_argument(validate_completion)
     validate_completion.add_argument('milestones', nargs='*', help='Milestone paths to validate. Defaults to all milestones.')
+    validate_completion.add_argument('--maturity', choices=sorted(MATURITY_LEVELS), help='Override milestone maturity for gate interpretation.')
+    validate_completion.add_argument('--python', help='Python interpreter to probe for completion gates. Defaults to ZEN_CAD_PYTHON or the current interpreter.')
     validate_completion.set_defaults(func=command_validate_completion)
 
     source_lock = subparsers.add_parser('source-lock', help='Audit standard-part source-lock status before CAD generation.')
     add_root_argument(source_lock)
     source_lock.add_argument('milestones', nargs='*', help='Milestone paths to audit. Defaults to all milestones.')
+    source_lock.add_argument('--maturity', choices=sorted(MATURITY_LEVELS), help='Override milestone maturity for source-lock severity.')
     source_lock.add_argument('--audit-only', action='store_true', help='Always return zero while printing source-lock blockers.')
     source_lock.set_defaults(func=command_source_lock)
 
     blocked_report = subparsers.add_parser('blocked-report', help='Render a truthful PASS/BLOCKED evidence report from completion gates.')
     add_root_argument(blocked_report)
     blocked_report.add_argument('milestones', nargs='*', help='Milestone paths to report. Defaults to all milestones.')
+    blocked_report.add_argument('--maturity', choices=sorted(MATURITY_LEVELS), help='Override milestone maturity for gate interpretation.')
+    blocked_report.add_argument('--python', help='Python interpreter to probe for completion gates. Defaults to ZEN_CAD_PYTHON or the current interpreter.')
     blocked_report.add_argument('--write', action='store_true', help='Write 07_report/blocked_report.md in each milestone.')
     blocked_report.set_defaults(func=command_blocked_report)
     return parser

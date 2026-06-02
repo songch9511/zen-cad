@@ -1,9 +1,9 @@
-id: REPLACE_WITH_MILESTONE_ID
-title: REPLACE_WITH_TITLE
+id: 002_nema17_mount_plate
+title: NEMA17 mount plate
 status: draft
 workflow: /agentic-cad
-maturity: REPLACE_WITH_MATURITY
-created_at: REPLACE_WITH_DATE
+maturity: final
+created_at: 2026-06-02
 deliverables:
   - requirements_brief
   - part_classification_table

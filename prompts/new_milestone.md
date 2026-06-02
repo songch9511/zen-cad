@@ -8,7 +8,9 @@ For prompt-first milestone startup, the user may only provide a CAD goal such as
 python3 scripts/new_milestone.py --request "<goal>"
 ```
 
-That command derives the next available milestone id and title automatically, for example `002_gearbox` and `Gearbox`.
+That command derives the next available milestone id and title automatically, for example `003_gearbox` and `Gearbox` in this repository.
+
+New milestones default to `maturity: concept`. Generate useful CAD first, mark proxies/envelopes as non-final, and switch to `maturity: final` only when source-lock and validation evidence are ready.
 
 For automation or exact naming, the existing explicit path still works:
 

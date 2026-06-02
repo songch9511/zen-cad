@@ -1,0 +1,59 @@
+{
+  "milestone_id": "002_nema17_mount_plate",
+  "maturity": "final",
+  "status": "pass",
+  "checks": [
+    {
+      "check_id": "CHK-001",
+      "name": "Required files exist",
+      "result": "pass",
+      "evidence": "scripts/validate_milestone.py and repository schema checks pass for this milestone.",
+      "limitations": []
+    },
+    {
+      "check_id": "CHK-002",
+      "name": "build123d export",
+      "result": "pass",
+      "evidence": "03_cad/nema17_mount_plate.py generated non-empty STEP and STL files under 03_cad/exports/.",
+      "limitations": []
+    },
+    {
+      "check_id": "CHK-003",
+      "name": "OCP STEP load",
+      "result": "pass",
+      "evidence": "OCP STEPControl_Reader loaded 03_cad/exports/nema17_mount_plate.step with IFSelect_RetDone.",
+      "limitations": []
+    },
+    {
+      "check_id": "CHK-004",
+      "name": "Source-lock not required",
+      "result": "pass",
+      "evidence": "Selected parts manifest contains only custom_design_specific C-001; no standard/catalog part is claimed as final evidence.",
+      "limitations": []
+    }
+  ],
+  "gates": [
+    {
+      "gate_id": "Gate 0",
+      "name": "doctor / environment preflight",
+      "result": "pass",
+      "evidence": "Generated with build123d/OCP-capable Python; artifact evidence is committed with the milestone.",
+      "smallest_unblock_step": ""
+    },
+    {
+      "gate_id": "Gate 2",
+      "name": "standard part source-lock",
+      "result": "pass",
+      "evidence": "No standard/catalog parts are in final scope.",
+      "smallest_unblock_step": ""
+    },
+    {
+      "gate_id": "Gate 6",
+      "name": "CAD-kernel validation",
+      "result": "pass",
+      "evidence": "OCP loaded the exported STEP file.",
+      "smallest_unblock_step": ""
+    }
+  ],
+  "summary": "Final demo milestone for a single custom NEMA17 mount plate passes source-free custom CAD export and STEP load validation."
+}

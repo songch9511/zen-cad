@@ -38,6 +38,6 @@ The repo-local wrapper is equivalent for manual use:
 
 Use the wrapper only when you intentionally want to create a milestone from the terminal instead of through a CoBrA prompt.
 
-For example, `기어 박스를 만들고 싶어` should create the next available milestone such as `002_gearbox` with title `Gearbox`. Then follow `prompts/new_milestone.md`, keep standard parts source-first and custom geometry generate-second, and require `./zen-cad validate milestones/<id>` evidence before reporting completion.
+For example, `기어 박스를 만들고 싶어` should create the next available milestone such as `003_gearbox` with title `Gearbox` in this repository because `002_nema17_mount_plate` is the bundled final demo. Then follow `prompts/new_milestone.md`, keep standard parts source-first for final evidence, allow concept/layout proxy CAD when explicitly marked non-final, and require `./zen-cad validate-completion milestones/<id>` evidence before reporting final completion.
 
 The setup helper still supports `--milestone-request` for automation or smoke tests, and explicit `--milestone-id` plus `--milestone-title` still works when an exact folder name must be pinned.

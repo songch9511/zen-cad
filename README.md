@@ -16,7 +16,7 @@ cd zen-cad
 ./zen-cad doctor
 ```
 
-`doctor`는 현재 폴더가 Zen CAD 레포인지, 필수 파일과 JSON/CSV 스키마가 맞는지, CoBrA skill sync 상태가 어떤지 확인합니다. 0.4.0부터는 numpy, trimesh, CadQuery/OpenSCAD, artifact/cache 쓰기 권한 같은 CAD toolchain preflight도 함께 보여줍니다.
+`doctor`는 현재 폴더가 Zen CAD 레포인지, 필수 파일과 JSON/CSV 스키마가 맞는지, CoBrA skill sync 상태가 어떤지 확인합니다. 0.5.0부터는 build123d/OCP를 기본 CAD happy path로 보고, numpy, trimesh, CadQuery/OpenSCAD, artifact/cache 쓰기 권한 같은 CAD toolchain preflight도 함께 보여줍니다.
 
 최종 CAD 생성까지 바로 진행해야 하는 환경이면 stricter preflight를 사용합니다.
 
@@ -24,18 +24,24 @@ cd zen-cad
 ./zen-cad doctor --cad-required
 ```
 
+CoBrA worker가 다른 Python을 쓰는 경우에는 CAD가 되는 venv를 명시합니다.
+
+```bash
+./zen-cad doctor --cad-required --python /path/to/.venv/bin/python
+```
+
 그다음에는 CoBrA, Codex, Claude Code, Cursor 같은 에이전트에서 자연어로 요청합니다.
 
 ```text
-기어 박스를 만들고 싶어
+NEMA17 mount plate를 만들어줘
 ```
 
-에이전트는 이 요청을 Zen CAD milestone 시작으로 해석하고, 레포 안에서 내부적으로 `scripts/new_milestone.py --request "<goal>"`를 실행해야 합니다. 사용자가 milestone id나 title을 직접 고르거나 `zen-cad new`를 외울 필요는 없습니다.
+에이전트는 이 요청을 Zen CAD milestone 시작으로 해석하고, 레포 안에서 내부적으로 `scripts/new_milestone.py --request "<goal>"`를 실행해야 합니다. 새 milestone은 기본적으로 `maturity: concept`에서 시작하므로 CAD 생성이 source-lock보다 먼저 진행될 수 있습니다. 사용자가 milestone id나 title을 직접 고르거나 `zen-cad new`를 외울 필요는 없습니다.
 
 직접 터미널에서 milestone을 만들고 싶을 때만 수동 래퍼를 사용합니다.
 
 ```bash
-./zen-cad new "기어 박스를 만들고 싶어"
+./zen-cad new --maturity concept "NEMA17 mount plate를 만들어줘"
 ```
 
 milestone이 생성된 뒤 구조와 completion evidence 상태를 분리해서 확인합니다.
@@ -80,9 +86,15 @@ Preview는 사람이 보는 리뷰 자료입니다. 완료 선언에는 재현 �
 8. 새 CAD 작업은 기본적으로 milestone으로 진행합니다.
 9. 워크플로우 개선점은 다시 `/agentic-cad`에 피드백합니다.
 
-## 0.4.0 gate contract
+0.5.0에는 작은 final demo가 포함되어 있습니다.
 
-Zen CAD는 one-shot CAD generator가 아니라 evidence-gated workflow입니다. 앞 gate가 PASS가 아니면 뒤 gate가 완료처럼 보이면 안 됩니다.
+```bash
+./zen-cad validate-completion milestones/002_nema17_mount_plate
+```
+
+## 0.5.0 maturity and gate contract
+
+Zen CAD는 one-shot CAD generator가 아니라 generation-first, evidence-gated workflow입니다. `concept`와 `layout`에서는 proxy/envelope CAD 생성을 허용하지만, `final` completion claim은 아래 gate가 PASS일 때만 가능합니다.
 
 1. Gate 0: doctor / environment preflight
 2. Gate 1: requirement normalization
@@ -93,7 +105,7 @@ Zen CAD는 one-shot CAD generator가 아니라 evidence-gated workflow입니다.
 7. Gate 6: CAD-kernel validation
 8. Gate 7: final report / BOM / evidence bundle
 
-표준품은 `status: "source_locked"`, supplier/SKU/source URL/datasheet/cached STEP/STP/critical dimensions evidence가 있어야 completion-eligible입니다. `placeholder_proxy`, proxy STL, screenshot, GLB/viewer snapshot은 preview/debug artifact일 뿐 completion evidence가 아닙니다.
+표준품은 final maturity에서 `status: "source_locked"`, supplier/SKU/source URL/datasheet/cached STEP/STP/critical dimensions evidence가 있어야 completion-eligible입니다. `concept`와 `layout`에서는 source-lock blocker를 truthful warning으로 남기고 CAD 생성을 진행할 수 있습니다. `placeholder_proxy`, proxy STL, screenshot, GLB/viewer snapshot은 preview/debug artifact일 뿐 final completion evidence가 아닙니다.
 
 막힌 milestone은 실패를 감추지 말고 blocked report로 남깁니다.
 
