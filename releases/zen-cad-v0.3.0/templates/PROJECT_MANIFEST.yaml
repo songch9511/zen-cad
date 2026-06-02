@@ -1,9 +1,0 @@
-name: Zen CAD Workspace
-version: 0.3.0
-workflow_skill: /agentic-cad
-principles:
-  - source_first_generate_second
-  - standard_parts_are_sourced_before_generated
-  - viewer_artifacts_are_not_completion_evidence
-  - step_geometry_is_not_engineering_certification
-default_milestone_root: milestones

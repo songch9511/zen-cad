@@ -1,9 +1,0 @@
-part_id,name,classification,quantity,manufacturer,part_number,source_url,step_path,engineering_rating_verified,notes
-P-001,NEMA17 stepper motor,off_the_shelf,1,TBD,TBD,TBD,02_parts/step/P-001_nema17_motor.step,false,seed placeholder
-P-002,GT2 drive pulley,off_the_shelf,1,TBD,TBD,TBD,02_parts/step/P-002_gt2_pulley.step,false,seed placeholder
-P-003,GT2 belt,off_the_shelf,1,TBD,TBD,TBD,,false,belt length TBD
-P-004,Linear rail/carriage,off_the_shelf,1,TBD,TBD,TBD,,false,rail length TBD
-C-001,Motor mount plate,custom_design_specific,1,,,,,false,custom CAD to generate
-C-002,Idler bracket,custom_design_specific,1,,,,,false,custom CAD to generate
-C-003,Carriage adapter plate,custom_design_specific,1,,,,,false,custom CAD to generate
-X-001,Idler pulley proxy,placeholder_proxy,1,TBD,TBD,TBD,02_parts/step/X-001_idler_proxy.step,false,non-final proxy

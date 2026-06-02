@@ -46,7 +46,6 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             work = Path(tmp) / 'zen-cad-kit'
             copy_repo_fixture(work)
-            shutil.rmtree(work / 'milestones/002_setup_smoke_robot_gripper', ignore_errors=True)
             completed = subprocess.run(
                 [sys.executable, 'scripts/new_milestone.py', '--request', '기어 박스를 만들고 싶어'],
                 cwd=work,
@@ -79,7 +78,21 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             work = Path(tmp) / 'zen-cad-kit'
             copy_repo_fixture(work)
-            missing = work / 'milestones/002_setup_smoke_robot_gripper/01_research/research_log.md'
+            subprocess.run(
+                [
+                    sys.executable,
+                    'scripts/new_milestone.py',
+                    '--id',
+                    '002_required_files_test',
+                    '--title',
+                    'Required files test',
+                ],
+                cwd=work,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            missing = work / 'milestones/002_required_files_test/01_research/research_log.md'
             missing.unlink()
 
             completed = subprocess.run(
@@ -90,13 +103,27 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             )
 
             self.assertNotEqual(completed.returncode, 0)
-            self.assertIn('milestones/002_setup_smoke_robot_gripper/01_research/research_log.md', completed.stdout)
+            self.assertIn('milestones/002_required_files_test/01_research/research_log.md', completed.stdout)
 
     def test_schema_check_rejects_actual_schema_violations(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             work = Path(tmp) / 'zen-cad-kit'
             copy_repo_fixture(work)
-            manifest = work / 'milestones/002_setup_smoke_robot_gripper/02_parts/selected_parts_manifest.json'
+            subprocess.run(
+                [
+                    sys.executable,
+                    'scripts/new_milestone.py',
+                    '--id',
+                    '002_schema_test',
+                    '--title',
+                    'Schema test',
+                ],
+                cwd=work,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            manifest = work / 'milestones/002_schema_test/02_parts/selected_parts_manifest.json'
             data = json.loads(manifest.read_text(encoding='utf-8'))
             data['unexpected'] = True
             data['parts'][0]['geometry_match'] = 'false'
