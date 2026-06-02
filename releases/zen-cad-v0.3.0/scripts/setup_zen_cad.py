@@ -12,12 +12,18 @@ def repo_root_from_script() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def run_step(label: str, command: list[str], cwd: Path) -> None:
+def run_step(label: str, command: list[str], cwd: Path, capture: bool = False) -> subprocess.CompletedProcess[str]:
     print(f'\n==> {label}')
     print('$ ' + ' '.join(command))
-    completed = subprocess.run(command, cwd=cwd)
+    completed = subprocess.run(command, cwd=cwd, text=True, capture_output=capture)
+    if capture:
+        if completed.stdout:
+            print(completed.stdout, end='')
+        if completed.stderr:
+            print(completed.stderr, end='', file=sys.stderr)
     if completed.returncode != 0:
         raise SystemExit(f'ERROR: {label} failed with exit code {completed.returncode}')
+    return completed
 
 
 def sync_cobra_skill(root: Path, skill_dir: Path) -> Path:
@@ -57,6 +63,19 @@ def create_or_reuse_milestone(root: Path, milestone_id: str, title: str) -> Path
     return target
 
 
+def create_milestone_from_request(root: Path, request: str) -> Path:
+    completed = run_step(
+        'create milestone from request',
+        [sys.executable, str(root / 'scripts/new_milestone.py'), '--root', str(root), '--request', request],
+        root,
+        capture=True,
+    )
+    for line in completed.stdout.splitlines():
+        if line.startswith('Created milestone: '):
+            return Path(line.removeprefix('Created milestone: ')).resolve()
+    raise SystemExit('ERROR: milestone creation did not report a created path')
+
+
 def validate(root: Path, extra_milestone: Path | None) -> None:
     run_step('check required files', [sys.executable, str(root / 'scripts/check_required_files.py'), str(root)], root)
     run_step('check JSON schemas', [sys.executable, str(root / 'scripts/check_json_schemas.py'), str(root)], root)
@@ -73,8 +92,9 @@ def main() -> int:
     parser.add_argument('--root', default=None, help='Zen CAD repository root. Defaults to this script\'s parent repository.')
     parser.add_argument('--sync-cobra-skill', action='store_true', help='Copy skills/agentic-cad/SKILL.md into a CoBrA skills directory.')
     parser.add_argument('--cobra-skill-dir', default='~/.cobra/workspace/skills/agentic-cad', help='Target directory for CoBrA /agentic-cad skill sync.')
-    parser.add_argument('--milestone-id', help='Optional unique lowercase snake_case milestone id, e.g. 002_desktop_cnc_fixture.')
+    parser.add_argument('--milestone-id', help='Optional explicit lowercase snake_case milestone id, e.g. 002_gearbox.')
     parser.add_argument('--milestone-title', help='Human-readable title for --milestone-id.')
+    parser.add_argument('--milestone-request', help='Optional natural-language first CAD request; derives milestone id/title automatically, e.g. "기어 박스를 만들고 싶어".')
     parser.add_argument('--skip-validation', action='store_true', help='Skip built-in required-file/schema/milestone validation.')
     args = parser.parse_args()
 
@@ -83,11 +103,15 @@ def main() -> int:
         raise SystemExit(f'ERROR: not a Zen CAD repository root: {root}')
 
     milestone = None
+    if args.milestone_request and (args.milestone_id or args.milestone_title):
+        raise SystemExit('ERROR: use either --milestone-request or --milestone-id/--milestone-title, not both')
     if bool(args.milestone_id) != bool(args.milestone_title):
         raise SystemExit('ERROR: use --milestone-id and --milestone-title together')
     if args.sync_cobra_skill:
         sync_cobra_skill(root, Path(args.cobra_skill_dir))
-    if args.milestone_id and args.milestone_title:
+    if args.milestone_request:
+        milestone = create_milestone_from_request(root, args.milestone_request)
+    elif args.milestone_id and args.milestone_title:
         milestone = create_or_reuse_milestone(root, args.milestone_id, args.milestone_title)
     if not args.skip_validation:
         validate(root, milestone)
@@ -96,7 +120,7 @@ def main() -> int:
     print(f'Repository root: {root}')
     if milestone is not None:
         print(f'Milestone ready: {milestone}')
-    print('Next: open prompts/new_milestone.md and skills/agentic-cad/SKILL.md in your agentic CAD environment.')
+    print('Next: tell your agent what you want to design, or open prompts/new_milestone.md and skills/agentic-cad/SKILL.md.')
     return 0
 
 

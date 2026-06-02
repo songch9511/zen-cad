@@ -27,6 +27,18 @@ Use `/agentic-cad` when the task is a mechanical design project that needs more 
 
 Do not use this skill as a shortcut for creating decorative or approximate CAD from text. If the job is only a narrow parametric CAD generation task with a complete measurable spec and no sourcing/architecture work, invoke `/spec-to-cad` directly instead.
 
+## Zen CAD prompt-first milestone startup
+
+When running inside a Zen CAD repository, a natural-language CAD goal at the start of a new CoBrA/agent session is a milestone-start request. For example, if the user says `기어 박스를 만들고 싶어`, do not ask the user to run a Python command and do not require the user to manually choose a milestone id/title.
+
+Instead, from the Zen CAD repository root, internally run:
+
+```bash
+python3 scripts/new_milestone.py --request "<goal>"
+```
+
+Use the created milestone as the active CAD job. For `기어 박스를 만들고 싶어`, the expected derived milestone is the next available `*_gearbox`, such as `002_gearbox`, titled `Gearbox`. After creation, continue this `/agentic-cad` workflow inside that milestone and require validation-script evidence before completion claims.
+
 ## Execution mode
 
 For non-trivial mechanical CAD projects, run `/agentic-cad` as an orchestration workflow rather than a single-shot CAD generation prompt. Split the work into roles or internal workstreams when the scope warrants it:

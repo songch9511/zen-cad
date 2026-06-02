@@ -129,24 +129,38 @@ def main() -> None:
     python3 scripts/setup_zen_cad.py --sync-cobra-skill
     ```
 
-    To sync CoBrA, create a first milestone, and validate everything in one command:
+    ## Prompt-first milestone startup
+
+    After setup, the user-facing CoBrA flow is natural language, not another Python command. In a new CoBrA session or prompt window, the user can simply say the CAD goal, for example:
+
+    ```text
+    기어 박스를 만들고 싶어
+    ```
+
+    The agent must treat that as a new Zen CAD job request. Do not ask the user to run a milestone command or manually choose the milestone id/title. Instead, the agent internally runs this from the Zen CAD repository root:
+
+    ```bash
+    python3 scripts/new_milestone.py --request "<goal>"
+    ```
+
+    For `기어 박스를 만들고 싶어`, that creates the next available milestone such as `002_gearbox` with title `Gearbox`, then the agent continues with `prompts/new_milestone.md` and `skills/agentic-cad/SKILL.md`.
+
+    The setup-time `--milestone-request` path is still available for automation, smoke tests, or non-interactive agents:
 
     ```bash
     python3 scripts/setup_zen_cad.py \
-      --sync-cobra-skill \
-      --milestone-id 002_robot_gripper \
-      --milestone-title "Small servo-driven robot gripper"
+      --milestone-request "foldable drone landing gear를 만들고 싶어"
     ```
 
-    For Claude Code, Codex, Cursor, or other non-CoBrA agents, open this repository as the project root and run:
+    The explicit path also still works when you need to pin a specific id/title:
 
     ```bash
     python3 scripts/setup_zen_cad.py \
-      --milestone-id 002_robot_gripper \
-      --milestone-title "Small servo-driven robot gripper"
+      --milestone-id 002_desktop_cnc_fixture \
+      --milestone-title "Desktop CNC workholding fixture"
     ```
 
-    Then ask the agent to read `skills/agentic-cad/SKILL.md` and `prompts/new_milestone.md` before editing the milestone artifacts.
+    Good natural-language starting topics include gearbox, robot arm joint, watch escapement, drone frame, camera mount, enclosure, fixture, actuator, or any other mechanical CAD job.
 
     ## Manual validation commands
 
@@ -167,7 +181,7 @@ def main() -> None:
     python3 scripts/setup_zen_cad.py --sync-cobra-skill
     ```
 
-    Then start a project or milestone with `prompts/project_kickoff.md` or `prompts/new_milestone.md` and require evidence from the validation scripts before declaring completion.
+    Then start a project or milestone with `prompts/project_kickoff.md` or say the CAD goal naturally, e.g. `기어 박스를 만들고 싶어`; the agent should use `prompts/new_milestone.md`, internally run `python3 scripts/new_milestone.py --request "<goal>"`, and activate the created milestone before editing artifacts. Require evidence from the validation scripts before declaring completion.
 
     ## Non-CoBrA usage
 
@@ -233,27 +247,35 @@ def main() -> None:
 
         The setup helper validates required files, checks bundled JSON/CSV artifacts, validates the milestone template, and validates the reference milestone.
 
-        To create a first milestone during setup:
-
-        ```bash
-        python3 scripts/setup_zen_cad.py \
-          --milestone-id 002_robot_gripper \
-          --milestone-title "Small servo-driven robot gripper"
-        ```
-
         For CoBrA, add `--sync-cobra-skill` to copy `skills/agentic-cad/SKILL.md` into `~/.cobra/workspace/skills/agentic-cad/SKILL.md` before validation.
 
         ```bash
-        python3 scripts/setup_zen_cad.py \
-          --sync-cobra-skill \
-          --milestone-id 002_robot_gripper \
-          --milestone-title "Small servo-driven robot gripper"
+        python3 scripts/setup_zen_cad.py --sync-cobra-skill
         ```
+
+        After that, milestone startup is prompt-first: the user can type a natural CAD goal such as `기어 박스를 만들고 싶어` in the agent prompt, and the agent should internally run `python3 scripts/new_milestone.py --request "<goal>"` to create the next milestone, for example `002_gearbox` titled `Gearbox`.
+
+        For automation, CI, or non-interactive setup, the helper can still create a first milestone during setup from a natural-language request:
+
+        ```bash
+        python3 scripts/setup_zen_cad.py \
+          --milestone-request "기어 박스를 만들고 싶어"
+        ```
+
+        The explicit id/title path also remains available when you must pin an exact folder name:
+
+        ```bash
+        python3 scripts/setup_zen_cad.py \
+          --milestone-id 002_desktop_cnc_fixture \
+          --milestone-title "Desktop CNC workholding fixture"
+        ```
+
+        The milestone can be a gearbox stage, robot arm joint, watch mechanism, drone frame, enclosure, fixture, actuator, or any other CAD job. The examples are not presets.
         ''',
         'docs/cobra_usage.md': '''
         # CoBrA Usage
 
-        From the Zen CAD repository root, run:
+        From the Zen CAD repository root, run setup once:
 
         ```bash
         python3 scripts/setup_zen_cad.py --sync-cobra-skill
@@ -261,16 +283,23 @@ def main() -> None:
 
         That command copies the embedded `/agentic-cad` skill from `skills/agentic-cad/SKILL.md` to `~/.cobra/workspace/skills/agentic-cad/SKILL.md` and runs the bundled validation checks.
 
-        To create a new CAD job at the same time:
+        ## Prompt-first milestone startup
 
-        ```bash
-        python3 scripts/setup_zen_cad.py \
-          --sync-cobra-skill \
-          --milestone-id 002_robot_gripper \
-          --milestone-title "Small servo-driven robot gripper"
+        After setup, the user does not need to run another Python command to create a CAD job. In a new CoBrA session or prompt window, the user can simply type a natural-language CAD goal such as:
+
+        ```text
+        기어 박스를 만들고 싶어
         ```
 
-        Then start from `prompts/project_kickoff.md` for a new workspace or `prompts/new_milestone.md` for a new CAD job. Keep standard parts source-first and custom geometry generate-second. Require `scripts/check_required_files.py`, `scripts/check_json_schemas.py`, and `scripts/validate_milestone.py` evidence before reporting completion.
+        The agent should treat that prompt as the milestone creation request. Do not ask the user to run a Python command, and do not require the user to manually choose a milestone id/title. Internally run this command from the Zen CAD repository root:
+
+        ```bash
+        python3 scripts/new_milestone.py --request "<goal>"
+        ```
+
+        For example, `기어 박스를 만들고 싶어` should create the next available milestone such as `002_gearbox` with title `Gearbox`. Then follow `prompts/new_milestone.md`, keep standard parts source-first and custom geometry generate-second, and require `scripts/check_required_files.py`, `scripts/check_json_schemas.py`, and `scripts/validate_milestone.py` evidence before reporting completion.
+
+        The setup helper still supports `--milestone-request` for automation or smoke tests, and explicit `--milestone-id` plus `--milestone-title` still works when an exact folder name must be pinned.
         ''',
         'docs/non_cobra_usage.md': '''
         # Non-CoBrA Usage
@@ -285,19 +314,15 @@ def main() -> None:
         python3 scripts/setup_zen_cad.py
         ```
 
-        To create the first CAD job folder immediately:
-
-        ```bash
-        python3 scripts/setup_zen_cad.py \
-          --milestone-id 002_robot_gripper \
-          --milestone-title "Small servo-driven robot gripper"
-        ```
-
-        Then tell the agent:
+        Then tell the agent what you want to build in natural language, for example:
 
         ```text
-        Use this repository as the Zen CAD workspace. Read README.md and skills/agentic-cad/SKILL.md first. Use prompts/new_milestone.md for the active milestone and keep validation evidence in the milestone folder.
+        기어 박스를 만들고 싶어
         ```
+
+        The expected agent behavior is prompt-first milestone startup: do not ask the user to run a milestone command or choose an id/title. The agent should internally run `python3 scripts/new_milestone.py --request "<goal>"`, create the next milestone such as `002_gearbox` titled `Gearbox`, then use `prompts/new_milestone.md` for the active milestone and keep validation evidence in the milestone folder.
+
+        For automation or scripted startup, `scripts/setup_zen_cad.py --milestone-request "<goal>"` is still available. When an exact folder name must be pinned, explicit `--milestone-id` and `--milestone-title` still work.
 
         CoBrA-only skill installation is not required in Claude Code or Codex because the skill file is already inside this repository.
         ''',
@@ -311,9 +336,13 @@ def main() -> None:
 
         Use `/agentic-cad` as the top-level workflow. Treat this repository as a portable Zen CAD operating environment, not a one-off text-to-CAD task. Preserve the source-first/generate-second rule, create CAD jobs as milestones, and require validation-script evidence before completion claims.
 
+        ## Prompt-first milestone startup
+
+        If the user starts a new CoBrA/agent session by stating a CAD goal such as `기어 박스를 만들고 싶어`, treat that as a milestone-start request. Do not ask the user to run a Python command or manually choose a milestone id/title. Internally run `python3 scripts/new_milestone.py --request "<goal>"` from the Zen CAD repository root, confirm the created milestone such as `002_gearbox` titled `Gearbox`, then continue with the new milestone artifacts.
+
         First response requirements:
 
-        - confirm the milestone target and assumptions;
+        - confirm the active milestone id/title and assumptions;
         - identify standard/off-the-shelf parts to source first;
         - identify likely custom CAD parts;
         - name required artifacts and validation evidence;
@@ -322,7 +351,23 @@ def main() -> None:
         'prompts/new_milestone.md': '''
         # New Milestone Prompt
 
-        Create a new Zen CAD milestone for the requested mechanical design. Use `scripts/new_milestone.py --id <id> --title <title>` or manually copy `milestones/_template`. Fill the required artifacts progressively and validate with:
+        Create a new Zen CAD milestone for the requested mechanical design.
+
+        For prompt-first milestone startup, the user may only provide a CAD goal such as `기어 박스를 만들고 싶어`. Do not ask the user to run a Python command or manually choose a milestone id/title. Internally run this from the Zen CAD repository root:
+
+        ```bash
+        python3 scripts/new_milestone.py --request "<goal>"
+        ```
+
+        That command derives the next available milestone id and title automatically, for example `002_gearbox` and `Gearbox`.
+
+        For automation or exact naming, the existing explicit path still works:
+
+        ```bash
+        python3 scripts/new_milestone.py --id <id> --title <title>
+        ```
+
+        Fill the required artifacts progressively and validate with:
 
         ```bash
         python3 scripts/check_required_files.py .
@@ -589,12 +634,18 @@ def main() -> None:
         return Path(__file__).resolve().parents[1]
 
 
-    def run_step(label: str, command: list[str], cwd: Path) -> None:
+    def run_step(label: str, command: list[str], cwd: Path, capture: bool = False) -> subprocess.CompletedProcess[str]:
         print(f'\n==> {label}')
         print('$ ' + ' '.join(command))
-        completed = subprocess.run(command, cwd=cwd)
+        completed = subprocess.run(command, cwd=cwd, text=True, capture_output=capture)
+        if capture:
+            if completed.stdout:
+                print(completed.stdout, end='')
+            if completed.stderr:
+                print(completed.stderr, end='', file=sys.stderr)
         if completed.returncode != 0:
             raise SystemExit(f'ERROR: {label} failed with exit code {completed.returncode}')
+        return completed
 
 
     def sync_cobra_skill(root: Path, skill_dir: Path) -> Path:
@@ -634,6 +685,19 @@ def main() -> None:
         return target
 
 
+    def create_milestone_from_request(root: Path, request: str) -> Path:
+        completed = run_step(
+            'create milestone from request',
+            [sys.executable, str(root / 'scripts/new_milestone.py'), '--root', str(root), '--request', request],
+            root,
+            capture=True,
+        )
+        for line in completed.stdout.splitlines():
+            if line.startswith('Created milestone: '):
+                return Path(line.removeprefix('Created milestone: ')).resolve()
+        raise SystemExit('ERROR: milestone creation did not report a created path')
+
+
     def validate(root: Path, extra_milestone: Path | None) -> None:
         run_step('check required files', [sys.executable, str(root / 'scripts/check_required_files.py'), str(root)], root)
         run_step('check JSON schemas', [sys.executable, str(root / 'scripts/check_json_schemas.py'), str(root)], root)
@@ -646,12 +710,13 @@ def main() -> None:
 
 
     def main() -> int:
-        parser = argparse.ArgumentParser(description='One-command Zen CAD setup helper.')
+        parser = argparse.ArgumentParser(description='One-command Zen CAD setup helper for any milestone-based CAD job.')
         parser.add_argument('--root', default=None, help='Zen CAD repository root. Defaults to this script\'s parent repository.')
         parser.add_argument('--sync-cobra-skill', action='store_true', help='Copy skills/agentic-cad/SKILL.md into a CoBrA skills directory.')
         parser.add_argument('--cobra-skill-dir', default='~/.cobra/workspace/skills/agentic-cad', help='Target directory for CoBrA /agentic-cad skill sync.')
-        parser.add_argument('--milestone-id', help='Optional milestone id to create or reuse, e.g. 002_robot_gripper.')
+        parser.add_argument('--milestone-id', help='Optional explicit lowercase snake_case milestone id, e.g. 002_gearbox.')
         parser.add_argument('--milestone-title', help='Human-readable title for --milestone-id.')
+        parser.add_argument('--milestone-request', help='Optional natural-language first CAD request; derives milestone id/title automatically, e.g. "기어 박스를 만들고 싶어".')
         parser.add_argument('--skip-validation', action='store_true', help='Skip built-in required-file/schema/milestone validation.')
         args = parser.parse_args()
 
@@ -660,11 +725,15 @@ def main() -> None:
             raise SystemExit(f'ERROR: not a Zen CAD repository root: {root}')
 
         milestone = None
+        if args.milestone_request and (args.milestone_id or args.milestone_title):
+            raise SystemExit('ERROR: use either --milestone-request or --milestone-id/--milestone-title, not both')
         if bool(args.milestone_id) != bool(args.milestone_title):
             raise SystemExit('ERROR: use --milestone-id and --milestone-title together')
         if args.sync_cobra_skill:
             sync_cobra_skill(root, Path(args.cobra_skill_dir))
-        if args.milestone_id and args.milestone_title:
+        if args.milestone_request:
+            milestone = create_milestone_from_request(root, args.milestone_request)
+        elif args.milestone_id and args.milestone_title:
             milestone = create_or_reuse_milestone(root, args.milestone_id, args.milestone_title)
         if not args.skip_validation:
             validate(root, milestone)
@@ -673,7 +742,7 @@ def main() -> None:
         print(f'Repository root: {root}')
         if milestone is not None:
             print(f'Milestone ready: {milestone}')
-        print('Next: open prompts/new_milestone.md and skills/agentic-cad/SKILL.md in your agentic CAD environment.')
+        print('Next: tell your agent what you want to design, or open prompts/new_milestone.md and skills/agentic-cad/SKILL.md.')
         return 0
 
 
@@ -865,32 +934,137 @@ def main() -> None:
     from __future__ import annotations
 
     import argparse
+    import re
     import shutil
+    import unicodedata
     from datetime import date
     from pathlib import Path
 
-    def main() -> int:
-        parser = argparse.ArgumentParser(description='Create a new Zen CAD milestone from the template.')
-        parser.add_argument('--id', required=True, help='Milestone id, e.g. 002_robot_gripper')
-        parser.add_argument('--title', required=True, help='Human-readable milestone title')
-        parser.add_argument('--root', default='.', help='Zen CAD repository root')
-        args = parser.parse_args()
+    ALIASES = [
+        (('gearbox', 'gear box', 'reduction gearbox', '기어박스', '기어 박스', '감속기'), 'gearbox', 'Gearbox'),
+        (('robot gripper', 'gripper', '그리퍼', '로봇 그리퍼'), 'robot_gripper', 'Robot gripper'),
+        (('robot arm joint', 'robot arm', '로봇암', '로봇 암', '조인트', '관절'), 'robot_arm_joint', 'Robot arm joint'),
+        (('linear actuator', 'actuator', '리니어 액추에이터', '액추에이터'), 'linear_actuator', 'Linear actuator'),
+        (('drone frame', 'drone', '드론 프레임', '드론'), 'drone_frame', 'Drone frame'),
+        (('landing gear', '랜딩기어', '랜딩 기어'), 'landing_gear', 'Landing gear'),
+        (('camera mount', '카메라 마운트', '마운트'), 'camera_mount', 'Camera mount'),
+        (('watch escapement', 'watch mechanism', 'escapement', '시계', '탈진기', '이스케이프먼트'), 'watch_escapement', 'Watch escapement'),
+        (('cnc fixture', 'fixture', 'workholding', '지그', '픽스처', '치공구'), 'cnc_fixture', 'CNC fixture'),
+        (('enclosure', 'housing', 'case', '인클로저', '하우징', '케이스'), 'enclosure', 'Enclosure'),
+        (('bracket', '브라켓', '브래킷'), 'bracket', 'Bracket'),
+    ]
 
-        root = Path(args.root).resolve()
+    STOPWORDS = {
+        'a', 'an', 'and', 'cad', 'create', 'design', 'for', 'i', 'make', 'me', 'model', 'please',
+        'start', 'the', 'to', 'want', 'with', 'would', 'like', 'build', 'need', 'new', 'project',
+    }
+
+
+    def compact(text: str) -> str:
+        return re.sub(r'\s+', '', text.casefold())
+
+
+    def alias_for_request(request: str) -> tuple[str, str] | None:
+        lowered = request.casefold()
+        compacted = compact(request)
+        for terms, slug, title in ALIASES:
+            for term in terms:
+                if term.casefold() in lowered or compact(term) in compacted:
+                    return slug, title
+        return None
+
+
+    def slugify(text: str) -> str:
+        normalized = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+        words = re.findall(r'[a-zA-Z0-9]+', normalized.casefold())
+        filtered = [word for word in words if word not in STOPWORDS]
+        slug = '_'.join(filtered[:6]).strip('_')
+        return slug or 'cad_job'
+
+
+    def title_from_slug(slug: str) -> str:
+        base = re.sub(r'^\d{3}_', '', slug).replace('_', ' ').strip()
+        return base[:1].upper() + base[1:] if base else 'CAD job'
+
+
+    def derive_slug_title(request: str) -> tuple[str, str]:
+        cleaned = ' '.join(request.strip().split())
+        if not cleaned:
+            raise SystemExit('ERROR: empty milestone request')
+        alias = alias_for_request(cleaned)
+        if alias is not None:
+            return alias
+        slug = slugify(cleaned)
+        if slug == 'cad_job':
+            return slug, cleaned
+        return slug, title_from_slug(slug)
+
+
+    def next_milestone_id(root: Path, slug: str) -> str:
+        milestones_dir = root / 'milestones'
+        used = []
+        if milestones_dir.exists():
+            for child in milestones_dir.iterdir():
+                if child.is_dir():
+                    match = re.match(r'^(\d{3})_', child.name)
+                    if match:
+                        used.append(int(match.group(1)))
+        next_number = max(used, default=0) + 1
+        return f'{next_number:03d}_{slug}'
+
+
+    def create_milestone(root: Path, milestone_id: str, title: str) -> Path:
         template = root / 'milestones/_template'
-        target = root / f'milestones/{args.id}'
+        milestones_dir = (root / 'milestones').resolve()
+        target = (milestones_dir / milestone_id).resolve()
+        if target.parent != milestones_dir:
+            raise SystemExit('ERROR: milestone id must name a direct child under milestones/')
         if target.exists():
             raise SystemExit(f'ERROR: milestone already exists: {target}')
         shutil.copytree(template, target)
         milestone_file = target / 'milestone.yaml'
         text = milestone_file.read_text(encoding='utf-8')
-        text = text.replace('REPLACE_WITH_MILESTONE_ID', args.id).replace('REPLACE_WITH_TITLE', args.title).replace('REPLACE_WITH_DATE', date.today().isoformat())
+        text = text.replace('REPLACE_WITH_MILESTONE_ID', milestone_id).replace('REPLACE_WITH_TITLE', title).replace('REPLACE_WITH_DATE', date.today().isoformat())
         milestone_file.write_text(text, encoding='utf-8')
         for rel in ['02_parts/selected_parts_manifest.json', '04_assembly/contact_map.json', '04_assembly/connections.json', '05_validation/validation_report.json']:
             path = target / rel
-            path.write_text(path.read_text(encoding='utf-8').replace('REPLACE_WITH_MILESTONE_ID', args.id), encoding='utf-8')
+            path.write_text(path.read_text(encoding='utf-8').replace('REPLACE_WITH_MILESTONE_ID', milestone_id), encoding='utf-8')
+        return target
+
+
+    def main() -> int:
+        parser = argparse.ArgumentParser(description='Create a Zen CAD milestone from explicit id/title or a natural-language CAD request.')
+        parser.add_argument('request_words', nargs='*', help='Natural-language CAD request, e.g. "기어 박스를 만들고 싶어"')
+        parser.add_argument('--request', help='Natural-language CAD request. The script derives the next milestone id and title.')
+        parser.add_argument('--id', help='Explicit milestone id, e.g. 002_gearbox')
+        parser.add_argument('--title', help='Explicit human-readable milestone title')
+        parser.add_argument('--root', default='.', help='Zen CAD repository root')
+        args = parser.parse_args()
+
+        root = Path(args.root).resolve()
+        request = args.request or ' '.join(args.request_words)
+
+        if args.id and args.title:
+            milestone_id = args.id
+            title = args.title
+        elif args.id and request:
+            milestone_id = args.id
+            _, title = derive_slug_title(request)
+        elif args.title and not args.id:
+            slug, title = derive_slug_title(args.title)
+            milestone_id = next_milestone_id(root, slug)
+        elif request:
+            slug, title = derive_slug_title(request)
+            milestone_id = next_milestone_id(root, slug)
+        else:
+            raise SystemExit('ERROR: provide --id and --title, or provide a natural-language request with --request "..."')
+
+        target = create_milestone(root, milestone_id, title)
         print(f'Created milestone: {target}')
+        print(f'Milestone id: {milestone_id}')
+        print(f'Title: {title}')
         return 0
+
 
     if __name__ == '__main__':
         raise SystemExit(main())

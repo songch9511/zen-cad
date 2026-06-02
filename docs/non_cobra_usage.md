@@ -10,20 +10,14 @@ Clone or download the Zen CAD repo, open it as the project root, and run:
 python3 scripts/setup_zen_cad.py
 ```
 
-To create the first CAD job folder immediately, replace the milestone id and title with your actual target:
-
-```bash
-python3 scripts/setup_zen_cad.py \
-  --milestone-id 002_foldable_drone_landing_gear \
-  --milestone-title "Foldable drone landing gear"
-```
-
-The job is not limited to the example shown here. Use any unique lowercase snake_case milestone id, such as `002_gearbox_stage`, `002_watch_escapement`, `002_robot_arm_joint`, `002_camera_mount`, or `002_desktop_cnc_fixture`.
-
-Then tell the agent:
+Then tell the agent what you want to build in natural language, for example:
 
 ```text
-Use this repository as the Zen CAD workspace. Read README.md and skills/agentic-cad/SKILL.md first. Use prompts/new_milestone.md for the active milestone and keep validation evidence in the milestone folder.
+기어 박스를 만들고 싶어
 ```
+
+The expected agent behavior is prompt-first milestone startup: do not ask the user to run a milestone command or choose an id/title. The agent should internally run `python3 scripts/new_milestone.py --request "<goal>"`, create the next milestone such as `002_gearbox` titled `Gearbox`, then use `prompts/new_milestone.md` for the active milestone and keep validation evidence in the milestone folder.
+
+For automation or scripted startup, `scripts/setup_zen_cad.py --milestone-request "<goal>"` is still available. When an exact folder name must be pinned, explicit `--milestone-id` and `--milestone-title` still work.
 
 CoBrA-only skill installation is not required in Claude Code or Codex because the skill file is already inside this repository.
