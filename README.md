@@ -16,7 +16,13 @@ cd zen-cad
 ./zen-cad doctor
 ```
 
-`doctor`는 현재 폴더가 Zen CAD 레포인지, 필수 파일과 JSON/CSV 스키마가 맞는지, CoBrA skill sync 상태가 어떤지 확인합니다.
+`doctor`는 현재 폴더가 Zen CAD 레포인지, 필수 파일과 JSON/CSV 스키마가 맞는지, CoBrA skill sync 상태가 어떤지 확인합니다. 0.4.0부터는 numpy, trimesh, CadQuery/OpenSCAD, artifact/cache 쓰기 권한 같은 CAD toolchain preflight도 함께 보여줍니다.
+
+최종 CAD 생성까지 바로 진행해야 하는 환경이면 stricter preflight를 사용합니다.
+
+```bash
+./zen-cad doctor --cad-required
+```
 
 그다음에는 CoBrA, Codex, Claude Code, Cursor 같은 에이전트에서 자연어로 요청합니다.
 
@@ -32,16 +38,26 @@ cd zen-cad
 ./zen-cad new "기어 박스를 만들고 싶어"
 ```
 
-milestone이 생성된 뒤 구조와 evidence 상태를 확인합니다.
+milestone이 생성된 뒤 구조와 completion evidence 상태를 분리해서 확인합니다.
 
 ```bash
-./zen-cad validate milestones/<id>
+./zen-cad validate --level structure milestones/<id>
+./zen-cad validate --level completion milestones/<id>
 ```
 
 검증 출력은 두 층으로 나뉩니다.
 
 - `Zen CAD validation result: PASS`: 필수 파일, schema, BOM header, milestone 구조가 유효합니다.
-- `Completion evidence: BLOCKED`: 아직 CAD source, STEP/STL export, kernel/export checks, 최종 validation evidence가 부족합니다.
+- `Zen CAD completion validation result: BLOCKED`: source-lock, proxy 격리, STEP cache/export, CAD kernel checks, BOM/report evidence 중 아직 막힌 gate가 있습니다.
+
+기존 호환 명령도 남아 있습니다. `./zen-cad validate milestones/<id>`는 구조 PASS를 exit code 0으로 유지하면서 completion blockers를 같이 출력합니다. CI나 release gate에서는 `validate-completion` 또는 `--level completion`을 사용해야 합니다.
+
+```bash
+./zen-cad validate-structure milestones/<id>
+./zen-cad validate-completion milestones/<id>
+./zen-cad source-lock milestones/<id>
+./zen-cad blocked-report --write milestones/<id>
+```
 
 Preview는 사람이 보는 리뷰 자료입니다. 완료 선언에는 재현 가능한 evidence가 필요합니다.
 
@@ -63,6 +79,29 @@ Preview는 사람이 보는 리뷰 자료입니다. 완료 선언에는 재현 �
 7. 완료 선언에는 CAD source, STEP exports, validation JSON, kernel/export checks, CONTACT_MAP, CONNECTIONS, BOM, final engineering report 같은 재현 가능한 증거가 필요합니다.
 8. 새 CAD 작업은 기본적으로 milestone으로 진행합니다.
 9. 워크플로우 개선점은 다시 `/agentic-cad`에 피드백합니다.
+
+## 0.4.0 gate contract
+
+Zen CAD는 one-shot CAD generator가 아니라 evidence-gated workflow입니다. 앞 gate가 PASS가 아니면 뒤 gate가 완료처럼 보이면 안 됩니다.
+
+1. Gate 0: doctor / environment preflight
+2. Gate 1: requirement normalization
+3. Gate 2: standard part source-lock
+4. Gate 3: custom CAD generation
+5. Gate 4: assembly contract
+6. Gate 5: export/cache verification
+7. Gate 6: CAD-kernel validation
+8. Gate 7: final report / BOM / evidence bundle
+
+표준품은 `status: "source_locked"`, supplier/SKU/source URL/datasheet/cached STEP/STP/critical dimensions evidence가 있어야 completion-eligible입니다. `placeholder_proxy`, proxy STL, screenshot, GLB/viewer snapshot은 preview/debug artifact일 뿐 completion evidence가 아닙니다.
+
+막힌 milestone은 실패를 감추지 말고 blocked report로 남깁니다.
+
+```bash
+./zen-cad blocked-report --write milestones/<id>
+```
+
+이 명령은 `07_report/blocked_report.md`에 완료된 gate, 막힌 gate, smallest unblock step을 기록합니다.
 
 ## 포함된 스킬
 

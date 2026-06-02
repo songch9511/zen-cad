@@ -404,45 +404,67 @@ Expected `/spec-to-cad` outputs:
 
 ## Validation gates
 
-### Gate 1: Requirements and assumptions
+Zen CAD 0.4.0 uses a strict evidence-gated order. Structure validation and completion validation are different. `./zen-cad validate --level structure milestones/<id>` may pass while `./zen-cad validate --level completion milestones/<id>` is blocked. Never present a downstream gate as complete while an upstream gate remains blocked.
 
-Pass only when requirements are measurable enough to size, source, and validate the design, or when assumptions are explicit and safe for the current phase.
+### Gate 0: Doctor / environment preflight
 
-### Gate 2: Research and datasheet evidence
+Pass only when `./zen-cad doctor --cad-required` can run for the CAD/mesh/kernel stack needed by the job, or when the final report truthfully states `ENV_BLOCKED` and stops before CAD completion claims.
 
-Pass only when selected catalog/standard parts have traceable source evidence. If ratings matter, datasheet/rating evidence must be present or `engineering_rating_verified` must be marked `unknown`/`fail` with risk noted.
+### Gate 1: Requirement normalization
 
-### Gate 3: Engineering sizing
+Pass only when requirements are measurable enough to size, source, generate, assemble, and validate the design, or when assumptions are explicit and safe for the current phase.
 
-Pass only when key dimensions and part selections are justified by calculations, rules of thumb with stated limits, standards, or verified user requirements.
+### Gate 2: Standard part source-lock
 
-### Gate 4: Part classification
+Pass only when every standard/catalog/semi-standard part required for completion is source-locked before custom CAD proceeds as final evidence. Source-lock means exact supplier/manufacturer, SKU/part number, source URL, datasheet/rating evidence where relevant, cached STEP/STP file, and critical dimensions verified.
 
-Pass only when every part is classified and the source-vs-generate decision is justified.
+Required source-lock shape:
 
-### Gate 5: STEP Part RAG and normalization
+```json
+{
+  "part_id": "P-003",
+  "kind": "standard",
+  "status": "source_locked",
+  "completion_eligible": true,
+  "supplier": "...",
+  "sku": "...",
+  "source_url": "...",
+  "datasheet_url": "...",
+  "step_file": "02_parts/step/P-003.step",
+  "critical_dimensions_verified": true
+}
+```
 
-Pass only when retrieved STEP files have cached paths, source metadata, units/bounding boxes/interfaces extracted, and geometry/rating status separated.
+Proxy shape:
 
-### Gate 6: `/spec-to-cad` handoff readiness
+```json
+{
+  "status": "proxy_only",
+  "completion_eligible": false
+}
+```
 
-Pass only when the handoff includes measurable spec, selected parts manifest, custom parts list, CONTACT_MAP, CONNECTIONS, and validation criteria.
+Run `./zen-cad source-lock milestones/<id>` before treating standard parts as final evidence.
 
-### Gate 7: CAD-kernel validation
+### Gate 3: Custom CAD generation
 
-Pass only when reproducible tooling confirms required CAD files load, solids are valid where required, units and bounding boxes are plausible, references resolve, placements are defined, and required exports can be regenerated.
+Pass only when generated geometry is design-specific custom CAD, not generated lookalikes for standard parts. Proxy STL/debug geometry may be useful for layout but is completion-ineligible.
 
-### Gate 8: Assembly/contact validation
+### Gate 4: Assembly contract
 
-Pass only when CONTACT_MAP and CONNECTIONS are checked against actual assembly geometry where possible: mating references exist, fasteners/connectors/bearings align, clearance and interference expectations are tested, and violations are reported.
+Pass only when CONTACT_MAP and CONNECTIONS reference known sourced and custom parts, include expected contacts/connections, and state clearances, fasteners, joints, or unresolved assumptions.
 
-### Gate 9: Independent verifier
+### Gate 5: Export/cache verification
 
-Pass only when a verifier reviews the original requirements, artifacts, and evidence and either approves or lists concrete failures.
+Pass only when source-backed STEP/STP files are cached and normalized for standard parts, final custom exports exist, and normalized metadata records units, bounding boxes, interfaces, source paths, and unresolved limits.
 
-### Gate 10: Non-CAD engineering limitations
+### Gate 6: CAD-kernel validation
 
-Pass only when the report explicitly distinguishes completed CAD validation from analyses not performed, such as FEA, thermal, vibration, fatigue, bearing life, manufacturability, tolerance stack-up, compliance, certification, procurement approval, and physical testing.
+Pass only when reproducible tooling confirms required CAD files load, solids are valid where required, units and bounding boxes are plausible, references resolve, placements are defined, contacts/clearances are checked where in scope, and required exports can be regenerated.
+
+### Gate 7: Final report / BOM / evidence bundle
+
+Pass only when the BOM, sourcing report, validation report, and final engineering report agree on one verdict. If source-lock, exports, or kernel validation are blocked, the final report must say `Verdict: BLOCKED` and list completed evidence, blockers, and the smallest unblock step.
 
 ## Completion criteria
 

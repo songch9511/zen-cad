@@ -16,7 +16,7 @@ def copy_repo_fixture(target: Path) -> None:
     shutil.copytree(
         ROOT,
         target,
-        ignore=shutil.ignore_patterns('.git', 'releases', 'tests', '__pycache__'),
+        ignore=shutil.ignore_patterns('.git', 'releases', 'tests', '__pycache__', '002_linear_actuator'),
     )
 
 

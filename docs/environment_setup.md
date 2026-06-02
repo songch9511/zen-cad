@@ -3,7 +3,9 @@
 Minimum requirements:
 
 - Python 3.10+
-- no required third-party Python package for metadata validation
+- no required third-party Python package for structure/schema metadata validation
+- numpy and trimesh for mesh/loadability validation
+- CadQuery, OpenSCAD, or another project-approved CAD kernel/export path for final CAD work
 - a CAD generator/exporter appropriate to the task
 - bundled schema validation for required keys, types, enums, arrays, object structure, and BOM headers
 
@@ -15,7 +17,15 @@ Run this from the Zen CAD repository root:
 ./zen-cad doctor
 ```
 
-`doctor` validates required files, checks bundled JSON/CSV artifacts, reports CoBrA skill sync state, and explains whether the repository is ready for a first milestone.
+`doctor` validates required files, checks bundled JSON/CSV artifacts, reports CoBrA skill sync state, and shows CAD toolchain preflight. If you only need structure validation, missing CAD tooling is reported as `ENV_BLOCKED` but the repository can still be workflow-ready.
+
+Before final CAD generation or completion validation, use:
+
+```bash
+./zen-cad doctor --cad-required
+```
+
+If this exits `ENV_BLOCKED`, stop CAD generation and resolve the missing toolchain first. A truthful blocked report is preferred over proxy CAD that looks complete.
 
 To run setup explicitly, use:
 

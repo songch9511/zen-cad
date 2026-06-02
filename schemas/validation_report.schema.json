@@ -32,6 +32,39 @@
         "additionalProperties": true
       }
     },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "gate_id",
+          "name",
+          "result"
+        ],
+        "properties": {
+          "gate_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "blocked",
+              "not_run"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "smallest_unblock_step": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
     "summary": {
       "type": "string"
     }

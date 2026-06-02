@@ -4,13 +4,20 @@
     {
       "part_id": "P-001",
       "name": "Example sourced part",
+      "kind": "standard",
       "classification": "off_the_shelf",
+      "status": "needs_source_lock",
+      "completion_eligible": false,
+      "supplier": "TBD",
+      "sku": "TBD",
       "manufacturer": "TBD",
       "part_number": "TBD",
       "source_url": "TBD",
       "datasheet_url": "TBD",
       "step_path": "02_parts/step/example.step",
+      "step_file": "02_parts/step/example.step",
       "geometry_match": false,
+      "critical_dimensions_verified": false,
       "engineering_rating_verified": false,
       "limitations": [
         "example placeholder"

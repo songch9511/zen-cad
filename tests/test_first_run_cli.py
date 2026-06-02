@@ -16,7 +16,7 @@ def copy_repo_fixture(target: Path) -> None:
     shutil.copytree(
         ROOT,
         target,
-        ignore=shutil.ignore_patterns('.git', 'releases', 'tests', '__pycache__'),
+        ignore=shutil.ignore_patterns('.git', 'releases', 'tests', '__pycache__', '002_linear_actuator'),
     )
 
 
@@ -40,6 +40,7 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
             self.assertIn('Zen CAD doctor: PASS', completed.stdout)
             self.assertIn('[WARN] CoBrA skill sync', completed.stdout)
+            self.assertIn('CAD toolchain preflight', completed.stdout)
             self.assertIn('does not register this repository as the active CoBrA workspace', completed.stdout)
             self.assertIn('In CoBrA/Codex/Claude Code/Cursor, ask:', completed.stdout)
             self.assertIn('Manual terminal fallback:', completed.stdout)
@@ -97,6 +98,54 @@ class FirstRunCliTest(unittest.TestCase):
                 '--completion-required',
             )
             self.assertEqual(strict.returncode, 2, strict.stderr + strict.stdout)
+
+    def test_validation_levels_are_separate_gates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+
+            structure = run_cli(work, 'validate', '--level', 'structure', 'milestones/001_nema17_belt_linear_actuator')
+            self.assertEqual(structure.returncode, 0, structure.stderr + structure.stdout)
+            self.assertIn('Zen CAD validation result: PASS', structure.stdout)
+            self.assertNotIn('Completion evidence:', structure.stdout)
+
+            completion = run_cli(work, 'validate', '--level', 'completion', 'milestones/001_nema17_belt_linear_actuator')
+            self.assertEqual(completion.returncode, 2, completion.stderr + completion.stdout)
+            self.assertIn('Zen CAD completion validation result: BLOCKED', completion.stdout)
+            self.assertIn('Blocking gates:', completion.stdout)
+            self.assertIn('Gate 2 standard part source-lock', completion.stdout)
+            self.assertIn('Gate 6 CAD-kernel validation', completion.stdout)
+
+            alias = run_cli(work, 'validate-completion', 'milestones/001_nema17_belt_linear_actuator')
+            self.assertEqual(alias.returncode, 2, alias.stderr + alias.stdout)
+
+    def test_source_lock_blocks_proxies_and_unlocked_standard_parts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+
+            completed = run_cli(work, 'source-lock', 'milestones/001_nema17_belt_linear_actuator')
+
+            self.assertEqual(completed.returncode, 2, completed.stderr + completed.stdout)
+            self.assertIn('Source-lock: BLOCKED', completed.stdout)
+            self.assertIn('completion_eligible: false', completed.stdout)
+            self.assertIn('proxy_only artifacts are completion-ineligible', completed.stdout)
+            self.assertIn('status is', completed.stdout)
+
+    def test_blocked_report_writes_truthful_blocked_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+
+            completed = run_cli(work, 'blocked-report', '--write', 'milestones/001_nema17_belt_linear_actuator')
+
+            self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
+            self.assertIn('Verdict: BLOCKED', completed.stdout)
+            report = work / 'milestones/001_nema17_belt_linear_actuator/07_report/blocked_report.md'
+            self.assertTrue(report.exists())
+            text = report.read_text(encoding='utf-8')
+            self.assertIn('Structure PASS is not completion PASS.', text)
+            self.assertIn('Gate 2 standard part source-lock', text)
 
     def test_default_validate_does_not_report_template_as_active_milestone(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
