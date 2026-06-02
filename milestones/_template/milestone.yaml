@@ -1,0 +1,15 @@
+id: REPLACE_WITH_MILESTONE_ID
+title: REPLACE_WITH_TITLE
+status: draft
+workflow: /agentic-cad
+created_at: REPLACE_WITH_DATE
+deliverables:
+  - requirements_brief
+  - part_classification_table
+  - selected_parts_manifest
+  - custom_cad_handoff
+  - contact_map
+  - connections
+  - validation_report
+  - bom
+  - final_engineering_report

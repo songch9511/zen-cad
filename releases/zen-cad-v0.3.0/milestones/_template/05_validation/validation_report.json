@@ -1,0 +1,14 @@
+{
+  "milestone_id": "REPLACE_WITH_MILESTONE_ID",
+  "status": "draft",
+  "checks": [
+    {
+      "check_id": "CHK-001",
+      "name": "Required files exist",
+      "result": "not_run",
+      "evidence": "",
+      "limitations": []
+    }
+  ],
+  "summary": "TBD"
+}

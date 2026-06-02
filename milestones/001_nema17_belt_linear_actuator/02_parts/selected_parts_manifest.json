@@ -1,0 +1,50 @@
+{
+  "milestone_id": "001_nema17_belt_linear_actuator",
+  "parts": [
+    {
+      "part_id": "P-001",
+      "name": "NEMA17 stepper motor",
+      "classification": "off_the_shelf",
+      "manufacturer": "TBD",
+      "part_number": "TBD",
+      "source_url": "TBD",
+      "datasheet_url": "TBD",
+      "step_path": "02_parts/step/P-001_nema17_motor.step",
+      "geometry_match": false,
+      "engineering_rating_verified": false,
+      "limitations": [
+        "seed placeholder; source not attached"
+      ]
+    },
+    {
+      "part_id": "P-002",
+      "name": "GT2 drive pulley",
+      "classification": "off_the_shelf",
+      "manufacturer": "TBD",
+      "part_number": "TBD",
+      "source_url": "TBD",
+      "datasheet_url": "TBD",
+      "step_path": "02_parts/step/P-002_gt2_pulley.step",
+      "geometry_match": false,
+      "engineering_rating_verified": false,
+      "limitations": [
+        "seed placeholder; tooth count and bore unverified"
+      ]
+    },
+    {
+      "part_id": "X-001",
+      "name": "Idler pulley proxy",
+      "classification": "placeholder_proxy",
+      "manufacturer": "TBD",
+      "part_number": "TBD",
+      "source_url": "TBD",
+      "datasheet_url": "TBD",
+      "step_path": "02_parts/step/X-001_idler_proxy.step",
+      "geometry_match": false,
+      "engineering_rating_verified": false,
+      "limitations": [
+        "proxy only; not final geometry"
+      ]
+    }
+  ]
+}

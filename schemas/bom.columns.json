@@ -1,0 +1,14 @@
+{
+  "columns": [
+    "part_id",
+    "name",
+    "classification",
+    "quantity",
+    "manufacturer",
+    "part_number",
+    "source_url",
+    "step_path",
+    "engineering_rating_verified",
+    "notes"
+  ]
+}
