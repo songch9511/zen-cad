@@ -1,790 +1,274 @@
 ---
 name: spec-to-cad
-description: Turn a measurable specification into a verified parametric CAD implementation using explicit CONTACT_MAP/CONNECTIONS, kernel-backed physical validation, full-CAD dynamic smoke tests, independent verifier harnesses, and failure-driven iteration.
+description: Milestone-first CAD execution skill for turning measurable mechanical specs into STEP-first CAD artifacts with command-backed Zen CAD validation evidence.
+version: 0.6.3
 ---
 
 # Spec-to-CAD
 
-Use this skill when a user asks to create, improve, or validate a CAD model from a specification, reference product, drawing, benchmark, or loosely described mechanical concept. The workflow converts ambiguous requirements into a measurable spec, implements a parametric CAD/GFL/CadQuery model, and verifies it with independent test harnesses, CAD-kernel evidence, artifact checks, and, when needed, dynamic simulation.
+## Purpose
 
-The central rule: **create a real CAD artifact first, then be honest about its grade**. Visual inspection, metadata-only claims, or worker reports may support concept/layout review, but final completion requires reproducible CLI/JSON evidence and independent verification.
+`/spec-to-cad` is the downstream CAD execution skill for Zen CAD. It receives a measurable handoff from `/agentic-cad`, creates or updates design-specific CAD, and records the command-backed evidence needed for Zen CAD completion gates.
 
-## Prerequisites
+The central rule is: **produce a real CAD artifact first, then grade it honestly**. Concept/layout work may be incomplete or environment-blocked. Final/release work must produce reproducible validation evidence, not a screenshot, worker summary, or metadata-only PASS.
 
-- A target workspace directory is known and writable.
-- The requested CAD scope is inside the user's stated goal.
-- Irreversible, user-facing, or scope-expanding decisions use `ask_to_user` with a safe default.
-- In a CoBrA-installed Zen CAD skill, if sibling `ZEN_CAD_WORKSPACE.md` exists, read it and use its `Repository root:` path when the upstream `/agentic-cad` handoff did not already provide an explicit root.
-- In a Zen CAD repository, concept/layout CAD should proceed with any available harness CAD stack. Run `./zen-cad doctor --cad-required` only before final/release claims; if it blocks, report the shipped artifact plus `ENV_BLOCKED` final-gate limitations instead of stopping before CAD exists.
-- In a Zen CAD repository, sourced standard/catalog parts must pass `./zen-cad source-lock milestones/<id>` before they are used as final assembly evidence.
-- At least one CAD implementation stack is available or selectable, e.g. GFL, CadQuery, OpenCascade/OCP, FreeCAD, STEP/STL export, or another kernel-backed toolchain.
-- For mechanical assemblies, acceptance must include kernel-backed checks, not only metadata or screenshots.
-- For dynamic checks on macOS, prefer **MuJoCo** as the default rigid-body/contact smoke-test backend. Keep Drake/Isaac Sim optional unless the user explicitly chooses them and the target environment supports them.
+When `earthtojake/text-to-cad` or an equivalent STEP-first CAD skill is available, use it as the preferred generation, inspection, and snapshot path. Zen CAD wraps that execution with milestone structure, source-lock rules, artifact hashes, BOM, and reporting.
 
----
+## Root Model
 
-## Standard Procedure
+Keep these paths explicit:
 
-### 0. Define the goal
+- **Zen CAD repository root**: the checkout containing `./zen-cad`, `skills/`, `schemas/`, and `milestones/`.
+- **Active milestone**: `milestones/<id>/`.
+- **CAD source directory**: usually `milestones/<id>/03_cad/`.
+- **Validation directory**: `milestones/<id>/05_validation/`.
 
-Start by making the project goal explicit:
+If this skill is installed into CoBrA and a sibling `ZEN_CAD_WORKSPACE.md` exists, read its `Repository root:` line and use that checkout unless the user gives another root. In Codex, Claude Code, or another repo-local harness, use the current repository root.
 
-- What device or mechanism is being modeled?
-- What CAD artifacts are required?
-- What physical behavior or assembly constraints must be verified?
-- Which checks count as completion?
+Do not create project artifacts in unrelated workspace paths. All Zen CAD milestone artifacts should stay under the active milestone unless the user explicitly asks for a separate export location.
 
-For a mechanical assembly, the goal should usually include:
+## Use This Skill When
 
-- Part count and key dimensions
-- STEP/STL generation
-- Connection/contact coverage
-- No floating parts
-- Fastener or mechanical evidence for connections
-- CAD-kernel shape validity
-- Contact/clearance distance checks
-- Unexpected interference checks
-- Optional dynamic smoke test with explicit runtime evidence
-- Machine-readable JSON acceptance output
+Use `/spec-to-cad` when the task needs:
 
----
+- generated or modified mechanical CAD source;
+- STEP/STP as the primary CAD artifact;
+- STL, 3MF, DXF, GLB, or snapshots as secondary artifacts;
+- assembly contact or connection evidence;
+- source-level custom parts that integrate sourced STEP parts;
+- validation evidence for `./zen-cad validate --level completion`.
 
-### 1. Write a measurable spec before modeling
+Do not use this skill to generate final lookalikes for standard/catalog parts. If a part is classified as `off_the_shelf` or source-first `semi_standard_configurable`, use its source-locked STEP/STP file or return a blocker.
 
-Create or update a spec document such as `spec.md` before CAD implementation.
+## Default Workflow
 
-The spec must contain measurable requirements, not vague descriptions.
+1. Resolve the Zen CAD root and active milestone.
+2. Read the measurable handoff from `03_cad/custom_cad_handoff.yaml`, requirements, selected parts manifest, CONTACT_MAP, and CONNECTIONS.
+3. Decide whether the milestone is `concept`, `layout`, or `final`.
+4. Generate or update design-specific CAD source under `03_cad/`.
+5. Produce explicit STEP/STP output targets. Prefer STEP as the primary artifact.
+6. Inspect geometry deterministically. Prefer text-to-cad `scripts/inspect refs --facts --planes --positioning`, then targeted `measure`, `mate`, `frame`, or `diff` where relevant.
+7. Run snapshot review for visible primary STEP/STP changes when the CAD stack supports it. Snapshots are human review only.
+8. Record command-backed validation evidence in `05_validation/validation_report.json`.
+9. Link CONTACT_MAP and CONNECTIONS rows to passing geometry checks with `evidence_check_ids`.
+10. Run `./zen-cad validate --level structure milestones/<id>` for concept/layout and `./zen-cad validate --level completion milestones/<id>` before any final claim.
 
-Include:
+## Preferred text-to-cad Path
 
-1. **Device purpose and operating envelope**
-   - Example: high-speed powder mill, rotor diameter, max RPM, motor power, throughput assumptions.
+When the text-to-cad CAD skill is installed, use its launchers from that skill directory or the harness-provided equivalent:
 
-2. **Critical dimensions**
-   - Rotor diameter
-   - Shaft centerline and bearing positions
-   - Housing dimensions
-   - Clearances
-   - Wall thicknesses
-   - Seal/coupling/flange positions
+```bash
+python scripts/step <generator.py>
+python scripts/inspect refs <model.step> --facts --planes --positioning
+python scripts/inspect measure --from '@cad[<model.step>#selector_a]' --to '@cad[<model.step>#selector_b]' --axis z
+python scripts/inspect mate --moving '@cad[<model.step>#moving_selector]' --target '@cad[<model.step>#target_selector]' --mode flush --axis z
+python scripts/inspect frame '@cad[<model.step>#selector]'
+python scripts/inspect diff <before.step> <after.step> --planes
+python scripts/snapshot <model.step>
+```
 
-3. **Part and subassembly targets**
-   - Expected total part count
-   - Rotating vs fixed components
-   - Major subassemblies
-   - Required named parts
+Adapt launcher paths to the installed skill location. Use absolute target paths when the CAD skill directory and Zen CAD repository are different directories.
 
-4. **Connection requirements**
-   - `CONTACT_MAP`
-   - `CONNECTIONS`
-   - Expected connection count
-   - Connection type: `bolted`, `flanged`, `coaxial`, `seated`, `supported`, `clamped`, etc.
-   - Evidence feature: bolt, screw, flange, bearing seat, clamp, bracket, boss, dowel, retaining ring, seal cartridge, etc.
-   - Nominal clearance and tolerance
-   - Intentional overlaps or whitelisted contacts
-   - Forbidden floating components
+Expected text-to-cad evidence:
 
-5. **Validation criteria**
-   - Shape validity
-   - Contact distance
-   - Clearance tolerance
-   - Unexpected interference
-   - No-floating graph coverage
-   - Fastener evidence
-   - Dynamic smoke test if required
+- explicit target generation command, not directory-wide generation;
+- primary STEP/STP path;
+- generated sidecar paths when produced;
+- refs/facts/planes/positioning output;
+- targeted measure/mate/frame/diff output when relevant;
+- snapshot PNG/GIF paths or a documented skip reason;
+- any selectors used in CONTACT_MAP or CONNECTIONS.
 
-6. **CLI/JSON contract**
-   - `--json`
-   - `--contact-smoke --json`
-   - `--physical-check --json`
-   - `--export-step`
-   - `--export-stl`
-   - `--dynamic-sim-suite`
-   - `--dynamic-backend mujoco`
+If text-to-cad is unavailable, use build123d, CadQuery, FreeCAD, OpenSCAD, or another kernel-backed stack. The validation evidence contract remains the same.
 
-Unknowns should be recorded as assumptions, not hidden.
+## Milestone Artifact Paths
 
----
-
-### 2. Choose execution mode and worker roles
-
-Use direct mode only for small edits or quick checks.
-
-For full spec-to-CAD work, prefer delegation:
-
-- **Lead**
-  - Owns user communication
-  - Freezes spec and acceptance criteria
-  - Assigns worker tasks
-  - Runs or verifies final evidence
-  - Performs completion audit
-
-- **Coder / CAD implementer**
-  - Implements production CAD/GFL/CadQuery source
-  - Adds CLI options
-  - Generates STEP/STL/JSON/MJCF/artifacts
-  - Fixes geometry/runtime failures
-
-- **Verifier**
-  - Builds independent pytest harnesses
-  - Defines acceptance checklist
-  - Rejects fake PASS
-  - Does not loosen production acceptance by editing tests to match bad output
-  - Should avoid modifying production CAD source unless explicitly asked
-
-Worker briefs must include:
-
-- Concrete goal
-- Absolute target directory
-- Files in scope and out of scope
-- Spec path
-- Expected CLI commands
-- Expected JSON fields
-- Verification command
-- Non-goals
-- Skill reference: `spec-to-cad`
-
----
-
-### 3. Implement the parametric CAD model
-
-Use a production script such as:
+Use the repo's canonical milestone layout:
 
 ```text
-GFL/test_materials/<model_name>.py
+milestones/<id>/
+├─ 00_requirements/requirements_brief.md
+├─ 01_research/research_log.md
+├─ 02_parts/part_classification_table.md
+├─ 02_parts/selected_parts_manifest.json
+├─ 03_cad/custom_cad_handoff.yaml
+├─ 03_cad/<cad_source>
+├─ 03_cad/exports/<primary>.step
+├─ 04_assembly/contact_map.json
+├─ 04_assembly/connections.json
+├─ 05_validation/validation_report.json
+├─ 06_bom/bom.csv
+└─ 07_report/final_engineering_report.md
 ```
 
-Implementation requirements:
+Do not invent parallel root-level files such as `requirements.md`, `CONTACT_MAP.json`, or `BOM.csv` when working inside a Zen CAD milestone.
 
-- Generate real CAD solids, not only placeholder metadata.
-- Avoid accepting primitive/proxy-only geometry as final full-CAD output.
-- Do not generate final lookalikes for standard/catalog parts that are supposed to be source-locked.
-- Keep proxy STL/debug geometry explicitly completion-ineligible.
-- Name every important part.
-- Record part role, location, material/assumption, and connection metadata.
-- Keep geometry parametric enough to adjust dimensions and clearances.
-- Export required artifacts.
+## CAD Source Requirements
 
-Typical JSON metadata:
+For custom CAD source:
+
+- use named parameters and units;
+- keep output paths explicit;
+- keep source and derived exports traceable;
+- generate closed positive-volume solids unless the spec asks for surfaces;
+- name major bodies/features where the CAD stack supports labels;
+- define assembly datums, frames, or transforms in source, not only in narrative text;
+- avoid proxy-only geometry for final evidence.
+
+For sourced standard parts:
+
+- never regenerate the catalog part as final evidence;
+- use the cached STEP/STP from `02_parts/selected_parts_manifest.json`;
+- record missing or unusable source files as blockers.
+
+## Validation Evidence Contract
+
+For final completion, `05_validation/validation_report.json` must pass the Zen CAD schema and completion gate audit. A PASS report needs passing checks with:
+
+- `evidence_type`;
+- `command.argv`, `command.cwd`, and `command.exit_code`;
+- `artifacts[]` with `path`, `role`, `size_bytes`, and `sha256`;
+- a truthful `limitations` list.
+
+Required final evidence types:
+
+- `cad_generation`;
+- `step_load`;
+- `geometry_inspection`.
+
+If the local validator cannot pass `./zen-cad doctor --cad-required`, include a passing `environment` evidence check from the CAD runtime that actually generated the final artifacts. Otherwise report the final gate as BLOCKED.
+
+Minimal final check shape:
 
 ```json
 {
-  "part_count": 313,
-  "rotor_diameter_mm": 160,
-  "max_rpm": 18000,
-  "expected_connections": 29,
-  "connections": [],
-  "contact_map": [],
-  "generated_artifacts": {}
-}
-```
-
----
-
-### 4. Implement basic artifact generation
-
-The CAD script should support basic JSON and export modes:
-
-```bash
-python3 GFL/test_materials/high_speed_powder_mill.py --json
-```
-
-```bash
-python3 GFL/test_materials/high_speed_powder_mill.py \
-  --export-step \
-  --export-stl \
-  --json
-```
-
-Required artifacts:
-
-- STEP file
-- STL file
-- JSON summary
-- Part metadata
-- Connection metadata
-- Artifact manifest
-
-Acceptance checks:
-
-- Files exist.
-- Files are non-empty.
-- STEP terminates with `END-ISO-10303-21` when applicable.
-- STL has plausible binary size and triangle count when applicable.
-- JSON reports artifact paths.
-- Part and connection counts match the spec.
-
----
-
-### 5. Do metadata validation, but never stop there
-
-Metadata validation is useful as a first screen, but it is not sufficient for completion.
-
-Check:
-
-- `part_count == expected part count`
-- `expected_connections == required connection count`
-- Each connection has `shape_a`, `shape_b`, and `connection_type`.
-- Each connection has `nominal_clearance_mm` and `tolerance_mm`.
-- Each connection has evidence features.
-- No-floating summary exists.
-- Limitations are explicit.
-
-Important: metadata-only PASS is a fake PASS. Use it only as input to kernel validation.
-
----
-
-### 6. Implement `--physical-check --json`
-
-Mechanical assemblies need a physical validation CLI:
-
-```bash
-python3 GFL/test_materials/high_speed_powder_mill.py \
-  --physical-check \
-  --json
-```
-
-Required JSON fields:
-
-```json
-{
-  "physical_check_supported": true,
-  "physical_check_passed": true,
-  "kernel_backend": "OCP/CadQuery",
-  "cadquery_version": "...",
-  "ocp_version": "...",
-  "part_count": 313,
-  "expected_connections": 29,
-  "connections_checked": 29,
-  "invalid_shapes": [],
-  "contact_failures": [],
-  "clearance_failures": [],
-  "unexpected_interferences": [],
+  "check_id": "CHK-002",
+  "name": "STEP-first CAD generation",
+  "result": "pass",
+  "evidence_type": "cad_generation",
+  "evidence": "Generated primary STEP from the recorded CAD source.",
+  "command": {
+    "argv": ["python", "scripts/step", "milestones/<id>/03_cad/<source.py>"],
+    "cwd": "<cad-skill-or-repo-root>",
+    "exit_code": 0
+  },
+  "artifacts": [
+    {
+      "path": "03_cad/<source.py>",
+      "role": "cad_source",
+      "size_bytes": 1234,
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "03_cad/exports/<model>.step",
+      "role": "primary_step",
+      "size_bytes": 5678,
+      "sha256": "<sha256>"
+    }
+  ],
   "limitations": []
 }
 ```
 
-The JSON must distinguish:
+STEP evidence must verify at least:
 
-- Unsupported check
-- Check not run
-- Check run and passed
-- Check run and failed
+- file exists and is non-empty;
+- file hash and size match the validation report;
+- STEP/STP file terminates with `END-ISO-10303-21`;
+- when a kernel is available, the file loads through the selected kernel or text-to-cad inspect path.
 
-Do not set pass booleans to `true` unless the check actually executed.
+Geometry inspection evidence should record:
 
----
+- bounding box, units, scale, and major labels/refs;
+- critical dimensions and offsets;
+- assembly references, frames, or positioning where relevant;
+- contact/clearance/mate measurements where in scope;
+- explicit limitations for checks not run.
 
-### 7. Validate shape validity with `BRepCheck_Analyzer`
+## CONTACT_MAP and CONNECTIONS
 
-For OCP/CadQuery workflows, validate all major shapes with `BRepCheck_Analyzer` or an equivalent CAD-kernel validity check.
+For every contact or connection row that supports a final claim:
 
-Expected JSON pattern:
+- reference actual part ids from `selected_parts_manifest.json`;
+- include CAD selectors or refs when available;
+- include expected clearance, mate, fastener, or contact intent;
+- add `evidence_check_ids` pointing to passing validation checks.
 
-```json
-{
-  "methods": {
-    "shape_validity": "BRepCheck_Analyzer"
-  },
-  "shape_validity_checked": 313,
-  "shape_validity_count": 313,
-  "invalid_shapes": []
-}
-```
-
-Procedure:
-
-1. Collect every part's `TopoDS_Shape`.
-2. Run `BRepCheck_Analyzer(shape).IsValid()` or equivalent.
-3. Record checked count.
-4. Record invalid shape names and diagnostic information.
-5. Fail if invalid shapes exist.
-
-Acceptance guidelines:
-
-- `shape_validity_checked` should cover the full assembly or a justified subset.
-- For full PM160-style assemblies, require at least 300 checked shapes when the expected part count is 313.
-- `shape_validity_count == shape_validity_checked`.
-- `invalid_shapes == []`.
-
----
-
-### 8. Validate connection/contact distance with `BRepExtrema_DistShapeShape`
-
-Every expected connection must have kernel-backed distance or contact evidence.
-
-Expected JSON pattern:
+Example:
 
 ```json
 {
-  "expected_connections": 29,
-  "connections_checked": 29,
-  "contact_distance_check_count": 29,
-  "contact_distance_checks": [],
-  "contact_failures": [],
-  "clearance_failures": []
+  "contact_id": "CT-001",
+  "part_a": "C-001",
+  "part_b": "P-001",
+  "type": "mounting_face",
+  "expected_clearance_mm": 0.0,
+  "cad_refs": [
+    "@cad[03_cad/exports/assembly.step#custom_plate_top]",
+    "@cad[02_parts/step/P-001.step#mounting_face]"
+  ],
+  "evidence_check_ids": ["CHK-004"],
+  "notes": "Flush motor-face interface verified by geometry inspection."
 }
 ```
 
-Each connection record should include:
-
-```json
-{
-  "connection_id": "rotor_to_shaft",
-  "shape_a": "rotor",
-  "shape_b": "drive_shaft",
-  "connection_type": "coaxial_press_fit",
-  "nominal_clearance_mm": 0.0,
-  "tolerance_mm": 0.2,
-  "best_pair": {
-    "distance_mm": 0.03
-  },
-  "passed": true
-}
-```
-
-Procedure:
-
-1. Iterate over `CONNECTIONS`.
-2. Resolve `shape_a` and `shape_b` to real kernel shapes.
-3. Run `BRepExtrema_DistShapeShape` or equivalent.
-4. Compute minimum distance.
-5. Compare against connection-type tolerance.
-6. Record finite distance evidence.
-7. Add failures to `contact_failures` or `clearance_failures`.
-
-Acceptance guidelines:
-
-- `connections_checked == expected_connections`.
-- `contact_distance_check_count == expected_connections`.
-- Every passing connection has finite `best_pair.distance_mm`.
-- Every check exposes `shape_a`, `shape_b`, `nominal_clearance_mm`, and `tolerance_mm`.
-- `contact_failures == []`.
-- `clearance_failures == []`.
-
----
-
-### 9. Validate unexpected interference with AABB + `BRepAlgoAPI_Common`
-
-Unexpected interference checks should run in two stages.
-
-#### 9.1 Broad phase
-
-Use AABB or equivalent bounding boxes to reduce candidate pairs.
-
-Expected JSON:
-
-```json
-{
-  "broad_phase": {
-    "target_count": 313,
-    "candidate_count": 120,
-    "checked_count": 45
-  }
-}
-```
-
-#### 9.2 Kernel phase
-
-For candidate pairs, use `BRepAlgoAPI_Common` or an equivalent boolean common operation to estimate overlap volume.
-
-Expected JSON:
-
-```json
-{
-  "interference_check": {
-    "method": "AABB + BRepAlgoAPI_Common volume",
-    "pairs_checked": 45
-  },
-  "unexpected_interferences": [],
-  "max_unexpected_overlap_mm3": 0.0
-}
-```
-
-Acceptance guidelines:
-
-- `methods.unexpected_interference` names `BRepAlgoAPI_Common`, `AABB`, and volume evidence.
-- `broad_phase.target_count > 0`.
-- `broad_phase.candidate_count > 0`.
-- `broad_phase.checked_count > 0`.
-- `candidate_count >= checked_count`.
-- `interference_check.pairs_checked == broad_phase.checked_count`.
-- Whitelist or intended-contact basis is explicit.
-- `unexpected_interferences == []`.
-- `max_unexpected_overlap_mm3` is finite.
-
-Implementation guardrails:
-
-- Handle null/empty common shapes.
-- Avoid `StopIteration` or empty-volume crashes.
-- Separate intended overlaps/contacts from unexpected interferences.
-
----
-
-### 10. Validate no-floating graph coverage
-
-Build a connection graph.
-
-Procedure:
-
-1. Register each part as a graph node.
-2. Register each valid connection as a graph edge.
-3. Choose root assembly components.
-4. Traverse from root.
-5. Mark unreachable parts as floating.
-6. Report floating parts in JSON.
-
-Expected JSON:
-
-```json
-{
-  "no_floating_check_passed": true,
-  "floating_parts": [],
-  "connected_part_count": 313
-}
-```
-
-Acceptance guidelines:
-
-- No-floating summary is tied to graph/connection coverage, not just metadata presence.
-- `floating_parts == []`.
-- Connected part count is consistent with the part count or explicitly justified.
-
----
-
-### 11. Validate fastener/mechanical evidence
-
-Each mechanical connection must have concrete evidence, not only a claim that two parts are connected.
-
-Evidence examples:
-
-- Bolt
-- Screw
-- Clamp
-- Flange
-- Dowel
-- Bearing seat
-- Retaining ring
-- Seal cartridge
-- Bracket
-- Boss
-- Coupling
-
-Expected JSON:
-
-```json
-{
-  "fastener_evidence_passed": true,
-  "missing_fastener_evidence": []
-}
-```
-
-Acceptance guidelines:
-
-- Each major connection maps to physical evidence.
-- Small components such as sensor bosses, seal cartridges, bearing housings, guards, brackets, and covers must not be ignored.
-- If simplified geometry represents a real fastener, record the simplification in `limitations`.
-
----
-
-### 12. Implement MuJoCo full-CAD dynamic smoke test when required
-
-For dynamic rigid-body/contact smoke tests, prefer MuJoCo as the default macOS-compatible backend.
-
-Example CLI:
-
-```bash
-python3 GFL/test_materials/high_speed_powder_mill.py \
-  --dynamic-sim-suite \
-  --dynamic-backend mujoco \
-  --dynamic-output-dir GFL/test_materials/pm160_mujoco_full_model \
-  --json
-```
-
-Required behavior:
-
-- Use full-CAD STL/mesh-based MJCF where the acceptance requires full-CAD evidence.
-- Do not accept primitive/proxy-only runtime as full-CAD acceptance.
-- Generate runtime artifacts.
-- Record whether MuJoCo actually ran.
-- Record unexpected collision pairs.
-- Record visual/collision limitations honestly.
-
-Expected JSON:
-
-```json
-{
-  "source_stl": "GFL/test_materials/high_speed_powder_mill.stl",
-  "ran_in_mujoco": true,
-  "runtime_status": "executed",
-  "mujoco_version": "3.8.1",
-  "simulated_steps": 240,
-  "joint_failures": [],
-  "unexpected_collision_pairs": [],
-  "full_cad_mesh_runtime": true,
-  "not_a_primitive_proxy_video": true,
-  "part_mesh_count": 313,
-  "dynamic_rotor_mesh_count": 82,
-  "fixed_mesh_count": 231,
-  "mesh_export_failures": [],
-  "mp4": "...runtime.mp4",
-  "gif": "...runtime.gif"
-}
-```
-
-Acceptance guidelines:
-
-- `ran_in_mujoco == true` for runtime acceptance.
-- `runtime_status == "executed"`.
-- `simulated_steps >= 240` unless the spec sets another threshold.
-- `joint_failures == []`.
-- `unexpected_collision_pairs == []`.
-- `part_mesh_count` meets the expected full-CAD part/mesh threshold.
-- `source_stl` points to the canonical STL.
-- MP4/GIF artifacts exist and are non-empty when required.
-- The result explicitly says whether it is full-CAD or proxy/primitive.
-
----
-
-### 13. Create independent verifier harnesses
-
-Production code should not be trusted to declare itself complete. Create independent tests under `tests/`.
-
-Example harness files:
-
-```text
-tests/test_pm160_kernel_physical_validation_harness.py
-tests/test_pm160_physical_acceptance_harness.py
-tests/test_pm160_fastener_evidence_harness.py
-tests/test_pm160_full_cad_mujoco_harness.py
-```
-
-Verifier harnesses should enforce:
-
-- CLI flags exist and return JSON.
-- JSON schema is stable.
-- `physical_check_supported is True` when acceptance depends on physical checks.
-- `physical_check_passed is True` only when kernel checks ran.
-- Kernel backend names OCP/CadQuery or the selected equivalent.
-- Version fields are present.
-- `BRepCheck_Analyzer` shape validity evidence is present.
-- `BRepExtrema_DistShapeShape` connection distance evidence is present.
-- `BRepAlgoAPI_Common` + AABB interference evidence is present.
-- All expected connections are checked.
-- No floating parts remain.
-- Fastener evidence is complete.
-- Full-CAD dynamic smoke test is not primitive/proxy-only.
-- Generated artifacts exist.
-- Limitations are non-empty and honest.
-
-Canonical combined verification command pattern:
-
-```bash
-cd /Users/vanta/.cobra/workspace/GFL
-
-python3 -m pytest \
-  tests/test_pm160_kernel_physical_validation_harness.py \
-  tests/test_pm160_physical_acceptance_harness.py \
-  tests/test_pm160_fastener_evidence_harness.py \
-  tests/test_pm160_full_cad_mujoco_harness.py \
-  -q
-```
-
-Adapt file names to the project.
-
----
-
-### 14. Run regression/package acceptance from the lead context
-
-Before declaring completion, verify with tools in the lead context. Worker reports are not enough.
-
-Example PM160-style acceptance sequence:
-
-```bash
-cd /Users/vanta/.cobra/workspace/GFL
-
-python3 -m py_compile GFL/test_materials/high_speed_powder_mill.py
-
-python3 GFL/test_materials/high_speed_powder_mill.py --json
-
-python3 GFL/test_materials/high_speed_powder_mill.py \
-  --contact-smoke \
-  --json
-
-python3 GFL/test_materials/high_speed_powder_mill.py \
-  --physical-check \
-  --json
-
-python3 GFL/test_materials/high_speed_powder_mill.py \
-  --export-step \
-  --export-stl \
-  --json
-
-python3 GFL/test_materials/high_speed_powder_mill.py \
-  --dynamic-sim-suite \
-  --dynamic-backend mujoco \
-  --dynamic-output-dir GFL/test_materials/pm160_mujoco_full_model \
-  --json
-
-python3 -m pytest \
-  tests/test_pm160_kernel_physical_validation_harness.py \
-  tests/test_pm160_physical_acceptance_harness.py \
-  tests/test_pm160_fastener_evidence_harness.py \
-  tests/test_pm160_full_cad_mujoco_harness.py \
-  -q
-```
-
-Minimum final evidence:
-
-- Source compiles.
-- JSON summary runs.
-- Contact/assembly smoke check runs.
-- Physical/kernel check runs and passes.
-- STEP/STL artifacts exist.
-- Independent verifier harness passes.
-- Dynamic smoke test passes if in scope.
-- Generated artifacts exist at expected paths.
-
----
-
-### 15. Use failure-driven self-evolution
-
-When a test fails, do not retry the same thing blindly.
-
-Failure loop:
-
-1. Read the exact failure message.
-2. Classify the failure:
-   - CLI missing
-   - JSON schema missing
-   - Metadata mismatch
-   - Geometry/kernel failure
-   - Contact/clearance failure
-   - Unexpected interference
-   - Floating part
-   - Fastener evidence gap
-   - Dynamic runtime issue
-   - Artifact missing
-3. Modify the production script, spec, or harness as appropriate.
-4. Regenerate artifacts.
-5. Run the narrow failing harness first.
-6. Run the full regression suite after the narrow fix passes.
-7. Update `limitations` and the spec so the failure cannot recur silently.
-
-Examples:
-
-- Add empty-common guards after boolean common/volume failures.
-- Add explicit tolerances when simplified geometry represents seated components.
-- Add harness assertions to prevent fake PASS.
-- Add connection evidence fields when floating parts are discovered.
-- Add `visual_collision_limitations` when MuJoCo visual mesh and collision semantics differ.
-
-Forbidden fixes:
-
-- Metadata-only fake PASS.
-- Loosening tests to accept incomplete output.
-- Claiming primitive/proxy runtime as full-CAD validation.
-- Setting `ran_in_mujoco=true` without actual runtime execution.
-- Matching connection count while omitting kernel evidence.
-- Reporting completion from worker text without lead-side verification.
-
----
-
-### 16. Completion criteria
-
-Declare completion only when every in-scope deliverable has tool-backed evidence.
-
-Checklist:
-
-```text
-[CAD artifacts]
-- STEP generated
-- STL generated
-- JSON summary generated
-- Artifact paths recorded
-
-[Model completeness]
-- part_count == expected part count
-- expected_connections == required connection count
-- all expected connections represented
-- no floating parts
-
-[Kernel physical validation]
-- BRepCheck_Analyzer or equivalent shape validity passes
-- BRepExtrema_DistShapeShape or equivalent contact/clearance passes
-- AABB + BRepAlgoAPI_Common or equivalent unexpected interference check passes
-- unexpected_interferences == []
-
-[Fastener evidence]
-- all major connections have physical evidence
-- missing_fastener_evidence == []
-
-[Dynamic simulation, if in scope]
-- MuJoCo or selected backend actually ran
-- full-CAD mesh path is explicit when required
-- joint_failures == []
-- unexpected_collision_pairs == []
-- runtime artifacts exist
-
-[Regression]
-- py_compile passes
-- CLI commands pass
-- independent pytest harnesses pass
-```
-
-If any item lacks direct evidence, the project is not complete.
-
----
-
-### 17. Completion report
-
-The final user report should include:
-
-- What was built
-- Exact source paths
-- Exact artifact paths
-- Commands run
-- Pass/fail results
-- Evidence type for each check (`cad_generation`, `step_load`, `geometry_inspection`, etc.)
-- Artifact file sizes and SHA-256 hashes for final evidence
-- Key counts and dimensions
-- Kernel/backend versions
-- Dynamic runtime status if applicable
-- Known limitations
-- What was deliberately not certified
-
-Always distinguish:
-
-- CAD assembly/contact/interference validation
-- FEA
-- thermal analysis
-- vibration/rotordynamics
-- bearing life
-- manufacturability
-- regulatory certification
-
-Do not imply that unperformed analyses were completed.
-
----
+## Concept/Layout vs Final
+
+For `concept` or `layout` maturity:
+
+- generate useful CAD early with the available toolchain;
+- record source/export paths and assumptions;
+- keep proxy parts and missing source-locks explicit;
+- run `./zen-cad validate --level structure milestones/<id>`;
+- report final blockers instead of claiming completion.
+
+For `final` maturity:
+
+- run or record source-lock evidence;
+- produce primary STEP/STP and required secondary exports;
+- hash-lock validation artifacts;
+- link assembly rows to geometry evidence;
+- run `./zen-cad validate --level completion milestones/<id>`;
+- only claim final completion if the command passes.
+
+## Failure Handling
+
+When generation or validation fails:
+
+1. Preserve the failed command and error.
+2. Classify the blocker: environment, source-lock, generation, STEP load, geometry inspection, assembly, BOM/report, or unsupported analysis.
+3. Fix the smallest responsible source or metadata section.
+4. Regenerate only the affected artifacts.
+5. Rerun the failed validation command.
+6. If still blocked, write a truthful blocker and smallest unblock step.
+
+Forbidden shortcuts:
+
+- metadata-only PASS;
+- stale export PASS;
+- hash values copied from another file;
+- screenshots as completion evidence;
+- generated catalog-part lookalikes as final standard parts;
+- CONTACT_MAP/CONNECTIONS rows without evidence links;
+- claims of FEA, fatigue, manufacturability, certification, or ratings without the relevant analysis.
+
+## Final Response Contract
+
+When handing results back to the user, include:
+
+- active milestone path;
+- CAD source path;
+- primary STEP/STP path;
+- secondary artifact paths;
+- validation commands run;
+- PASS/BLOCKED result;
+- key dimensions or inspection facts;
+- known limitations and unperformed analyses.
+
+Do not imply that CAD validation proves structural safety, manufacturing tolerance, fatigue life, certification, procurement readiness, or physical-test performance.
 
 ## Short Form
 
-Use this condensed sequence when briefing workers or auditing progress:
-
 ```text
-1. Write measurable spec.md with dimensions, CONTACT_MAP, CONNECTIONS, tolerances, artifact and CLI/JSON requirements.
-2. Implement parametric GFL/CadQuery production model.
-3. Add STEP/STL/JSON export CLI.
-4. Add CONTACT_MAP / CONNECTIONS / fastener evidence.
-5. Add --physical-check --json.
-6. Use BRepCheck_Analyzer for shape validity.
-7. Use BRepExtrema_DistShapeShape for all expected contact/clearance checks.
-8. Use AABB + BRepAlgoAPI_Common volume for unexpected interference checks.
-9. Use graph coverage for no-floating validation.
-10. Add MuJoCo full-CAD dynamic smoke test when in scope.
-11. Generate runtime artifacts such as MJCF, JSON, MP4, GIF when required.
-12. Build independent pytest verifier harnesses.
-13. Run lead-side regression commands.
-14. On failure: fix production/spec/harness, regenerate artifacts, rerun narrow test, then full regression.
-15. Declare completion only when all CLI, artifact, kernel, dynamic, and independent harness checks pass.
+Resolve Zen CAD root and milestone -> read handoff -> generate design-specific CAD -> prefer text-to-cad scripts/step -> inspect refs/facts/planes/positioning -> measure/mate/frame/diff as needed -> snapshot for visual review -> write validation_report.json with command metadata and artifact hashes -> link CONTACT_MAP/CONNECTIONS evidence_check_ids -> run ./zen-cad validate --level completion before final claims.
 ```

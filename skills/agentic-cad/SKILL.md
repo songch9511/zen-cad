@@ -1,7 +1,7 @@
 ---
 name: agentic-cad
-description: Sourcing-aware mechanical CAD workflow that orchestrates requirements, research, Part RAG, custom CAD, validation, BOM, and engineering reporting.
-version: 0.1.1
+description: Sourcing-aware mechanical CAD workflow that orchestrates Zen CAD milestones, source-locks, STEP-first custom CAD, validation evidence, BOM, and engineering reporting.
+version: 0.6.3
 ---
 
 # Agentic CAD
@@ -222,27 +222,22 @@ The final engineering report must state what is verified, what is only CAD-valid
 
 ## Required artifacts
 
-A complete `/agentic-cad` project should produce or update these artifacts, unless explicitly out of scope:
+A complete `/agentic-cad` project should produce or update these canonical Zen CAD milestone artifacts, unless explicitly out of scope:
 
-- `requirements.md` or `requirements.json`: measurable requirements, assumptions, open questions, and success criteria;
-- `research_log.md` or `research_sources.json`: catalogs, datasheets, standards, URLs, source evidence, and confidence;
-- `calculations.md` or `calculations.json`: engineering sizing calculations, assumptions, safety factors, and limitations;
-- `mechanical_architecture.md` or `architecture.json`: assemblies, interfaces, frames, functions, and design rationale;
-- `part_classification.json`: every part classified as `off_the_shelf`, `semi_standard_configurable`, `custom_design_specific`, or `placeholder_proxy`;
-- `selected_parts_manifest.json`: selected off-the-shelf/catalog parts with source, datasheet, STEP path, dimensions, interfaces, `geometry_match`, and `engineering_rating_verified`;
-- `part_rag_candidates.json`: candidate list and ranking rationale for sourced parts;
-- `parts_cache/`: downloaded/retrieved STEP files where allowed;
-- `normalized_step_metadata.json`: units, bounding boxes, axes, mating features, connection points, and metadata extracted from retrieved STEP files;
-- `custom_parts_list.json`: custom parts to generate, including dimensions, functions, interfaces, and validation criteria;
-- `CONTACT_MAP.json`: contacts, mating surfaces, clearances, keep-outs, and interference expectations;
-- `CONNECTIONS.json`: joints, fasteners, bearings, shafts, connectors, degrees of freedom, and assembly relationships;
-- `spec_to_cad_handoff.json`: complete downstream bundle for `/spec-to-cad`;
-- generated CAD/assembly files from `/spec-to-cad`;
-- `validation_report.json`: reproducible CAD-kernel/CLI/test evidence;
-- `verifier_report.md` or `verifier_report.json`: independent verifier findings and pass/fail status;
-- `BOM.csv` or `BOM.json`: quantities, part numbers, source/manufacturing method, and status;
-- `sourcing_report.md`: supplier/source evidence, datasheet/rating status, alternatives, risks, and unresolved items;
-- `final_engineering_report.md`: verified claims, limitations, next engineering steps, and delivery summary.
+- `00_requirements/requirements_brief.md`: measurable requirements, assumptions, open questions, and success criteria;
+- `01_research/research_log.md`: catalogs, datasheets, standards, URLs, source evidence, and confidence;
+- `02_parts/part_classification_table.md`: every part classified as `off_the_shelf`, `semi_standard_configurable`, `custom_design_specific`, or `placeholder_proxy`;
+- `02_parts/selected_parts_manifest.json`: selected off-the-shelf/catalog parts with source, datasheet, STEP path, dimensions, interfaces, `geometry_match`, and `engineering_rating_verified`;
+- `02_parts/normalized_step_metadata.json`: units, bounding boxes, axes, mating features, connection points, and metadata extracted from retrieved STEP files when standard parts are in scope;
+- `03_cad/custom_cad_handoff.yaml`: complete downstream bundle for `/spec-to-cad`;
+- `03_cad/<source>` and `03_cad/exports/<primary>.step`: generated custom CAD source and primary STEP-first exports from `/spec-to-cad`;
+- `04_assembly/contact_map.json`: contacts, mating surfaces, clearances, keep-outs, and interference expectations;
+- `04_assembly/connections.json`: joints, fasteners, bearings, shafts, connectors, degrees of freedom, and assembly relationships;
+- `05_validation/validation_report.json`: command-backed validation checks with evidence type, command metadata, artifact paths, sizes, hashes, results, and limitations;
+- `06_bom/bom.csv`: quantities, part numbers, source/manufacturing method, and status;
+- `07_report/final_engineering_report.md`: verified claims, limitations, next engineering steps, and delivery summary.
+
+Optional supporting files such as candidate rankings, calculations, verifier reports, snapshots, and blocked reports should live inside the closest matching milestone folder, not as parallel root-level artifacts.
 
 ## Part classification
 
@@ -401,7 +396,7 @@ Expected `/spec-to-cad` outputs:
 - generated custom CAD files;
 - assembly files integrating sourced and custom geometry;
 - normalized exports as required by the project;
-- `validation_report.json` with reproducible CLI/kernel/test evidence;
+- `05_validation/validation_report.json` with reproducible command metadata, evidence types, and hash-backed artifacts;
 - failure report with exact blockers if generation or validation cannot complete.
 
 ## Validation gates
@@ -412,9 +407,9 @@ Zen CAD uses a generation-first, maturity-aware order. Structure validation and 
 
 For `concept` and `layout`, `./zen-cad doctor` is diagnostic only. If strict local CAD/mesh packages are missing, use the harness's available CAD path and record the limitation instead of returning without CAD.
 
-For `final`, pass only when `./zen-cad doctor --cad-required` can run for the CAD/mesh/kernel stack needed by the job, or when the final report truthfully states `ENV_BLOCKED` and stops before final completion claims.
+For `final`, pass only when `./zen-cad doctor --cad-required` can run for the CAD/mesh/kernel stack needed by the job, or when `05_validation/validation_report.json` includes a passing `environment` evidence check from the CAD runtime that generated the final artifacts. If neither is true, the final report must truthfully state `ENV_BLOCKED` and stop before final completion claims.
 
-Prefer the harness's working CAD stack over repairing one preferred local stack. If a known venv exists, run doctor with `--python /path/to/.venv/bin/python` or set `ZEN_CAD_PYTHON`.
+Prefer the harness's working CAD stack over repairing one preferred local stack. If a known venv exists, run doctor with `--python /path/to/.venv/bin/python` or set `ZEN_CAD_PYTHON`. If final artifacts were generated elsewhere, record the exact CAD runtime command as `evidence_type: "environment"`.
 
 ### Gate 1: Requirement normalization
 
@@ -454,7 +449,7 @@ Run `./zen-cad source-lock milestones/<id>` before treating standard parts as fi
 
 ### Gate 3: Custom CAD generation
 
-Pass only when generated geometry is design-specific custom CAD, not generated lookalikes for standard parts. Proxy STL/debug geometry may be useful for layout but is completion-ineligible. For final PASS, the validation report must include `cad_generation` evidence with command metadata and matching source/export artifact hashes.
+Pass only when generated geometry is design-specific custom CAD, not generated lookalikes for standard parts. Proxy STL/debug geometry may be useful for layout but is completion-ineligible. For final PASS, `05_validation/validation_report.json` must include `cad_generation` evidence with command metadata and matching source/export artifact hashes.
 
 ### Gate 4: Assembly contract
 
@@ -466,7 +461,41 @@ Pass only when source-backed STEP/STP files are cached and normalized for standa
 
 ### Gate 6: CAD-kernel validation
 
-Pass only when reproducible tooling confirms required CAD files load, solids are valid where required, units and bounding boxes are plausible, references resolve, placements are defined, contacts/clearances are checked where in scope, and required exports can be regenerated. For Zen CAD 0.6.2 completion PASS, `validation_report.json` must include passing `cad_generation`, `step_load`, and `geometry_inspection` checks with command metadata and hash-backed artifacts.
+Pass only when reproducible tooling confirms required CAD files load, solids are valid where required, units and bounding boxes are plausible, references resolve, placements are defined, contacts/clearances are checked where in scope, and required exports can be regenerated. For Zen CAD completion PASS, `05_validation/validation_report.json` must include passing `cad_generation`, `step_load`, and `geometry_inspection` checks with command metadata and hash-backed artifacts.
+
+Minimal PASS check shape:
+
+```json
+{
+  "check_id": "CHK-004",
+  "name": "Geometry inspection",
+  "result": "pass",
+  "evidence_type": "geometry_inspection",
+  "evidence": "Measured critical interfaces on the primary STEP export.",
+  "command": {
+    "argv": [
+      "python",
+      "scripts/inspect",
+      "refs",
+      "milestones/<id>/03_cad/exports/<model>.step",
+      "--facts",
+      "--planes",
+      "--positioning"
+    ],
+    "cwd": "<cad-skill-or-repo-root>",
+    "exit_code": 0
+  },
+  "artifacts": [
+    {
+      "path": "03_cad/exports/<model>.step",
+      "role": "primary_step",
+      "size_bytes": 12345,
+      "sha256": "<sha256>"
+    }
+  ],
+  "limitations": []
+}
+```
 
 ### Gate 7: Final report / BOM / evidence bundle
 

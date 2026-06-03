@@ -13,7 +13,7 @@
 
 Harness-native CAD workflow for source-aware mechanical design agents
 
-[![Version](https://img.shields.io/badge/version-0.6.2-4A5568?style=for-the-badge)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.6.3-4A5568?style=for-the-badge)](VERSION)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](docs/environment_setup.md)
 [![STEP](https://img.shields.io/badge/STEP-first-00A676?style=for-the-badge)](skills/spec-to-cad/SKILL.md)
 [![CoBrA](https://img.shields.io/badge/CoBrA-adapter-2F80ED?style=for-the-badge)](plugins/cobra/README.md)

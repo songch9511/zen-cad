@@ -21,6 +21,71 @@ def copy_repo_fixture(target: Path) -> None:
 
 
 class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
+    def test_shipped_skills_have_release_versions(self) -> None:
+        for skill_name in ['agentic-cad', 'spec-to-cad', 'self-evolving-producer-verifier']:
+            text = (ROOT / f'skills/{skill_name}/SKILL.md').read_text(encoding='utf-8')
+            self.assertIn('version: 0.6.3', text, skill_name)
+
+    def test_spec_to_cad_is_milestone_first_and_text_to_cad_first(self) -> None:
+        text = (ROOT / 'skills/spec-to-cad/SKILL.md').read_text(encoding='utf-8')
+        required_phrases = [
+            'Milestone-first CAD execution skill',
+            'earthtojake/text-to-cad',
+            'scripts/step',
+            'scripts/inspect refs',
+            'scripts/snapshot',
+            '03_cad/custom_cad_handoff.yaml',
+            '05_validation/validation_report.json',
+            'cad_generation',
+            'step_load',
+            'geometry_inspection',
+            'size_bytes',
+            'sha256',
+            'evidence_check_ids',
+            './zen-cad validate --level completion milestones/<id>',
+        ]
+        for phrase in required_phrases:
+            self.assertIn(phrase, text)
+        forbidden_phrases = [
+            'GFL/test_materials',
+            'high_speed_powder_mill',
+            'PM160',
+            '/Users/vanta',
+        ]
+        for phrase in forbidden_phrases:
+            self.assertNotIn(phrase, text)
+
+    def test_agentic_cad_uses_canonical_milestone_paths(self) -> None:
+        text = (ROOT / 'skills/agentic-cad/SKILL.md').read_text(encoding='utf-8')
+        for phrase in [
+            '00_requirements/requirements_brief.md',
+            '02_parts/selected_parts_manifest.json',
+            '03_cad/custom_cad_handoff.yaml',
+            '04_assembly/contact_map.json',
+            '05_validation/validation_report.json',
+            '06_bom/bom.csv',
+            '07_report/final_engineering_report.md',
+            'evidence_type: "environment"',
+        ]:
+            self.assertIn(phrase, text)
+        for phrase in [
+            '`requirements.md` or `requirements.json`',
+            '`CONTACT_MAP.json`',
+            '`BOM.csv` or `BOM.json`',
+        ]:
+            self.assertNotIn(phrase, text)
+
+    def test_self_evolving_skill_has_portable_fallback(self) -> None:
+        text = (ROOT / 'skills/self-evolving-producer-verifier/SKILL.md').read_text(encoding='utf-8')
+        for phrase in [
+            'optional harness primitives',
+            'Portable Fallback',
+            'producer_approach.md',
+            'verifier_report.md',
+            'If it does not, use the portable file-based fallback',
+        ]:
+            self.assertIn(phrase, text)
+
     def test_agent_creates_milestone_from_prompt_after_setup(self) -> None:
         searchable_text = '\n'.join(
             path.read_text(encoding='utf-8')

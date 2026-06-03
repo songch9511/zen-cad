@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.6.3
+
+- Rewrite `/spec-to-cad` as a Zen CAD milestone-first, text-to-cad-first execution skill with canonical artifact paths.
+- Remove stale GFL/PM160/private-path assumptions from the shipped CAD execution skill.
+- Align `/agentic-cad` required artifacts, Gate 0 environment evidence, and validation report examples with the 0.6.x completion gates.
+- Add portable fallback guidance to `/self-evolving-producer-verifier` for harnesses without CoBrA loop primitives.
+- Add skill contract regression tests for text-to-cad guidance, canonical milestone paths, portable producer-verifier fallback, and skill versions.
+
 ## 0.6.2
 
 - Rewrite README in an official distribution style with skill/adaptor tables, quickstart, validation gates, and evidence contract.

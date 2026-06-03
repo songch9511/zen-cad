@@ -1,6 +1,7 @@
 ---
 name: self-evolving-producer-verifier
 description: "/self-evolving-producer-verifier: Producer-verifier loop where the producer maintains and evolves a persistent approach document each iteration, so verifier critiques compound across iterations instead of being treated independently. General-purpose; layer domain specifics on top."
+version: 0.6.3
 ---
 
 # Self-Evolving Producer-Verifier (/self-evolving-producer-verifier)
@@ -9,7 +10,7 @@ description: "/self-evolving-producer-verifier: Producer-verifier loop where the
 
 Examples: `/self-evolving-producer-verifier implement this feature until tests pass`, `/self-evolving-producer-verifier draft this plan until the rubric checker approves`.
 
-> **Iron rule — the loop runs without the lead.** The lead sets up producer + verifier once; `emit_loop` handles the produce → verify → critique cycle and returns only the terminal result.
+> **Iron rule — use the harness loop when it exists.** If the harness provides `emit_loop`, the lead sets up producer + verifier once and lets the loop handle produce → verify → critique. If it does not, use the portable file-based fallback in this skill.
 
 > **Iron rule — the approach document is the locus of evolution.** The producer must persist a named approach document so iteration N+1 sees iteration N's lessons. Artifact revision without approach revision is only L0.
 
@@ -31,7 +32,11 @@ L1 is not a small GEPA: no candidate pool, no Pareto frontier, no multi-axis tou
 
 ---
 
-## Primitive: `emit_loop`
+## Harness Primitive: `emit_loop`
+
+`emit_loop`, `complete_sequence`, `assign_task`, CoMeT memory, `/producer-verifier-loop`, and `/gepa` are optional harness primitives. They are not shipped by Zen CAD itself. CoBrA-style environments may provide them; Codex, Claude Code, and simple terminal/file harnesses may not.
+
+When these primitives are unavailable, do not pretend the autonomous loop ran. Use the fallback procedure below and record the producer/verifier artifacts as files.
 
 ```python
 emit_loop(
@@ -68,6 +73,30 @@ Otherwise return a structured critique:
 
 The critique is the producer's next input. Concrete failed checks become approach-document rules; vague taste notes burn iterations.
 
+## Portable Fallback
+
+Use this when `emit_loop` or `complete_sequence` is not available:
+
+1. Create `<workdir>/producer_approach.md` from the approach template.
+2. Create `<workdir>/producer_output.md` or the requested artifact path.
+3. Create `<workdir>/verifier_report.md`.
+4. Run producer pass 1 against the original task and approach document.
+5. Run verifier pass 1 against the original acceptance criteria, citing files, commands, schema fields, or screenshots as evidence.
+6. If verifier passes, stop and return the approved artifact plus verifier report.
+7. If verifier fails, update `producer_approach.md` with generalized forward-looking rules before changing the artifact.
+8. Repeat for a fixed cap, normally 3-5 iterations.
+9. If the same blocker recurs three times, stop with a blocked report instead of repeating the same artifact.
+
+Fallback file contract:
+
+```text
+<workdir>/producer_approach.md
+<workdir>/producer_output.md or requested artifact path
+<workdir>/verifier_report.md
+```
+
+For Zen CAD work, the verifier report should reference `./zen-cad validate --level structure` or `./zen-cad validate --level completion` output when those commands are part of acceptance.
+
 ---
 
 ## Approach document contract
@@ -79,7 +108,7 @@ The approach document is the only new primitive over `/producer-verifier-loop`.
 | Storage | Pick when | Handle |
 |---|---|---|
 | **File** | Short-lived run; concrete working directory; artifact files already exist | `<workdir>/producer_approach.md` |
-| **CoMeT memory node** | Run spans turns; other workers need to read it; future runs may seed from it | tag `self_evolving_pv:approach:{run_id}` |
+| **Harness memory node** | Run spans turns and the harness provides memory primitives such as CoMeT | tag `self_evolving_pv:approach:{run_id}` |
 
 File is simpler and diffable. Memory is better for project continuity and cross-worker reuse. Pass the exact path, node id, or tag recipe in every brief.
 
@@ -176,7 +205,7 @@ The verifier remains the only judge of artifact acceptability. The approach docu
 3. **Initialize `run_id`.** Use a project id, task slug, timestamp, or sequence id; thread it through approach-doc names and briefs.
 4. **Create the approach document.** Seed `<workdir>/producer_approach.md` or a node tagged `self_evolving_pv:approach:{run_id}` with the task brief, acceptance criteria, and empty sections from the template.
 5. **Brief producer and verifier separately.** Producer owns approach evolution; verifier owns approval and critique.
-6. **Call the loop**:
+6. **Call the loop when the harness provides it**:
    ```python
    emit_loop(
        sessions=[producer_sid, verifier_sid],
@@ -186,8 +215,9 @@ The verifier remains the only judge of artifact acceptability. The approach docu
        sink='',
    )
    ```
-7. **On terminal output, read both deliverables.** The approved artifact is the immediate output; the approach document is the distilled experience of the run and may seed future similar tasks.
-8. **If terminated by cap, diagnose before retrying.** Compare final critique with the approach document. If the same critique recurs unchanged, change setup or escalate to `/gepa`.
+7. **Use the portable fallback otherwise.** Store producer output, verifier report, and approach document as files and iterate manually up to the cap.
+8. **On terminal output, read both deliverables.** The approved artifact is the immediate output; the approach document is the distilled experience of the run and may seed future similar tasks.
+9. **If terminated by cap, diagnose before retrying.** Compare final critique with the approach document. If the same critique recurs unchanged, change setup or escalate to a broader candidate-search method when available.
 
 ---
 
@@ -202,15 +232,15 @@ The verifier remains the only judge of artifact acceptability. The approach docu
 | Approach doc bloats unboundedly | Context noise degrades later iterations | Cap ~2-3k tokens; refactor periodically |
 | Same critique appears 3+ times unchanged | Fixed point; producer cannot use the feedback | Terminate as cap/block and surface recurrence evidence |
 | Producer self-verifies via approach doc | Reintroduces producer bias | Verifier remains the only acceptability judge |
-| Lead manually relays critiques | Lead returns to critical path | Use `emit_loop` |
+| Lead manually relays critiques despite loop support | Lead returns to critical path | Use `emit_loop` when available; otherwise use the file-based fallback deliberately |
 
 ---
 
 ## When NOT to use this skill
 
-- **Genuinely single-pass work** → use one `assign_task`.
+- **Genuinely single-pass work** → use a direct task assignment or one normal agent pass.
 - **No checkable approval criterion** → tighten criteria first, or do one pass + user review.
-- **Need Pareto-frontier multi-candidate search** → use `/gepa`.
+- **Need Pareto-frontier multi-candidate search** → use `/gepa` or another candidate-search method if the harness provides one.
 - **Producer and verifier are the same model with the same prompt** → no perspective shift; this skill cannot save the setup.
 - **Approach learning is irrelevant** → use L0 `/producer-verifier-loop`.
 - **The user must approve every iteration** → do not hide user-gated judgement inside an autonomous loop.
@@ -239,8 +269,8 @@ If the artifact passes but self-evolution failed, accept the artifact and mark t
 
 ## References / related skills
 
-- **`/producer-verifier-loop`** — L0 base machinery: fixed producer, verifier-approved termination via `complete_sequence`.
-- **`/gepa`** — L2 escalation: candidate pool, Pareto frontier, rollout batches, evaluator, and harness-tuner roles.
+- **`/producer-verifier-loop`** — optional L0 base machinery when the harness provides verifier-approved termination via `complete_sequence`.
+- **`/gepa`** — optional L2 escalation when the harness provides candidate pools, Pareto frontiers, rollout batches, evaluators, and harness-tuner roles.
 - **`/spec-to-cad`** — CAD E2E pipeline consumer; CAD-specific rules belong there, not in this general skill.
 
 Use this skill as a composable middle layer: autonomous producer-verifier iteration with one evolving producer approach, no domain assumptions, and no frontier machinery.
