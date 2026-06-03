@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import sys
@@ -184,6 +185,98 @@ class FirstRunCliTest(unittest.TestCase):
             demo = run_cli(work, 'validate-completion', 'milestones/002_nema17_mount_plate')
             self.assertEqual(demo.returncode, 0, demo.stderr + demo.stdout)
             self.assertIn('Zen CAD completion validation result: PASS', demo.stdout)
+
+    def test_completion_blocks_pass_report_without_command_argv(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+            report = work / 'milestones/002_nema17_mount_plate/05_validation/validation_report.json'
+            data = json.loads(report.read_text(encoding='utf-8'))
+            data['checks'][1]['command']['argv'] = []
+            report.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+
+            completed = run_cli(work, 'validate-completion', 'milestones/002_nema17_mount_plate')
+
+            self.assertEqual(completed.returncode, 2, completed.stderr + completed.stdout)
+            self.assertIn('Gate 6 CAD-kernel validation', completed.stdout)
+            self.assertIn('command.argv must be a non-empty string array', completed.stdout)
+
+    def test_completion_blocks_artifact_hash_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+            report = work / 'milestones/002_nema17_mount_plate/05_validation/validation_report.json'
+            data = json.loads(report.read_text(encoding='utf-8'))
+            data['checks'][1]['artifacts'][1]['sha256'] = '0' * 64
+            report.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+
+            completed = run_cli(work, 'validate-completion', 'milestones/002_nema17_mount_plate')
+
+            self.assertEqual(completed.returncode, 2, completed.stderr + completed.stdout)
+            self.assertIn('Gate 6 CAD-kernel validation', completed.stdout)
+            self.assertIn('sha256 mismatch', completed.stdout)
+
+    def test_completion_blocks_assembly_rows_without_geometry_evidence_links(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+            contact_map = work / 'milestones/002_nema17_mount_plate/04_assembly/contact_map.json'
+            data = json.loads(contact_map.read_text(encoding='utf-8'))
+            data['contacts'][0].pop('evidence_check_ids')
+            contact_map.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+
+            completed = run_cli(work, 'validate-completion', 'milestones/002_nema17_mount_plate')
+
+            self.assertEqual(completed.returncode, 2, completed.stderr + completed.stdout)
+            self.assertIn('Gate 4 assembly contract', completed.stdout)
+            self.assertIn('has no evidence_check_ids', completed.stdout)
+
+    def test_completion_requires_geometry_inspection_evidence_type(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+            report = work / 'milestones/002_nema17_mount_plate/05_validation/validation_report.json'
+            data = json.loads(report.read_text(encoding='utf-8'))
+            data['checks'][3]['evidence_type'] = 'other'
+            report.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+
+            completed = run_cli(work, 'validate-completion', 'milestones/002_nema17_mount_plate')
+
+            self.assertEqual(completed.returncode, 2, completed.stderr + completed.stdout)
+            self.assertIn('Gate 6 CAD-kernel validation', completed.stdout)
+            self.assertIn('missing required completion evidence types: geometry_inspection', completed.stdout)
+
+    def test_completion_requires_environment_evidence_when_cad_preflight_is_blocked(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            copy_repo_fixture(work)
+            fake_python = Path(tmp) / 'fake-python'
+            fake_python.write_text(
+                '#!/bin/sh\n'
+                'cat <<\'JSON\'\n'
+                '{"ok": true, "executable": "fake-python", "version": "3.11.0", "in_virtualenv": true, '
+                '"modules": {"numpy": false, "trimesh": false, "build123d": false, "cadquery": false, "OCP": false}, '
+                '"openscad": null, "stl_round_trip": false, "build123d_step_smoke": false}\n'
+                'JSON\n',
+                encoding='utf-8',
+            )
+            fake_python.chmod(0o755)
+            report = work / 'milestones/002_nema17_mount_plate/05_validation/validation_report.json'
+            data = json.loads(report.read_text(encoding='utf-8'))
+            data['checks'][6]['evidence_type'] = 'other'
+            report.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+
+            completed = run_cli(
+                work,
+                'validate-completion',
+                '--python',
+                str(fake_python),
+                'milestones/002_nema17_mount_plate',
+            )
+
+            self.assertEqual(completed.returncode, 2, completed.stderr + completed.stdout)
+            self.assertIn('Gate 0 doctor / environment preflight', completed.stdout)
+            self.assertIn('validation_report has no environment evidence check', completed.stdout)
 
     def test_source_lock_blocks_proxies_and_unlocked_standard_parts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -745,6 +745,8 @@ The final user report should include:
 - Exact artifact paths
 - Commands run
 - Pass/fail results
+- Evidence type for each check (`cad_generation`, `step_load`, `geometry_inspection`, etc.)
+- Artifact file sizes and SHA-256 hashes for final evidence
 - Key counts and dimensions
 - Kernel/backend versions
 - Dynamic runtime status if applicable

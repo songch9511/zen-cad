@@ -13,7 +13,7 @@
 
 Harness-native CAD workflow for source-aware mechanical design agents
 
-[![Version](https://img.shields.io/badge/version-0.6.1-4A5568?style=for-the-badge)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.6.2-4A5568?style=for-the-badge)](VERSION)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](docs/environment_setup.md)
 [![STEP](https://img.shields.io/badge/STEP-first-00A676?style=for-the-badge)](skills/spec-to-cad/SKILL.md)
 [![CoBrA](https://img.shields.io/badge/CoBrA-adapter-2F80ED?style=for-the-badge)](plugins/cobra/README.md)
@@ -138,7 +138,7 @@ Equivalent explicit commands:
 The two results are intentionally separate:
 
 - `Zen CAD validation result: PASS` means the repository and milestone structure are valid.
-- `Zen CAD completion validation result: PASS` means source-lock, CAD exports, assembly contract, CAD-kernel evidence, BOM, and final report gates are complete.
+- `Zen CAD completion validation result: PASS` means source-lock, CAD exports, assembly contract, command-backed CAD evidence, BOM, and final report gates are complete.
 - `BLOCKED` is a valid truthful result for concept/layout milestones.
 
 ## Evidence Contract
@@ -158,7 +158,9 @@ A final milestone should include:
 - source-lock records for standard/catalog parts
 - CONTACT_MAP and CONNECTIONS
 - kernel/export/loadability checks
-- validation JSON with commands and results actually run
+- validation JSON with command metadata, result status, evidence type, artifact paths, file sizes, and SHA-256 hashes
+- at least `cad_generation`, `step_load`, and `geometry_inspection` evidence types for completion PASS
+- local `doctor --cad-required` success, or command-backed `environment` evidence from the CAD runtime that generated the final artifacts
 - BOM
 - final engineering report
 
@@ -171,6 +173,8 @@ The repository includes a small final demo milestone:
 ```bash
 ./zen-cad validate-completion milestones/002_nema17_mount_plate
 ```
+
+The demo is intentionally small, but its PASS is hash-backed: the validation report records command metadata and matching artifact hashes for CAD source, STEP/STL exports, geometry inspection JSON, CONTACT_MAP/CONNECTIONS, BOM, and final report.
 
 The original reference milestone remains intentionally blocked until standard parts, generated CAD, STEP cache, and final validation evidence are completed:
 

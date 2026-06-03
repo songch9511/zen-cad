@@ -17,6 +17,7 @@ For every delegated CAD task, include:
 - target maturity: `concept`, `layout`, or `final`
 - allowed CAD generation/sourcing tools
 - required validation command before any final claim
+- required final evidence types: `cad_generation`, `step_load`, and `geometry_inspection` with artifact hashes
 
 Minimal worker brief:
 
@@ -26,7 +27,7 @@ Zen CAD repo: /absolute/path/to/zen-cad
 Active milestone: /absolute/path/to/zen-cad/milestones/<id>
 Target maturity: concept|layout|final
 Generate the first CAD artifact with the available harness/toolchain before spending cycles on strict env repair.
-Do not claim final completion until ./zen-cad validate --level completion milestones/<id> passes from the repo root.
+Do not claim final completion until validation_report.json contains command-backed CAD evidence with artifact hashes and ./zen-cad validate --level completion milestones/<id> passes from the repo root.
 ```
 
 For concept/layout work, `ENV_BLOCKED` from `doctor --cad-required` is a final-gate blocker, not a reason to return without CAD. Use CoBrA file/terminal/web/worker tools to produce the best runnable artifact and report remaining blockers separately.

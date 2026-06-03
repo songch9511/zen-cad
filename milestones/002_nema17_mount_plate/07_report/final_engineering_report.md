@@ -9,7 +9,9 @@ Final demo milestone for a single custom NEMA17 mount plate. The generated CAD i
 - Required milestone files, JSON schemas, and BOM header validate.
 - build123d source is present at `03_cad/nema17_mount_plate.py`.
 - STEP and STL exports are present under `03_cad/exports/`.
-- OCP loaded the exported STEP file during generation validation.
+- Validation evidence records command metadata, artifact sizes, and SHA-256 hashes for the CAD source, STEP export, STL export, source-lock manifest, and geometry inspection summary.
+- The STEP export includes the `END-ISO-10303-21` terminator required by the Zen CAD 0.6.2 completion gate.
+- The geometry inspection summary records the 60 x 60 x 4 mm plate, 22 mm pilot bore, four 3.4 mm NEMA17 holes on a 31 mm pattern, and four 4.5 mm frame holes on a 48 mm pattern.
 - No standard/catalog part is claimed as final evidence in this demo.
 
 ## CAD-validated only

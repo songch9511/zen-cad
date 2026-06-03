@@ -45,7 +45,9 @@ Zen CAD is complementary to earthtojake/text-to-cad:
 - Use text-to-cad for STEP-first generation.
 - Use deterministic CAD inspection for refs, facts, planes, measures, mates, frames, and diffs where available.
 - Use snapshots and viewer output for visual review only.
-- Store resulting source paths, STEP/STL paths, assumptions, validation commands, and blockers in the active Zen CAD milestone.
+- Store resulting source paths, STEP/STL paths, assumptions, validation commands, artifact sizes, SHA-256 hashes, and blockers in the active Zen CAD milestone.
+- For final PASS, record command-backed `cad_generation`, `step_load`, and `geometry_inspection` checks in `05_validation/validation_report.json`, and link CONTACT_MAP/CONNECTIONS rows to passing geometry checks with `evidence_check_ids`.
+- If the validating machine cannot pass `doctor --cad-required`, record a command-backed `environment` check from the CAD runtime that actually generated the final artifacts, or report the milestone as BLOCKED.
 
 If text-to-cad is unavailable, a harness may use build123d, CadQuery, FreeCAD, OpenSCAD, or another kernel-backed stack, but the same milestone evidence contract still applies.
 

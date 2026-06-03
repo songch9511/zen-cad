@@ -17,9 +17,11 @@ Completion is blocked until:
 - requirements are normalized into measurable assumptions and outputs;
 - every standard/catalog part is source-locked or explicitly marked as completion-ineligible proxy;
 - custom CAD exports are final evidence, not proxy-only viewer/debug artifacts;
-- CONTACT_MAP and CONNECTIONS are populated;
+- CONTACT_MAP and CONNECTIONS are populated and linked to passing validation checks with `evidence_check_ids`;
 - STEP/STP cache and normalized metadata exist where standard parts are used;
-- CAD-kernel/export/contact/clearance checks pass with reproducible evidence;
+- CAD-kernel/export/contact/clearance checks pass with command metadata and size/hash-locked artifacts;
+- validation evidence includes `cad_generation`, `step_load`, and `geometry_inspection` check types for final PASS;
+- if the current environment is `ENV_BLOCKED`, validation evidence includes a passing `environment` check from the CAD runtime used to generate the final artifacts;
 - BOM and final report truthfully match the validation verdict.
 
 When a gate blocks, the final report should say `Verdict: BLOCKED` and list completed evidence, blockers, and the smallest unblock step.

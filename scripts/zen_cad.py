@@ -64,6 +64,34 @@ class PartAudit:
     smallest_unblock_steps: list[str]
 
 
+@dataclass
+class ValidationReportAudit:
+    status: str
+    blockers: list[str]
+    summary: str
+    passed_check_ids: set[str]
+    evidence_types: set[str]
+    artifact_paths: set[Path]
+    step_artifact_paths: set[Path]
+    artifacts_by_role: dict[str, set[Path]]
+
+
+COMPLETION_REQUIRED_EVIDENCE_TYPES = {
+    'cad_generation',
+    'step_load',
+    'geometry_inspection',
+}
+
+ARTIFACT_REQUIRED_EVIDENCE_TYPES = {
+    'cad_generation',
+    'step_load',
+    'geometry_inspection',
+    'visual_snapshot',
+}
+
+STEP_ARTIFACT_ROLES = {'primary_step', 'step_export', 'step'}
+
+
 def print_section(title: str) -> None:
     print(f'\n{title}')
 
@@ -273,6 +301,15 @@ def local_artifact_exists(milestone: Path, value: object) -> bool:
     if not path.is_absolute():
         path = milestone / path
     return path.exists() and path.stat().st_size > 0
+
+
+def resolve_artifact_path(milestone: Path, value: object) -> Path | None:
+    if not is_meaningful(value) or not isinstance(value, str):
+        return None
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = milestone / path
+    return path.resolve()
 
 
 def value_from_any(data: dict[str, object], *keys: str) -> object:
@@ -1000,28 +1037,245 @@ def nonempty_artifacts(path: Path, suffixes: set[str]) -> list[Path]:
     )
 
 
-def validation_report_status(milestone: Path) -> tuple[str, list[str], str]:
+def step_file_has_end_iso(path: Path) -> bool:
+    try:
+        tail = path.read_bytes()[-4096:]
+    except Exception:
+        return False
+    return b'END-ISO-10303-21' in tail
+
+
+def artifact_hash(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open('rb') as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def audit_validation_artifact(
+    milestone: Path,
+    check_id: str,
+    artifact: object,
+    index: int,
+) -> tuple[list[str], Path | None, str]:
+    prefix = f'check {check_id} artifact[{index}]'
+    if not isinstance(artifact, dict):
+        return [f'{prefix} is not an object'], None, ''
+
+    path = resolve_artifact_path(milestone, artifact.get('path'))
+    if path is None:
+        return [f'{prefix} path is missing'], None, str(artifact.get('role') or '')
+
+    blockers: list[str] = []
+    role = str(artifact.get('role') or '')
+    if not role:
+        blockers.append(f'{prefix} role is missing')
+    if not path.exists() or not path.is_file():
+        blockers.append(f'{prefix} path does not exist: {artifact.get("path")}')
+        return blockers, path, role
+    size = path.stat().st_size
+    if size <= 0:
+        blockers.append(f'{prefix} is empty: {artifact.get("path")}')
+
+    recorded_size = artifact.get('size_bytes')
+    if not isinstance(recorded_size, int) or recorded_size != size:
+        blockers.append(f'{prefix} size_bytes mismatch for {artifact.get("path")}')
+
+    recorded_hash = str(artifact.get('sha256') or '').strip()
+    if not recorded_hash:
+        blockers.append(f'{prefix} sha256 is missing for {artifact.get("path")}')
+    else:
+        try:
+            actual_hash = artifact_hash(path)
+        except Exception as exc:
+            blockers.append(f'{prefix} sha256 could not be calculated for {artifact.get("path")}: {exc}')
+        else:
+            if actual_hash != recorded_hash:
+                blockers.append(f'{prefix} sha256 mismatch for {artifact.get("path")}')
+
+    if path.suffix.casefold() in {'.step', '.stp'} and not step_file_has_end_iso(path):
+        blockers.append(f'{prefix} STEP file is missing END-ISO-10303-21 terminator: {artifact.get("path")}')
+    return blockers, path, role
+
+
+def audit_pass_check_evidence(
+    milestone: Path,
+    check: dict[str, object],
+    index: int,
+) -> tuple[list[str], set[Path], set[Path], dict[str, set[Path]], str]:
+    check_id = str(check.get('check_id') or index)
+    blockers: list[str] = []
+    evidence_type = str(check.get('evidence_type') or '').strip()
+    if not evidence_type:
+        blockers.append(f'check {check_id} evidence_type is missing')
+    if not is_meaningful(check.get('evidence')):
+        blockers.append(f'check {check_id} evidence is missing')
+
+    command = check.get('command')
+    if not isinstance(command, dict):
+        blockers.append(f'check {check_id} command object is missing')
+    else:
+        argv = command.get('argv')
+        if not isinstance(argv, list) or not argv or not all(isinstance(arg, str) and arg.strip() for arg in argv):
+            blockers.append(f'check {check_id} command.argv must be a non-empty string array')
+        if not is_meaningful(command.get('cwd')):
+            blockers.append(f'check {check_id} command.cwd is missing')
+        if command.get('exit_code') != 0:
+            blockers.append(f'check {check_id} command.exit_code is not 0')
+
+    artifacts = check.get('artifacts')
+    if not isinstance(artifacts, list):
+        blockers.append(f'check {check_id} artifacts array is missing')
+        artifacts = []
+    if evidence_type in ARTIFACT_REQUIRED_EVIDENCE_TYPES and not artifacts:
+        blockers.append(f'check {check_id} {evidence_type} evidence has no artifacts')
+
+    artifact_paths: set[Path] = set()
+    step_artifact_paths: set[Path] = set()
+    artifacts_by_role: dict[str, set[Path]] = {}
+    for artifact_index, artifact in enumerate(artifacts):
+        artifact_blockers, path, role = audit_validation_artifact(milestone, check_id, artifact, artifact_index)
+        blockers.extend(artifact_blockers)
+        if path is None:
+            continue
+        artifact_paths.add(path)
+        if role:
+            artifacts_by_role.setdefault(role, set()).add(path)
+        if path.suffix.casefold() in {'.step', '.stp'} or role in STEP_ARTIFACT_ROLES:
+            step_artifact_paths.add(path)
+
+    return blockers, artifact_paths, step_artifact_paths, artifacts_by_role, evidence_type
+
+
+def audit_validation_report(milestone: Path) -> ValidationReportAudit:
     validation_report = milestone / '05_validation/validation_report.json'
     data, error = read_json_file(validation_report)
     if data is None:
-        return 'blocked', [f'validation_report.json is not readable JSON: {error}'], ''
-    status = data.get('status')
+        return ValidationReportAudit(
+            status='blocked',
+            blockers=[f'validation_report.json is not readable JSON: {error}'],
+            summary='',
+            passed_check_ids=set(),
+            evidence_types=set(),
+            artifact_paths=set(),
+            step_artifact_paths=set(),
+            artifacts_by_role={},
+        )
+
+    status = str(data.get('status') or '')
     checks = data.get('checks')
     blockers: list[str] = []
+    passed_check_ids: set[str] = set()
+    evidence_types: set[str] = set()
+    artifact_paths: set[Path] = set()
+    step_artifact_paths: set[Path] = set()
+    artifacts_by_role: dict[str, set[Path]] = {}
+
     if status != 'pass':
         blockers.append(f'validation_report status is {status!r}, not "pass"')
-    if isinstance(checks, list):
-        not_passed = [
-            str(check.get('check_id') or check.get('name') or index)
-            for index, check in enumerate(checks)
-            if isinstance(check, dict) and check.get('result') != 'pass'
-        ]
-        if not_passed:
-            blockers.append(f'validation checks not passing: {", ".join(not_passed)}')
-    else:
-        blockers.append('validation_report checks array is missing')
-    summary = str(data.get('summary') or '')
-    return str(status), blockers, summary
+    if not isinstance(checks, list) or not checks:
+        blockers.append('validation_report checks array is missing or empty')
+        checks = []
+
+    for index, check in enumerate(checks):
+        if not isinstance(check, dict):
+            blockers.append(f'validation check {index} is not an object')
+            continue
+        check_id = str(check.get('check_id') or index)
+        result = check.get('result')
+        if result != 'pass':
+            blockers.append(f'validation check {check_id} result is {result!r}, not "pass"')
+            continue
+        passed_check_ids.add(check_id)
+        check_blockers, check_artifacts, check_step_artifacts, check_artifacts_by_role, evidence_type = audit_pass_check_evidence(milestone, check, index)
+        blockers.extend(check_blockers)
+        if evidence_type:
+            evidence_types.add(evidence_type)
+        artifact_paths.update(check_artifacts)
+        step_artifact_paths.update(check_step_artifacts)
+        for role, paths in check_artifacts_by_role.items():
+            artifacts_by_role.setdefault(role, set()).update(paths)
+
+    if status == 'pass':
+        missing_types = sorted(COMPLETION_REQUIRED_EVIDENCE_TYPES - evidence_types)
+        if missing_types:
+            blockers.append(f'validation_report is missing required completion evidence types: {", ".join(missing_types)}')
+        if not step_artifact_paths:
+            blockers.append('validation_report has no hashed STEP/STP artifact evidence')
+
+    return ValidationReportAudit(
+        status=status,
+        blockers=blockers,
+        summary=str(data.get('summary') or ''),
+        passed_check_ids=passed_check_ids,
+        evidence_types=evidence_types,
+        artifact_paths=artifact_paths,
+        step_artifact_paths=step_artifact_paths,
+        artifacts_by_role=artifacts_by_role,
+    )
+
+
+def validation_report_status(milestone: Path) -> tuple[str, list[str], str]:
+    audit = audit_validation_report(milestone)
+    return audit.status, audit.blockers, audit.summary
+
+
+def has_recorded_artifact(audit: ValidationReportAudit, candidates: list[Path]) -> bool:
+    candidate_set = {candidate.resolve() for candidate in candidates}
+    return bool(candidate_set & audit.artifact_paths)
+
+
+def has_recorded_artifact_role(audit: ValidationReportAudit, roles: set[str], candidates: list[Path]) -> bool:
+    candidate_set = {candidate.resolve() for candidate in candidates}
+    for role in roles:
+        if candidate_set & audit.artifacts_by_role.get(role, set()):
+            return True
+    return False
+
+
+def assembly_contract_blockers(
+    contact_map: dict[str, object] | None,
+    contact_error: str,
+    connections: dict[str, object] | None,
+    connection_error: str,
+    validation_audit: ValidationReportAudit,
+) -> list[str]:
+    blockers: list[str] = []
+    contacts = contact_map.get('contacts') if contact_map else None
+    connection_rows = connections.get('connections') if connections else None
+    if contact_error:
+        blockers.append(f'CONTACT_MAP invalid: {contact_error}')
+    elif not isinstance(contacts, list) or not contacts:
+        blockers.append('CONTACT_MAP has no contacts')
+    if connection_error:
+        blockers.append(f'CONNECTIONS invalid: {connection_error}')
+    elif not isinstance(connection_rows, list) or not connection_rows:
+        blockers.append('CONNECTIONS has no connections')
+
+    for label, rows in [('CONTACT_MAP', contacts), ('CONNECTIONS', connection_rows)]:
+        if not isinstance(rows, list):
+            continue
+        for index, row in enumerate(rows):
+            if not isinstance(row, dict):
+                blockers.append(f'{label} row {index} is not an object')
+                continue
+            row_id = str(row.get('contact_id') or row.get('connection_id') or index)
+            evidence_ids = row.get('evidence_check_ids')
+            if not isinstance(evidence_ids, list) or not evidence_ids:
+                blockers.append(f'{label} {row_id} has no evidence_check_ids')
+                continue
+            missing = [
+                str(value)
+                for value in evidence_ids
+                if not isinstance(value, str) or value not in validation_audit.passed_check_ids
+            ]
+            if missing:
+                blockers.append(f'{label} {row_id} evidence_check_ids not passing: {", ".join(missing)}')
+
+    if 'geometry_inspection' not in validation_audit.evidence_types:
+        blockers.append('assembly contract has no geometry_inspection evidence in validation_report')
+    return blockers
 
 
 def analyze_completion_gates(
@@ -1032,22 +1286,30 @@ def analyze_completion_gates(
 ) -> list[GateResult]:
     gates: list[GateResult] = []
     maturity = milestone_maturity(milestone, maturity_override)
-    validation_status, validation_blockers, validation_summary = validation_report_status(milestone)
+    validation_audit = audit_validation_report(milestone)
+    validation_status = validation_audit.status
+    validation_blockers = validation_audit.blockers
+    validation_summary = validation_audit.summary
 
     env_checks = cad_toolchain_checks(root, python_executable)
     env_blockers = [check for check in env_checks if check.status == 'ENV_BLOCKED']
-    gate0_pass = validation_status == 'pass' and not validation_blockers
-    if gate0_pass or not env_blockers:
-        gates.append(GateResult('Gate 0', 'doctor / environment preflight', 'PASS', 'CAD environment evidence is available.', []))
+    environment_evidence = 'environment' in validation_audit.evidence_types
+    gate0_pass = not env_blockers or (validation_status == 'pass' and not validation_blockers and environment_evidence)
+    if gate0_pass:
+        detail = 'Local CAD environment is available.' if not env_blockers else 'validation_report includes command-backed environment evidence.'
+        gates.append(GateResult('Gate 0', 'doctor / environment preflight', 'PASS', detail, []))
     else:
         missing = ', '.join(check.name for check in env_blockers)
+        detail = f'ENV_BLOCKED: {missing}'
+        if validation_status == 'pass' and not validation_blockers and not environment_evidence:
+            detail = f'{detail}; validation_report has no environment evidence check'
         gates.append(
             GateResult(
                 'Gate 0',
                 'doctor / environment preflight',
                 'BLOCKED',
-                f'ENV_BLOCKED: {missing}',
-                ['Run ./zen-cad doctor --cad-required and install or expose the missing CAD/mesh toolchain.'],
+                detail,
+                ['Run ./zen-cad doctor --cad-required or record command-backed environment evidence from the CAD runtime used for final artifacts.'],
             )
         )
 
@@ -1086,8 +1348,15 @@ def analyze_completion_gates(
         proxy_data, _ = read_json_file(proxy_validation)
         proxy_status = str((proxy_data or {}).get('status') or '').casefold()
         proxy_only = 'proxy' in proxy_status
-    if cad_sources and cad_exports and not proxy_only:
-        gates.append(GateResult('Gate 3', 'custom CAD generation', 'PASS', 'custom CAD source and exports are present.', []))
+    source_evidence = has_recorded_artifact_role(validation_audit, {'cad_source', 'source'}, cad_sources)
+    export_evidence = has_recorded_artifact_role(
+        validation_audit,
+        {'primary_step', 'step_export', 'stl_export', 'brep_export', 'cad_export'},
+        cad_exports,
+    )
+    generation_evidence = 'cad_generation' in validation_audit.evidence_types
+    if cad_sources and cad_exports and not proxy_only and source_evidence and export_evidence and generation_evidence:
+        gates.append(GateResult('Gate 3', 'custom CAD generation', 'PASS', 'custom CAD source and exports have hash-backed generation evidence.', []))
     else:
         details = []
         if not cad_sources:
@@ -1096,39 +1365,35 @@ def analyze_completion_gates(
             details.append('custom CAD exports missing')
         if proxy_only:
             details.append('custom CAD evidence is proxy-only')
+        if cad_sources and not source_evidence:
+            details.append('custom CAD source is not recorded with matching validation artifact hash')
+        if cad_exports and not export_evidence:
+            details.append('custom CAD exports are not recorded with matching validation artifact hashes')
+        if not generation_evidence:
+            details.append('cad_generation evidence check is missing')
         gates.append(
             GateResult(
                 'Gate 3',
                 'custom CAD generation',
                 'BLOCKED',
                 ', '.join(details) or 'custom CAD final evidence missing',
-                ['Generate design-specific CAD only, export final STEP/STL as required, and keep proxy exports out of completion evidence.'],
+                ['Generate design-specific CAD, record command-backed cad_generation evidence, and hash the source plus final exports.'],
             )
         )
 
     contact_map, contact_error = read_json_file(milestone / '04_assembly/contact_map.json')
     connections, connection_error = read_json_file(milestone / '04_assembly/connections.json')
-    contacts = contact_map.get('contacts') if contact_map else None
-    connection_rows = connections.get('connections') if connections else None
-    if isinstance(contacts, list) and contacts and isinstance(connection_rows, list) and connection_rows:
-        gates.append(GateResult('Gate 4', 'assembly contract', 'PASS', 'CONTACT_MAP and CONNECTIONS contain assembly rows.', []))
+    assembly_blockers = assembly_contract_blockers(contact_map, contact_error, connections, connection_error, validation_audit)
+    if not assembly_blockers:
+        gates.append(GateResult('Gate 4', 'assembly contract', 'PASS', 'CONTACT_MAP and CONNECTIONS are linked to passing geometry evidence checks.', []))
     else:
-        blockers = []
-        if contact_error:
-            blockers.append(f'CONTACT_MAP invalid: {contact_error}')
-        elif not contacts:
-            blockers.append('CONTACT_MAP has no contacts')
-        if connection_error:
-            blockers.append(f'CONNECTIONS invalid: {connection_error}')
-        elif not connection_rows:
-            blockers.append('CONNECTIONS has no connections')
         gates.append(
             GateResult(
                 'Gate 4',
                 'assembly contract',
                 'BLOCKED',
-                '; '.join(blockers),
-                ['Define contact and connection rows that reference sourced and custom parts before assembly validation.'],
+                '; '.join(assembly_blockers),
+                ['Define contact/connection rows with evidence_check_ids that point to passing geometry_inspection or physical validation evidence.'],
             )
         )
 
@@ -1147,8 +1412,16 @@ def analyze_completion_gates(
     standard_parts_present = any(audit.classification in {'off_the_shelf', 'semi_standard_configurable'} for audit in audits)
     metadata_required = maturity == 'final' and standard_parts_present
     final_step_exports = nonempty_artifacts(milestone / '03_cad', {'.step', '.stp'})
-    if (not metadata_required or (not metadata_blocked and normalized_metadata.exists())) and (maturity != 'final' or not standard_step_missing) and final_step_exports:
-        gates.append(GateResult('Gate 5', 'export/cache verification', 'PASS', 'STEP cache/metadata and final exports are present.', []))
+    invalid_step_exports = [path for path in final_step_exports if not step_file_has_end_iso(path)]
+    recorded_step_exports = has_recorded_artifact_role(validation_audit, STEP_ARTIFACT_ROLES, final_step_exports)
+    if (
+        (not metadata_required or (not metadata_blocked and normalized_metadata.exists()))
+        and (maturity != 'final' or not standard_step_missing)
+        and final_step_exports
+        and not invalid_step_exports
+        and recorded_step_exports
+    ):
+        gates.append(GateResult('Gate 5', 'export/cache verification', 'PASS', 'STEP cache/metadata and final exports have matching hash evidence.', []))
     else:
         blockers = []
         if metadata_required and (metadata_blocked or not normalized_metadata.exists()):
@@ -1157,13 +1430,17 @@ def analyze_completion_gates(
             blockers.append(f'standard STEP/STP missing for {", ".join(standard_step_missing[:5])}')
         if not final_step_exports:
             blockers.append('final STEP/STP exports are missing')
+        if invalid_step_exports:
+            blockers.append(f'STEP exports missing END-ISO terminator: {", ".join(path.name for path in invalid_step_exports[:5])}')
+        if final_step_exports and not recorded_step_exports:
+            blockers.append('final STEP/STP exports are not recorded with matching validation artifact hashes')
         gates.append(
             GateResult(
                 'Gate 5',
                 'export/cache verification',
                 'BLOCKED',
                 '; '.join(blockers),
-                ['Cache source-backed STEP/STP files, normalize metadata, and export final STEP/STP artifacts before completion.'],
+                ['Cache source-backed STEP/STP files, record size/hash evidence, and verify STEP terminators before completion.'],
             )
         )
 
@@ -1174,11 +1451,11 @@ def analyze_completion_gates(
                 'CAD-kernel validation',
                 'BLOCKED',
                 '; '.join(validation_blockers),
-                ['Run kernel-backed load/export/solid/contact/clearance checks and update validation_report.json only with reproducible pass evidence.'],
+                ['Run command-backed generation, STEP load, and geometry inspection checks; record commands plus hashed artifacts in validation_report.json.'],
             )
         )
     else:
-        gates.append(GateResult('Gate 6', 'CAD-kernel validation', 'PASS', 'validation_report status and checks are pass.', []))
+        gates.append(GateResult('Gate 6', 'CAD-kernel validation', 'PASS', 'validation_report has command-backed generation, STEP load, and geometry inspection evidence.', []))
 
     bom_path = milestone / '06_bom/bom.csv'
     final_report = milestone / '07_report/final_engineering_report.md'
@@ -1254,23 +1531,9 @@ def print_completion_gate_summary(gates: list[GateResult]) -> None:
 
 
 def completion_evidence_status(milestone: Path) -> tuple[str, str]:
-    validation_report = milestone / '05_validation/validation_report.json'
-    try:
-        data = json.loads(validation_report.read_text(encoding='utf-8'))
-    except Exception as exc:
-        return 'BLOCKED', f'validation_report.json is not readable JSON: {exc}'
-    status = data.get('status')
-    checks = data.get('checks')
-    if status != 'pass':
-        return 'BLOCKED', f'validation_report status is {status!r}, not "pass"'
-    if isinstance(checks, list):
-        not_passed = [
-            str(check.get('check_id') or check.get('name') or index)
-            for index, check in enumerate(checks)
-            if isinstance(check, dict) and check.get('result') != 'pass'
-        ]
-        if not_passed:
-            return 'BLOCKED', f'validation checks not passing: {", ".join(not_passed)}'
+    audit = audit_validation_report(milestone)
+    if audit.blockers:
+        return 'BLOCKED', '; '.join(audit.blockers)
     return 'PASS', ''
 
 

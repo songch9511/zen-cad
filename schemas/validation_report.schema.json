@@ -34,8 +34,102 @@
         "required": [
           "check_id",
           "name",
-          "result"
+          "result",
+          "evidence_type",
+          "evidence",
+          "command",
+          "artifacts",
+          "limitations"
         ],
+        "properties": {
+          "check_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "blocked",
+              "not_run"
+            ]
+          },
+          "evidence_type": {
+            "enum": [
+              "structure",
+              "environment",
+              "source_lock",
+              "cad_generation",
+              "step_load",
+              "geometry_inspection",
+              "physical_check",
+              "visual_snapshot",
+              "report",
+              "other"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "command": {
+            "type": "object",
+            "required": [
+              "argv",
+              "cwd",
+              "exit_code"
+            ],
+            "properties": {
+              "argv": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "cwd": {
+                "type": "string"
+              },
+              "exit_code": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": true
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "path",
+                "role",
+                "sha256",
+                "size_bytes"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "size_bytes": {
+                  "type": "integer"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "additionalProperties": true
       }
     },

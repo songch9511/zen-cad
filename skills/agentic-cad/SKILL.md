@@ -454,19 +454,19 @@ Run `./zen-cad source-lock milestones/<id>` before treating standard parts as fi
 
 ### Gate 3: Custom CAD generation
 
-Pass only when generated geometry is design-specific custom CAD, not generated lookalikes for standard parts. Proxy STL/debug geometry may be useful for layout but is completion-ineligible.
+Pass only when generated geometry is design-specific custom CAD, not generated lookalikes for standard parts. Proxy STL/debug geometry may be useful for layout but is completion-ineligible. For final PASS, the validation report must include `cad_generation` evidence with command metadata and matching source/export artifact hashes.
 
 ### Gate 4: Assembly contract
 
-Pass only when CONTACT_MAP and CONNECTIONS reference known sourced and custom parts, include expected contacts/connections, and state clearances, fasteners, joints, or unresolved assumptions.
+Pass only when CONTACT_MAP and CONNECTIONS reference known sourced and custom parts, include expected contacts/connections, state clearances, fasteners, joints, or unresolved assumptions, and link each row to passing geometry evidence with `evidence_check_ids`.
 
 ### Gate 5: Export/cache verification
 
-Pass only when source-backed STEP/STP files are cached and normalized for standard parts, final custom exports exist, and normalized metadata records units, bounding boxes, interfaces, source paths, and unresolved limits.
+Pass only when source-backed STEP/STP files are cached and normalized for standard parts, final custom exports exist, STEP files terminate correctly, and validation evidence records matching artifact sizes and SHA-256 hashes.
 
 ### Gate 6: CAD-kernel validation
 
-Pass only when reproducible tooling confirms required CAD files load, solids are valid where required, units and bounding boxes are plausible, references resolve, placements are defined, contacts/clearances are checked where in scope, and required exports can be regenerated.
+Pass only when reproducible tooling confirms required CAD files load, solids are valid where required, units and bounding boxes are plausible, references resolve, placements are defined, contacts/clearances are checked where in scope, and required exports can be regenerated. For Zen CAD 0.6.2 completion PASS, `validation_report.json` must include passing `cad_generation`, `step_load`, and `geometry_inspection` checks with command metadata and hash-backed artifacts.
 
 ### Gate 7: Final report / BOM / evidence bundle
 

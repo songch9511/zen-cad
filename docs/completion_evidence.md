@@ -8,10 +8,10 @@ A milestone is not final because a screenshot looks plausible. Final completion 
 - JSON artifacts pass schema validation;
 - `./zen-cad doctor --cad-required` can pass for final/release CAD/mesh/kernel evidence, using `--python` or `ZEN_CAD_PYTHON` when the harness needs a specific venv;
 - standard/catalog parts are source-locked before custom CAD and assembly validation proceed;
-- CAD source and final export paths are recorded;
-- CONTACT_MAP and CONNECTIONS reference known parts;
+- CAD source and final export paths are recorded with file sizes and SHA-256 hashes;
+- CONTACT_MAP and CONNECTIONS reference known parts and passing geometry evidence checks;
 - BOM distinguishes sourced, custom, semi-standard, and proxy parts;
-- validation report states checks, results, failures, and limitations;
+- validation report states checks, evidence type, command metadata, artifact hashes, results, failures, and limitations;
 - final engineering report separates verified facts from assumptions.
 
 ## First CAD pass is not completion
@@ -33,6 +33,8 @@ For concept/layout work, acceptable evidence is simpler: CAD source/export paths
 - Gate 6: CAD-kernel validation
 - Gate 7: final report / BOM / evidence bundle
 
+In 0.6.2 and later, completion PASS also requires the validation report to include passing `cad_generation`, `step_load`, and `geometry_inspection` evidence types. If the local CAD environment is `ENV_BLOCKED`, Gate 0 also requires a passing `environment` evidence check from the CAD runtime that generated the final artifacts. For every passing check, command metadata must be present and every recorded artifact must match the committed file size and SHA-256 hash.
+
 If completion is blocked, a truthful `BLOCKED` report is a valid milestone output. It should state completed evidence, blockers, and the smallest unblock step.
 
 Generate one with:
@@ -48,7 +50,7 @@ Proxy artifacts are preview/debug only:
 - `placeholder_proxy` parts are always completion-ineligible.
 - `completion_eligible: false` must not be overridden by viewer screenshots or proxy STL files.
 - standard parts need source-backed STEP/STP and source metadata.
-- custom parts need source, final exports, and kernel-backed validation.
+- custom parts need source, final exports, command-backed generation evidence, STEP evidence, and geometry inspection evidence.
 - screenshots, GLB previews, and viewer snapshots are never completion evidence.
 
 ## Maturity modes

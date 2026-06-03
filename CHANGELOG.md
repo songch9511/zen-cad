@@ -2,8 +2,15 @@
 
 ## Unreleased
 
+## 0.6.2
+
 - Rewrite README in an official distribution style with skill/adaptor tables, quickstart, validation gates, and evidence contract.
 - Add explicit earthtojake/text-to-cad compatibility guidance to the harness adapter docs.
+- Strengthen completion validation so PASS reports must include command metadata, evidence types, artifact paths, file sizes, and SHA-256 hashes.
+- Require final completion reports to include `cad_generation`, `step_load`, and `geometry_inspection` evidence types.
+- Require `environment` evidence when local final CAD preflight is blocked but a committed final artifact is still being claimed.
+- Tie CONTACT_MAP and CONNECTIONS rows to passing geometry evidence through `evidence_check_ids`.
+- Upgrade the `002_nema17_mount_plate` demo to a 0.6.2 hash-backed PASS fixture and add red-team regression tests for fake PASS reports.
 
 ## 0.6.1
 

@@ -1,6 +1,6 @@
 # Zen CAD Core
 
-Zen CAD Core is the machine-checkable part of the workflow: schemas, milestone templates, source-lock audits, completion gates, and release evidence checks.
+Zen CAD Core is the machine-checkable part of the workflow: schemas, milestone templates, source-lock audits, completion gates, artifact hash checks, and release evidence checks.
 
 In 0.6.x this is a documented package boundary, not a separate published Python package yet. The implementation remains repo-local so existing users can keep running the same commands:
 

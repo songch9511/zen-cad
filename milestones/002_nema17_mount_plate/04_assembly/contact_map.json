@@ -7,6 +7,14 @@
       "part_b": "external_nema17_motor_face",
       "type": "motor_face_interface",
       "expected_clearance_mm": 0.0,
+      "cad_refs": [
+        "@cad[03_cad/exports/nema17_mount_plate.step#top_face]",
+        "@cad[03_cad/exports/nema17_mount_plate.step#center_pilot_bore]",
+        "@cad[03_cad/exports/nema17_mount_plate.step#nema17_m3_pattern]"
+      ],
+      "evidence_check_ids": [
+        "CHK-004"
+      ],
       "notes": "Top face is intended to mate to a NEMA17 motor face around the centered pilot bore."
     }
   ]
