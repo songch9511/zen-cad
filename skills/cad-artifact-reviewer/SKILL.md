@@ -1,7 +1,7 @@
 ---
 name: cad-artifact-reviewer
 description: Independently review Zen CAD milestone CAD artifacts, validation reports, STEP/STP exports, hashes, CONTACT_MAP/CONNECTIONS evidence links, and final claims before completion is accepted.
-version: 0.6.5
+version: 0.6.6
 ---
 
 # CAD Artifact Reviewer

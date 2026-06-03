@@ -1,7 +1,7 @@
 ---
 name: source-step-parts
 description: Source-lock standard and catalog mechanical parts for Zen CAD milestones by finding credible STEP/STP files, datasheets, supplier metadata, dimensions, ratings evidence, and cache/hash records before final CAD claims.
-version: 0.6.5
+version: 0.6.6
 ---
 
 # Source STEP Parts

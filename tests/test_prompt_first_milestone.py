@@ -24,7 +24,7 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
     def test_shipped_skills_have_release_versions(self) -> None:
         for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
             text = (ROOT / f'skills/{skill_name}/SKILL.md').read_text(encoding='utf-8')
-            self.assertIn('version: 0.6.5', text, skill_name)
+            self.assertIn('version: 0.6.6', text, skill_name)
 
     def test_text_to_cad_inspired_companion_skills_exist(self) -> None:
         expected = {
@@ -71,6 +71,23 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             'Do not load every companion skill automatically',
         ]:
             self.assertIn(phrase, text)
+
+    def test_agentic_cad_startup_does_not_conflate_cobra_cwd_with_workspace(self) -> None:
+        text = (ROOT / 'skills/agentic-cad/SKILL.md').read_text(encoding='utf-8')
+        for phrase in [
+            'after this skill resolves a Zen CAD workspace root',
+            'The CoBrA daemon cwd, CoBrA session cwd, and terminal cwd are not the Zen CAD workspace contract',
+            'Use the resolved Zen CAD root as the command cwd or pass it explicitly with `--root`',
+            'python3 "<zen-cad-root>/scripts/new_milestone.py" --root "<zen-cad-root>" --request "<goal>"',
+            '"<zen-cad-root>/zen-cad" --root "<zen-cad-root>" new "<goal>"',
+            'Use the last form only when the current command cwd is already the resolved Zen CAD root',
+        ]:
+            self.assertIn(phrase, text)
+        for phrase in [
+            'When running inside a Zen CAD repository',
+            'from the Zen CAD repository root, internally run',
+        ]:
+            self.assertNotIn(phrase, text)
 
     def test_spec_to_cad_is_milestone_first_and_text_to_cad_first(self) -> None:
         text = (ROOT / 'skills/spec-to-cad/SKILL.md').read_text(encoding='utf-8')
@@ -276,7 +293,10 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
                 context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'
                 self.assertTrue(context.exists(), skill_name)
-                self.assertIn(f'Repository root: {work.resolve()}', context.read_text(encoding='utf-8'))
+                context_text = context.read_text(encoding='utf-8')
+                self.assertIn(f'Repository root: {work.resolve()}', context_text)
+                self.assertIn('The CoBrA daemon/session cwd is not the Zen CAD workspace contract.', context_text)
+                self.assertIn('python3 "<repository-root>/scripts/new_milestone.py" --root "<repository-root>" --request "<goal>"', context_text)
 
 
 if __name__ == '__main__':

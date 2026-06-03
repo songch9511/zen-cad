@@ -72,7 +72,10 @@ class FirstRunCliTest(unittest.TestCase):
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
                 context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'
                 self.assertTrue(context.exists(), skill_name)
-                self.assertIn(f'Repository root: {work.resolve()}', context.read_text(encoding='utf-8'))
+                context_text = context.read_text(encoding='utf-8')
+                self.assertIn(f'Repository root: {work.resolve()}', context_text)
+                self.assertIn('The CoBrA daemon/session cwd is not the Zen CAD workspace contract.', context_text)
+                self.assertIn('python3 "<repository-root>/scripts/new_milestone.py" --root "<repository-root>" --request "<goal>"', context_text)
 
             doctor = run_cli(work, 'doctor', '--cobra-skills-root', str(skills_root))
             self.assertEqual(doctor.returncode, 0, doctor.stderr + doctor.stdout)

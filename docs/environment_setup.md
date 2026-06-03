@@ -11,7 +11,7 @@ Minimum requirements:
 
 ## One-command setup
 
-Run this from the Zen CAD repository root:
+Run this setup check with the Zen CAD repository as the command cwd:
 
 ```bash
 ./zen-cad doctor

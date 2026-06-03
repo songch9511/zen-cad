@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.6.6
+
+- Tighten `/agentic-cad` startup semantics so prompt-first milestone creation depends on a resolved Zen CAD workspace root, not CoBrA daemon/session cwd.
+- Document equivalent milestone creation commands using explicit command cwd or `--root`.
+- Add regression coverage against ambiguous "running inside a Zen CAD repository" and "from the Zen CAD repository root" wording in the CoBrA startup contract.
+
 ## 0.6.5
 
 - Clarify the CoBrA adapter boundary: the Zen CAD repository is not the CoBrA daemon cwd.

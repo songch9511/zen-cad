@@ -1,7 +1,7 @@
 ---
 name: agentic-cad
 description: Sourcing-aware mechanical CAD workflow that orchestrates Zen CAD milestones, source-locks, STEP-first custom CAD, validation evidence, BOM, and engineering reporting.
-version: 0.6.5
+version: 0.6.6
 ---
 
 # Agentic CAD
@@ -29,15 +29,22 @@ Do not use this skill as a shortcut for creating decorative or approximate CAD f
 
 ## Zen CAD prompt-first milestone startup
 
-When running inside a Zen CAD repository, a natural-language CAD goal at the start of a new CoBrA/agent session is a milestone-start request. For example, if the user says `기어 박스를 만들고 싶어`, do not ask the user to run a Python command and do not require the user to manually choose a milestone id/title.
+A natural-language CAD goal at the start of a new agent CAD session is a milestone-start request after this skill resolves a Zen CAD workspace root. For example, if the user says `기어 박스를 만들고 싶어`, do not ask the user to run a Python command and do not require the user to manually choose a milestone id/title.
 
 When this skill is installed into CoBrA, first check whether a sibling `ZEN_CAD_WORKSPACE.md` exists next to this `SKILL.md`. If present, read it and use its `Repository root:` path as the Zen CAD workspace unless the user explicitly provides another root. This is the CoBrA adapter binding created by `./zen-cad init --with-cobra`.
 
-Instead, from the Zen CAD repository root, internally run:
+The CoBrA daemon cwd, CoBrA session cwd, and terminal cwd are not the Zen CAD workspace contract. Use the resolved Zen CAD root as the command cwd or pass it explicitly with `--root`.
+
+Internally run one of these equivalent forms:
 
 ```bash
+cd "<zen-cad-root>" && python3 scripts/new_milestone.py --request "<goal>"
+python3 "<zen-cad-root>/scripts/new_milestone.py" --root "<zen-cad-root>" --request "<goal>"
+"<zen-cad-root>/zen-cad" --root "<zen-cad-root>" new "<goal>"
 python3 scripts/new_milestone.py --request "<goal>"
 ```
+
+Use the last form only when the current command cwd is already the resolved Zen CAD root.
 
 Use the created milestone as the active CAD job. For `기어 박스를 만들고 싶어`, the expected derived milestone is the next available `*_gearbox`, such as `003_gearbox` in this repository, titled `Gearbox`. After creation, continue this `/agentic-cad` workflow inside that milestone, generate the first CAD artifact with the available harness toolchain, and reserve completion-script evidence for final/release claims.
 

@@ -1,7 +1,7 @@
 ---
 name: spec-to-cad
 description: Milestone-first CAD execution skill for turning measurable mechanical specs into STEP-first CAD artifacts with command-backed Zen CAD validation evidence.
-version: 0.6.5
+version: 0.6.6
 ---
 
 # Spec-to-CAD

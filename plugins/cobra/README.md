@@ -1,6 +1,6 @@
 # CoBrA Adapter
 
-Run from the Zen CAD repository root:
+Run this setup command with the Zen CAD repository as the command cwd:
 
 ```bash
 ./zen-cad init --with-cobra

@@ -1,6 +1,6 @@
 # CoBrA Usage
 
-From the Zen CAD repository root, run setup once:
+With the Zen CAD repository as the command cwd, run setup once:
 
 ```bash
 ./zen-cad init --with-cobra

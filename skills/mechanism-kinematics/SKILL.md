@@ -1,7 +1,7 @@
 ---
 name: mechanism-kinematics
 description: Build and review Zen CAD mechanism kinematic contracts from assemblies, frames, joints, axes, travel limits, CONTACT_MAP, CONNECTIONS, and optional URDF/SDF/SRDF handoff data.
-version: 0.6.5
+version: 0.6.6
 ---
 
 # Mechanism Kinematics
