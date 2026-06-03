@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Rewrite README in an official distribution style with skill/adaptor tables, quickstart, validation gates, and evidence contract.
+- Add explicit earthtojake/text-to-cad compatibility guidance to the harness adapter docs.
+
 ## 0.6.1
 
 - Fix the CoBrA adapter boundary: `init --with-cobra` now installs a `ZEN_CAD_WORKSPACE.md` binding beside each synced skill so installed CoBrA skills can recover the Zen CAD repo root.

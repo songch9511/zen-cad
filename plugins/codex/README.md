@@ -8,6 +8,8 @@ Use Zen CAD as a Codex-style skill/plugin workspace rather than as a standalone 
 4. Let Codex use its normal file editing, terminal execution, and available CAD/generation tools.
 5. Deliver a concept/layout CAD artifact first; reserve strict Zen CAD gates for final claims.
 
+If the earthtojake/text-to-cad CAD skill or plugin is installed in the Codex environment, use it as the preferred STEP-first CAD execution path. Zen CAD supplies the milestone and evidence harness around that CAD execution.
+
 Suggested first prompt:
 
 ```text

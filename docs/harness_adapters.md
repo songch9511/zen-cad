@@ -27,6 +27,8 @@ A harness adapter should do five things:
 4. Treat `./zen-cad doctor` as a repo/skill sanity check; CAD toolchain `ENV_BLOCKED` warnings do not stop concept/layout generation.
 5. Reserve `doctor --cad-required`, `source-lock`, and `validate --level completion` for final/release claims.
 
+When earthtojake/text-to-cad or an equivalent STEP-first CAD skill is installed, use it as the preferred CAD execution path. Zen CAD should wrap that generation, inspection, and snapshot flow with milestone structure, source-lock rules, blocked reports, and completion gates.
+
 CoBrA-specific adapter behavior:
 
 1. `./zen-cad init --with-cobra` must install the three bundled skills under the CoBrA skills root.
@@ -35,6 +37,17 @@ CoBrA-specific adapter behavior:
 4. A missing skill or missing binding is a harness adapter problem. A missing CAD Python package is a final-gate environment problem.
 
 Worker reports, screenshots, GLB previews, and proxy geometry are useful review artifacts. They can support a concept/layout delivery, but they are not final completion evidence.
+
+## text-to-cad compatibility
+
+Zen CAD is complementary to earthtojake/text-to-cad:
+
+- Use text-to-cad for STEP-first generation.
+- Use deterministic CAD inspection for refs, facts, planes, measures, mates, frames, and diffs where available.
+- Use snapshots and viewer output for visual review only.
+- Store resulting source paths, STEP/STL paths, assumptions, validation commands, and blockers in the active Zen CAD milestone.
+
+If text-to-cad is unavailable, a harness may use build123d, CadQuery, FreeCAD, OpenSCAD, or another kernel-backed stack, but the same milestone evidence contract still applies.
 
 ## First CAD pass
 
