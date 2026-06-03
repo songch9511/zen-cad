@@ -33,7 +33,7 @@ CoBrA-specific adapter behavior:
 
 1. `./zen-cad init --with-cobra` must install the bundled Zen CAD skills under the CoBrA skills root.
 2. The same sync must write `ZEN_CAD_WORKSPACE.md` beside each installed skill.
-3. Installed skills should read that file when the current working directory is not the Zen CAD repository.
+3. Installed skills should read that file for the Zen CAD workspace root; the CoBrA daemon cwd is not the Zen CAD workspace contract.
 4. A missing skill or missing binding is a harness adapter problem. A missing CAD Python package is a final-gate environment problem.
 
 Worker reports, screenshots, GLB previews, and proxy geometry are useful review artifacts. They can support a concept/layout delivery, but they are not final completion evidence.

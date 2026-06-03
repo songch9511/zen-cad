@@ -8,7 +8,7 @@ Run from the Zen CAD repository root:
 
 This syncs the bundled Zen CAD skills into the CoBrA skills directory. It also writes `ZEN_CAD_WORKSPACE.md` beside each installed skill so the skill can recover the Zen CAD repository root when CoBrA invokes it outside this checkout.
 
-It does not change CoBrA's process working directory. The installed skill should use `ZEN_CAD_WORKSPACE.md` as its default root unless the user gives a different Zen CAD repo path.
+It does not change CoBrA's process working directory. Do not treat the Zen CAD repository as CoBrA's daemon cwd. Start or restart CoBrA from its normal installation, then let the installed skill use `ZEN_CAD_WORKSPACE.md` as its default Zen CAD root unless the user gives a different repo path.
 
 For every delegated CAD task, include:
 

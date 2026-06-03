@@ -1,7 +1,7 @@
 ---
 name: manufacturing-preflight
 description: Preflight Zen CAD milestone artifacts for likely manufacturing handoff issues in STEP, DXF, STL, 3MF, BOM, material, tolerance, fastener, and process assumptions without claiming certification or production approval.
-version: 0.6.4
+version: 0.6.5
 ---
 
 # Manufacturing Preflight

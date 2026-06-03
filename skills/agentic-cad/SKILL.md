@@ -1,7 +1,7 @@
 ---
 name: agentic-cad
 description: Sourcing-aware mechanical CAD workflow that orchestrates Zen CAD milestones, source-locks, STEP-first custom CAD, validation evidence, BOM, and engineering reporting.
-version: 0.6.4
+version: 0.6.5
 ---
 
 # Agentic CAD

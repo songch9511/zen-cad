@@ -24,7 +24,7 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
     def test_shipped_skills_have_release_versions(self) -> None:
         for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
             text = (ROOT / f'skills/{skill_name}/SKILL.md').read_text(encoding='utf-8')
-            self.assertIn('version: 0.6.4', text, skill_name)
+            self.assertIn('version: 0.6.5', text, skill_name)
 
     def test_text_to_cad_inspired_companion_skills_exist(self) -> None:
         expected = {

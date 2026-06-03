@@ -542,7 +542,9 @@ def command_doctor(args: argparse.Namespace) -> int:
     print_section('CoBrA workspace note')
     print('CoBrA skill sync installs the workflow skills and writes a ZEN_CAD_WORKSPACE.md binding.')
     print('It does not change CoBrA process cwd by itself.')
-    print(f'Start CoBrA from this repo, or let the installed skill use its bound root: {root}')
+    print('Do not treat the Zen CAD repo as the CoBrA daemon cwd.')
+    print(f'Bound Zen CAD root for installed skills: {root}')
+    print('Start/restart CoBrA from its normal install, then run Zen CAD commands with this root as cwd or --root.')
 
     if blocked:
         print_section('Zen CAD doctor: BLOCKED')
@@ -603,7 +605,9 @@ def command_init(args: argparse.Namespace) -> int:
         print('CoBrA skill sync: PASS')
         print('Installed skills include ZEN_CAD_WORKSPACE.md bindings for this repo.')
         print('Important: this does not change CoBrA process cwd by itself.')
-        print(f'Start CoBrA from this repo when possible, or let the installed skill use its bound root: {root}')
+        print('Do not treat the Zen CAD repo as the CoBrA daemon cwd.')
+        print(f'Bound Zen CAD root for installed skills: {root}')
+        print('Start/restart CoBrA from its normal install, then run Zen CAD commands with this root as cwd or --root.')
     print('Next:')
     print('- Check the environment: ./zen-cad doctor')
     print('- Create a milestone: ./zen-cad new "기어 박스를 만들고 싶어"')

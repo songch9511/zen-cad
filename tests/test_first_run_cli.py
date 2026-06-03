@@ -43,6 +43,8 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertIn('[WARN] CoBrA skill discovery', completed.stdout)
             self.assertIn('CAD toolchain preflight', completed.stdout)
             self.assertIn('does not change CoBrA process cwd by itself', completed.stdout)
+            self.assertIn('Do not treat the Zen CAD repo as the CoBrA daemon cwd', completed.stdout)
+            self.assertNotIn('Start CoBrA from this repo', completed.stdout)
             self.assertIn('In CoBrA/Codex/Claude Code/Cursor, ask:', completed.stdout)
             self.assertIn('Manual terminal fallback:', completed.stdout)
 
@@ -64,6 +66,8 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
             self.assertIn('Zen CAD init: PASS', completed.stdout)
             self.assertIn('CoBrA skill sync: PASS', completed.stdout)
+            self.assertIn('Do not treat the Zen CAD repo as the CoBrA daemon cwd', completed.stdout)
+            self.assertNotIn('Start CoBrA from this repo', completed.stdout)
             for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
                 context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'

@@ -8,7 +8,7 @@ From the Zen CAD repository root, run setup once:
 
 That command syncs the bundled Zen CAD skills into the CoBrA skills directory and runs the bundled validation checks. The installed skills include `/agentic-cad`, `/source-step-parts`, `/spec-to-cad`, `/mechanism-kinematics`, `/cad-artifact-reviewer`, `/manufacturing-preflight`, and `/self-evolving-producer-verifier`. In 0.6.1 and later, each synced skill also gets a generated `ZEN_CAD_WORKSPACE.md` file that records the Zen CAD repository root.
 
-Important: CoBrA skill sync installs the workflow skills and workspace binding only. It does not change the CoBrA process working directory. Start the CoBrA daemon or session from the Zen CAD repository root when possible; otherwise the installed `/agentic-cad` skill should read its sibling `ZEN_CAD_WORKSPACE.md` and use that path. For the adapter contract, also see `docs/harness_adapters.md` and `plugins/cobra/README.md`.
+Important: CoBrA skill sync installs the workflow skills and workspace binding only. It does not change the CoBrA daemon working directory, and the Zen CAD repository should not be treated as CoBrA's daemon cwd. Start or restart CoBrA from its normal installation, then let the installed skills read their sibling `ZEN_CAD_WORKSPACE.md` and use that path for Zen CAD commands. For the adapter contract, also see `docs/harness_adapters.md` and `plugins/cobra/README.md`.
 
 Use `doctor` whenever the first-run state is unclear:
 
@@ -24,7 +24,7 @@ After setup, the user does not need to run another Python command to create a CA
 기어 박스를 만들고 싶어
 ```
 
-The agent should treat that prompt as the milestone creation request. Do not ask the user to run a Python command, and do not require the user to manually choose a milestone id/title. Internally run this command from the Zen CAD repository root:
+The agent should treat that prompt as the milestone creation request. Do not ask the user to run a Python command, and do not require the user to manually choose a milestone id/title. Internally run this command with the bound Zen CAD repository root as the command cwd:
 
 ```bash
 python3 scripts/new_milestone.py --request "<goal>"

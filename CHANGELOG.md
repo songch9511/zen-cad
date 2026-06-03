@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.6.5
+
+- Clarify the CoBrA adapter boundary: the Zen CAD repository is not the CoBrA daemon cwd.
+- Update `doctor`, `init --with-cobra`, and CoBrA docs to use `ZEN_CAD_WORKSPACE.md` plus explicit command cwd/`--root` for Zen CAD work.
+- Add regression coverage so stale "Start CoBrA from this repo" guidance cannot return.
+
 ## 0.6.4
 
 - Add focused companion skills inspired by the text-to-cad skill split: `/source-step-parts`, `/cad-artifact-reviewer`, `/manufacturing-preflight`, and `/mechanism-kinematics`.

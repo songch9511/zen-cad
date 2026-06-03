@@ -47,7 +47,7 @@ For CoBrA, add `--with-cobra` to copy the bundled Zen CAD skills into the CoBrA 
 ./zen-cad init --with-cobra
 ```
 
-Skill sync writes a `ZEN_CAD_WORKSPACE.md` binding beside each installed skill. It does not change the CoBrA process working directory. Start CoBrA from the Zen CAD repository root when possible; otherwise the installed skill should read its workspace binding.
+Skill sync writes a `ZEN_CAD_WORKSPACE.md` binding beside each installed skill. It does not change the CoBrA process working directory. Do not use the Zen CAD repository as the CoBrA daemon cwd; start or restart CoBrA from its normal installation, then let installed skills read the workspace binding and run Zen CAD commands with that root as cwd or `--root`.
 
 Interpret blockers by layer:
 
