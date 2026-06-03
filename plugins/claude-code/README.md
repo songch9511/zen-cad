@@ -5,8 +5,9 @@ Use Zen CAD as repository-local skills plus an optional validation CLI.
 1. Open the Zen CAD repository in Claude Code or a similar coding harness.
 2. Ask the agent to follow `skills/agentic-cad/SKILL.md` for the CAD workflow.
 3. Keep each CAD job in `milestones/<id>/`.
-4. Use the harness for CAD generation, web/catalog lookup, file edits, CAD script execution, and review loops.
-5. Run `./zen-cad validate --level structure milestones/<id>` after milestone/artifact creation.
+4. Load focused companion skills only when needed for sourcing, CAD generation, kinematics, artifact review, manufacturing preflight, or producer/verifier iteration.
+5. Use the harness for CAD generation, web/catalog lookup, file edits, CAD script execution, and review loops.
+6. Run `./zen-cad validate --level structure milestones/<id>` after milestone/artifact creation.
 
 First deliverable target: a real concept/layout CAD source/export created by the available harness toolchain.
 

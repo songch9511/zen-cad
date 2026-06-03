@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.6.4
+
+- Add focused companion skills inspired by the text-to-cad skill split: `/source-step-parts`, `/cad-artifact-reviewer`, `/manufacturing-preflight`, and `/mechanism-kinematics`.
+- Route `/agentic-cad` to the new companion skills for source-locking, artifact review, manufacturing preflight, and kinematic contracts.
+- Extend CoBrA sync, doctor freshness checks, required-file validation, and regression tests to cover all bundled Zen CAD skills.
+- Update README and adapter docs to describe the expanded skill pack without turning Zen CAD into a CAD kernel or manufacturing certification tool.
+
 ## 0.6.3
 
 - Rewrite `/spec-to-cad` as a Zen CAD milestone-first, text-to-cad-first execution skill with canonical artifact paths.

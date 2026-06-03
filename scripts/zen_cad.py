@@ -17,8 +17,12 @@ from pathlib import Path
 
 COMPANION_SKILLS = [
     'agentic-cad',
+    'cad-artifact-reviewer',
+    'manufacturing-preflight',
+    'mechanism-kinematics',
     'spec-to-cad',
     'self-evolving-producer-verifier',
+    'source-step-parts',
 ]
 
 MATURITY_LEVELS = {'concept', 'layout', 'final'}

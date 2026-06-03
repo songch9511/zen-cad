@@ -6,7 +6,7 @@ From the Zen CAD repository root, run setup once:
 ./zen-cad init --with-cobra
 ```
 
-That command syncs the bundled `/agentic-cad`, `/spec-to-cad`, and `/self-evolving-producer-verifier` skills into the CoBrA skills directory and runs the bundled validation checks. In 0.6.1 and later, each synced skill also gets a generated `ZEN_CAD_WORKSPACE.md` file that records the Zen CAD repository root.
+That command syncs the bundled Zen CAD skills into the CoBrA skills directory and runs the bundled validation checks. The installed skills include `/agentic-cad`, `/source-step-parts`, `/spec-to-cad`, `/mechanism-kinematics`, `/cad-artifact-reviewer`, `/manufacturing-preflight`, and `/self-evolving-producer-verifier`. In 0.6.1 and later, each synced skill also gets a generated `ZEN_CAD_WORKSPACE.md` file that records the Zen CAD repository root.
 
 Important: CoBrA skill sync installs the workflow skills and workspace binding only. It does not change the CoBrA process working directory. Start the CoBrA daemon or session from the Zen CAD repository root when possible; otherwise the installed `/agentic-cad` skill should read its sibling `ZEN_CAD_WORKSPACE.md` and use that path. For the adapter contract, also see `docs/harness_adapters.md` and `plugins/cobra/README.md`.
 

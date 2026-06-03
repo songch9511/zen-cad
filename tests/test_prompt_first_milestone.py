@@ -22,9 +22,55 @@ def copy_repo_fixture(target: Path) -> None:
 
 class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
     def test_shipped_skills_have_release_versions(self) -> None:
-        for skill_name in ['agentic-cad', 'spec-to-cad', 'self-evolving-producer-verifier']:
+        for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
             text = (ROOT / f'skills/{skill_name}/SKILL.md').read_text(encoding='utf-8')
-            self.assertIn('version: 0.6.3', text, skill_name)
+            self.assertIn('version: 0.6.4', text, skill_name)
+
+    def test_text_to_cad_inspired_companion_skills_exist(self) -> None:
+        expected = {
+            'source-step-parts': [
+                'selected_parts_manifest.json',
+                'source_locked',
+                './zen-cad source-lock milestones/<id>',
+                'STEP geometry proves geometry only',
+            ],
+            'cad-artifact-reviewer': [
+                'cad_generation',
+                'step_load',
+                'geometry_inspection',
+                'evidence_check_ids',
+                'metadata-only PASS claims',
+            ],
+            'manufacturing-preflight': [
+                'manufacturing_preflight',
+                'DXF',
+                'STL/3MF',
+                'does not replace `cad_generation`, `step_load`, or `geometry_inspection`',
+            ],
+            'mechanism-kinematics': [
+                'kinematic_contract',
+                'URDF',
+                'SDF',
+                'SRDF',
+                'joints, frames, axes, limits',
+            ],
+        }
+        for skill_name, phrases in expected.items():
+            text = (ROOT / f'skills/{skill_name}/SKILL.md').read_text(encoding='utf-8')
+            for phrase in phrases:
+                self.assertIn(phrase, text, skill_name)
+
+    def test_agentic_cad_routes_to_companion_skills(self) -> None:
+        text = (ROOT / 'skills/agentic-cad/SKILL.md').read_text(encoding='utf-8')
+        for phrase in [
+            'Companion skill routing',
+            '/source-step-parts',
+            '/cad-artifact-reviewer',
+            '/manufacturing-preflight',
+            '/mechanism-kinematics',
+            'Do not load every companion skill automatically',
+        ]:
+            self.assertIn(phrase, text)
 
     def test_spec_to_cad_is_milestone_first_and_text_to_cad_first(self) -> None:
         text = (ROOT / 'skills/spec-to-cad/SKILL.md').read_text(encoding='utf-8')
@@ -226,7 +272,7 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
                 check=True,
             )
 
-            for skill_name in ['agentic-cad', 'spec-to-cad', 'self-evolving-producer-verifier']:
+            for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
                 context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'
                 self.assertTrue(context.exists(), skill_name)

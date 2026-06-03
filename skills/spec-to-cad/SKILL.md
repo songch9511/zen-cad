@@ -1,7 +1,7 @@
 ---
 name: spec-to-cad
 description: Milestone-first CAD execution skill for turning measurable mechanical specs into STEP-first CAD artifacts with command-backed Zen CAD validation evidence.
-version: 0.6.3
+version: 0.6.4
 ---
 
 # Spec-to-CAD
@@ -80,6 +80,8 @@ Expected text-to-cad evidence:
 - any selectors used in CONTACT_MAP or CONNECTIONS.
 
 If text-to-cad is unavailable, use build123d, CadQuery, FreeCAD, OpenSCAD, or another kernel-backed stack. The validation evidence contract remains the same.
+
+Use `/cad-artifact-reviewer` after generation when a final/release claim is being made. Use `/mechanism-kinematics` before or during generation when the assembly needs explicit joints, frames, axes, travel, or URDF/SDF/SRDF handoff data.
 
 ## Milestone Artifact Paths
 

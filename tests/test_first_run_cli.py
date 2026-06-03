@@ -64,7 +64,7 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
             self.assertIn('Zen CAD init: PASS', completed.stdout)
             self.assertIn('CoBrA skill sync: PASS', completed.stdout)
-            for skill_name in ['agentic-cad', 'spec-to-cad', 'self-evolving-producer-verifier']:
+            for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
                 context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'
                 self.assertTrue(context.exists(), skill_name)

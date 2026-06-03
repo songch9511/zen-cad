@@ -41,7 +41,7 @@ To run setup explicitly, use:
 
 The setup helper validates required files, checks bundled JSON/CSV artifacts, and validates every milestone skeleton under `milestones/`.
 
-For CoBrA, add `--with-cobra` to copy the bundled `/agentic-cad`, `/spec-to-cad`, and `/self-evolving-producer-verifier` skills into the CoBrA skills directory before validation.
+For CoBrA, add `--with-cobra` to copy the bundled Zen CAD skills into the CoBrA skills directory before validation.
 
 ```bash
 ./zen-cad init --with-cobra

@@ -12,7 +12,7 @@ The default adapter behavior is **generate first, gate later**:
 
 ## Distribution surfaces
 
-- `skills/`: portable Markdown skills. `/agentic-cad` remains the top-level workflow; `/spec-to-cad` remains the CAD execution handoff; `/self-evolving-producer-verifier` remains the review loop.
+- `skills/`: portable Markdown skills. `/agentic-cad` remains the top-level workflow; `/source-step-parts`, `/spec-to-cad`, `/mechanism-kinematics`, `/cad-artifact-reviewer`, `/manufacturing-preflight`, and `/self-evolving-producer-verifier` are focused companion skills.
 - `packages/zen_cad_core/`: the validation-core contract. In 0.6.x the implementation still lives in `scripts/`, `schemas/`, `templates/`, and `checklists/` so the existing repo-local CLI stays stable.
 - `plugins/`: harness adapter notes for CoBrA, Codex-style agents, and Claude Code-style agents.
 - `ZEN_CAD_WORKSPACE.md`: generated beside CoBrA-installed skills by `./zen-cad init --with-cobra`; records the Zen CAD repo root for installed-skill invocations.
@@ -31,7 +31,7 @@ When earthtojake/text-to-cad or an equivalent STEP-first CAD skill is installed,
 
 CoBrA-specific adapter behavior:
 
-1. `./zen-cad init --with-cobra` must install the three bundled skills under the CoBrA skills root.
+1. `./zen-cad init --with-cobra` must install the bundled Zen CAD skills under the CoBrA skills root.
 2. The same sync must write `ZEN_CAD_WORKSPACE.md` beside each installed skill.
 3. Installed skills should read that file when the current working directory is not the Zen CAD repository.
 4. A missing skill or missing binding is a harness adapter problem. A missing CAD Python package is a final-gate environment problem.

@@ -1,7 +1,7 @@
 ---
 name: agentic-cad
 description: Sourcing-aware mechanical CAD workflow that orchestrates Zen CAD milestones, source-locks, STEP-first custom CAD, validation evidence, BOM, and engineering reporting.
-version: 0.6.3
+version: 0.6.4
 ---
 
 # Agentic CAD
@@ -48,10 +48,12 @@ For non-trivial mechanical CAD projects, run `/agentic-cad` as an orchestration 
 - **Requirements / Systems Engineer** — extracts goals, constraints, units, interfaces, loads, envelope, and acceptance criteria.
 - **Research / Standards / Catalog Engineer** — finds reference designs, catalog parts, datasheets, standards, and credible manufacturer sources.
 - **Mechanical Sizing Engineer** — performs first-order engineering calculations, sizing, margins, and assumptions.
-- **Part Sourcing / STEP RAG Worker** — searches for off-the-shelf STEP/catalog parts and records source, metadata, dimensions, and limitations.
+- **Part Sourcing / STEP RAG Worker via `/source-step-parts`** — searches for off-the-shelf STEP/catalog parts and records source, metadata, dimensions, and limitations.
 - **CAD Generator via `/spec-to-cad`** — generates only design-specific custom parts and assembly glue from a measurable handoff.
+- **Mechanism Kinematics Worker via `/mechanism-kinematics`** — records joints, frames, axes, limits, and motion handoff data when the assembly moves.
 - **Assembly / Validation Worker** — verifies fit, interfaces, CONTACT_MAP, CONNECTIONS, collisions, units, and export integrity.
-- **Independent Verifier** — reviews whether evidence supports completion claims and flags unverified engineering assumptions.
+- **Independent Verifier via `/cad-artifact-reviewer`** — reviews whether evidence supports completion claims and flags unverified engineering assumptions.
+- **Manufacturing Preflight Worker via `/manufacturing-preflight`** — reviews manufacturing handoff risks without claiming certification or production approval.
 - **Report / BOM Worker** — produces the sourcing-aware BOM, validation summary, limitations, and final engineering report.
 
 For small tasks, these roles may collapse into one executor, but the same gates still apply: requirements, sourcing decision, CAD/custom-part decision, validation evidence, and final reporting.
@@ -75,9 +77,22 @@ For small tasks, these roles may collapse into one executor, but the same gates 
 
 `/spec-to-cad` must not silently replace selected catalog parts with generated lookalikes. If `/agentic-cad` says a part is sourced, `/spec-to-cad` should use the sourced STEP file or return a blocker explaining why it cannot.
 
+## Companion skill routing
+
+Use the focused Zen CAD companion skills when their scope appears:
+
+- `/source-step-parts`: source-lock standard/catalog parts, selected part manifests, cached STEP/STP paths, datasheet/rating evidence, and fallback blockers.
+- `/spec-to-cad`: generate design-specific CAD source, primary STEP/STP exports, and command-backed CAD evidence.
+- `/mechanism-kinematics`: define joints, frames, axes, limits, transmissions, and optional URDF/SDF/SRDF handoff data.
+- `/cad-artifact-reviewer`: independently review validation reports, artifact hashes, CONTACT_MAP/CONNECTIONS evidence links, and final claims.
+- `/manufacturing-preflight`: review manufacturing handoff risks for STEP/DXF/STL/3MF/BOM/material/process assumptions without claiming production approval.
+- `/self-evolving-producer-verifier`: iterate difficult artifacts when producer/verifier feedback needs to compound.
+
+Do not load every companion skill automatically. Invoke the narrow skill only when its artifact or decision surface is in scope.
+
 ## Relationship to `step-parts` / Part RAG
 
-`step-parts`, `skills/step-parts`, `step.parts`, or another STEP Part RAG module is the retrieval layer for off-the-shelf parts. `/agentic-cad` uses it before generating any standard/catalog geometry.
+`/source-step-parts`, `step-parts`, `skills/step-parts`, `step.parts`, or another STEP Part RAG module is the retrieval layer for off-the-shelf parts. `/agentic-cad` uses it before generating any standard/catalog geometry.
 
 Typical Part RAG targets include:
 

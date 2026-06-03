@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT_REQUIRED = [
     'README.md', 'VERSION', 'CHANGELOG.md',
     'docs/philosophy.md', 'docs/operating_principles.md', 'docs/source_first_generate_second.md', 'docs/completion_evidence.md', 'docs/milestone_protocol.md', 'docs/environment_setup.md', 'docs/cobra_usage.md', 'docs/non_cobra_usage.md', 'docs/harness_adapters.md',
-    'skills/agentic-cad/SKILL.md', 'skills/spec-to-cad/SKILL.md', 'skills/self-evolving-producer-verifier/SKILL.md',
+    'skills/agentic-cad/SKILL.md', 'skills/cad-artifact-reviewer/SKILL.md', 'skills/manufacturing-preflight/SKILL.md', 'skills/mechanism-kinematics/SKILL.md', 'skills/spec-to-cad/SKILL.md', 'skills/self-evolving-producer-verifier/SKILL.md', 'skills/source-step-parts/SKILL.md',
     'plugins/README.md', 'plugins/cobra/README.md', 'plugins/codex/README.md', 'plugins/claude-code/README.md',
     'packages/zen_cad_core/README.md',
     'prompts/project_kickoff.md', 'prompts/new_milestone.md', 'prompts/validation_review.md', 'prompts/release_review.md', 'prompts/feedback_to_agentic_cad_skill.md',

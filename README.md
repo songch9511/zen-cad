@@ -13,7 +13,7 @@
 
 Harness-native CAD workflow for source-aware mechanical design agents
 
-[![Version](https://img.shields.io/badge/version-0.6.3-4A5568?style=for-the-badge)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.6.4-4A5568?style=for-the-badge)](VERSION)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](docs/environment_setup.md)
 [![STEP](https://img.shields.io/badge/STEP-first-00A676?style=for-the-badge)](skills/spec-to-cad/SKILL.md)
 [![CoBrA](https://img.shields.io/badge/CoBrA-adapter-2F80ED?style=for-the-badge)](plugins/cobra/README.md)
@@ -43,7 +43,11 @@ Zen CAD is designed to wrap a STEP-first CAD runner. When [earthtojake/text-to-c
 | Skill | Summary | Source |
 | --- | --- | --- |
 | Agentic CAD | Top-level sourcing-aware orchestrator for requirements, research, part classification, CAD handoff, validation, BOM, and reporting. | [skills/agentic-cad](skills/agentic-cad/SKILL.md) |
+| Source STEP Parts | Source-locks standard/catalog parts with supplier identity, STEP/STP cache paths, datasheets, dimensions, ratings evidence, and blockers. | [skills/source-step-parts](skills/source-step-parts/SKILL.md) |
 | Spec-to-CAD | Downstream CAD execution skill for measurable specs, STEP/STL exports, CONTACT_MAP/CONNECTIONS, and kernel-backed evidence. | [skills/spec-to-cad](skills/spec-to-cad/SKILL.md) |
+| Mechanism Kinematics | Captures joints, frames, axes, limits, transmissions, and optional URDF/SDF/SRDF handoff contracts for moving assemblies. | [skills/mechanism-kinematics](skills/mechanism-kinematics/SKILL.md) |
+| CAD Artifact Reviewer | Independently checks validation reports, artifact hashes, STEP/STP exports, evidence links, and final claims before completion. | [skills/cad-artifact-reviewer](skills/cad-artifact-reviewer/SKILL.md) |
+| Manufacturing Preflight | Reviews STEP/DXF/STL/3MF/BOM/material/process handoff risks without claiming certification or production approval. | [skills/manufacturing-preflight](skills/manufacturing-preflight/SKILL.md) |
 | Self-Evolving Producer Verifier | Producer/verifier workflow for independent review, failure-driven iteration, and workflow feedback. | [skills/self-evolving-producer-verifier](skills/self-evolving-producer-verifier/SKILL.md) |
 
 ## Harness Adapters
