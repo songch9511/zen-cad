@@ -8,11 +8,11 @@ version: 0.1.1
 
 ## Purpose
 
-`/agentic-cad` is a top-level sourcing-aware mechanical CAD workflow skill. It turns ambiguous natural-language mechanical design goals into researched, calculated, source-aware, and verified CAD projects.
+`/agentic-cad` is a top-level harness-native mechanical CAD workflow skill. It turns ambiguous natural-language mechanical design goals into a first useful CAD artifact, then layers sourcing, validation, BOM, and engineering reporting as the required maturity increases.
 
-It is not a pure text-to-CAD generator. It orchestrates requirement extraction, research and datasheet lookup, engineering sizing, mechanical architecture, part classification, off-the-shelf STEP part retrieval, custom CAD generation, assembly, CAD-kernel validation, independent verification, BOM generation, sourcing evidence, and final engineering reporting.
+It is not trying to replace text-to-CAD generators. It leverages the host harness and available CAD plugins/tools first, then uses Zen CAD conventions to keep assumptions, proxies, sourcing gaps, and final evidence honest.
 
-Core principle: **Do not generate standard parts when credible off-the-shelf STEP/catalog parts can be retrieved.**
+Core principle: **Generate concept/layout CAD early; enforce source-lock and completion evidence only for final/release claims.**
 
 ## When to use
 
@@ -31,13 +31,15 @@ Do not use this skill as a shortcut for creating decorative or approximate CAD f
 
 When running inside a Zen CAD repository, a natural-language CAD goal at the start of a new CoBrA/agent session is a milestone-start request. For example, if the user says `기어 박스를 만들고 싶어`, do not ask the user to run a Python command and do not require the user to manually choose a milestone id/title.
 
+When this skill is installed into CoBrA, first check whether a sibling `ZEN_CAD_WORKSPACE.md` exists next to this `SKILL.md`. If present, read it and use its `Repository root:` path as the Zen CAD workspace unless the user explicitly provides another root. This is the CoBrA adapter binding created by `./zen-cad init --with-cobra`.
+
 Instead, from the Zen CAD repository root, internally run:
 
 ```bash
 python3 scripts/new_milestone.py --request "<goal>"
 ```
 
-Use the created milestone as the active CAD job. For `기어 박스를 만들고 싶어`, the expected derived milestone is the next available `*_gearbox`, such as `003_gearbox` in this repository, titled `Gearbox`. After creation, continue this `/agentic-cad` workflow inside that milestone and require validation-script evidence before completion claims.
+Use the created milestone as the active CAD job. For `기어 박스를 만들고 싶어`, the expected derived milestone is the next available `*_gearbox`, such as `003_gearbox` in this repository, titled `Gearbox`. After creation, continue this `/agentic-cad` workflow inside that milestone, generate the first CAD artifact with the available harness toolchain, and reserve completion-script evidence for final/release claims.
 
 ## Execution mode
 
@@ -404,13 +406,15 @@ Expected `/spec-to-cad` outputs:
 
 ## Validation gates
 
-Zen CAD 0.5.0 uses a generation-first, maturity-aware evidence-gated order. Structure validation and completion validation are different. `./zen-cad validate --level structure milestones/<id>` may pass while `./zen-cad validate --level completion milestones/<id>` is blocked. Never present final completion while an upstream final gate remains blocked.
+Zen CAD uses a generation-first, maturity-aware order. Structure validation and completion validation are different. `./zen-cad validate --level structure milestones/<id>` may pass while `./zen-cad validate --level completion milestones/<id>` is blocked. That is acceptable for concept/layout work. Never present final completion while an upstream final gate remains blocked.
 
 ### Gate 0: Doctor / environment preflight
 
-Pass only when `./zen-cad doctor --cad-required` can run for the CAD/mesh/kernel stack needed by the job, or when the final report truthfully states `ENV_BLOCKED` and stops before CAD completion claims.
+For `concept` and `layout`, `./zen-cad doctor` is diagnostic only. If strict local CAD/mesh packages are missing, use the harness's available CAD path and record the limitation instead of returning without CAD.
 
-Prefer build123d plus OCP when available. If CoBrA workers use a different runtime, run doctor with `--python /path/to/.venv/bin/python` or set `ZEN_CAD_PYTHON`.
+For `final`, pass only when `./zen-cad doctor --cad-required` can run for the CAD/mesh/kernel stack needed by the job, or when the final report truthfully states `ENV_BLOCKED` and stops before final completion claims.
+
+Prefer the harness's working CAD stack over repairing one preferred local stack. If a known venv exists, run doctor with `--python /path/to/.venv/bin/python` or set `ZEN_CAD_PYTHON`.
 
 ### Gate 1: Requirement normalization
 

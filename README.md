@@ -1,10 +1,10 @@
 # Zen CAD
 
-Zen CAD는 에이전트가 기계 CAD 작업을 일관되게 수행하도록 돕는 휴대 가능하고, 버전 관리되며, 재현 가능한 agentic mechanical CAD 워크플로우 환경입니다.
+Zen CAD는 에이전트/harness가 실제 CAD를 먼저 만들도록 돕는 **portable CAD skill pack + lightweight workflow notes + optional validation CLI**입니다.
 
-Zen CAD는 순수 text-to-CAD 생성기가 아닙니다. 자연어 목표를 받아 바로 그럴듯한 3D 형상을 만드는 대신, 요구사항 정리, 표준 부품 소싱, 커스텀 CAD 생성, 어셈블리 계약, 검증 증거, BOM, 최종 엔지니어링 리포트까지 이어지는 작업 방식을 패키징합니다.
+0.6.x부터 Zen CAD의 기본값은 text-to-cad 스타일의 harness-native 실행입니다. CoBrA, Codex, Claude Code, Cursor 같은 harness가 CAD 생성 도구, 파일 편집, 터미널 실행, 웹/카탈로그 검색, 메모리, worker orchestration을 담당합니다. Zen CAD는 그 위에 source-lock, milestone, BOM/report, completion evidence 같은 장점을 **final/release 단계에서 켜는 optional gate**로 제공합니다.
 
-CoBrA, Claude Code, Cursor, Codex 같은 에이전트 환경에서 같은 CAD 운영 경험을 재현할 수 있도록 스킬, 템플릿, 스키마, 체크리스트, 프롬프트, 검증 스크립트를 함께 제공합니다.
+즉 기본 목표는 “env를 완전히 고치기 전에도 CAD를 생성하고 확인한다”입니다. `doctor --cad-required`와 `validate-completion`은 첫 CAD pass를 막는 preflight가 아니라 final claim을 걸 때 쓰는 stricter gate입니다.
 
 ## 3분 quickstart
 
@@ -16,15 +16,9 @@ cd zen-cad
 ./zen-cad doctor
 ```
 
-`doctor`는 현재 폴더가 Zen CAD 레포인지, 필수 파일과 JSON/CSV 스키마가 맞는지, CoBrA skill sync 상태가 어떤지 확인합니다. 0.5.0부터는 build123d/OCP를 기본 CAD happy path로 보고, numpy, trimesh, CadQuery/OpenSCAD, artifact/cache 쓰기 권한 같은 CAD toolchain preflight도 함께 보여줍니다.
+`doctor`는 현재 폴더가 Zen CAD 레포인지, 필수 파일과 JSON/CSV 스키마가 맞는지, CoBrA skill discovery/workspace binding 상태가 어떤지 확인합니다. CAD toolchain preflight도 보여주지만, 0.6.x 기본 flow에서는 여기서 멈추지 않습니다. `numpy`, `trimesh`, `build123d` 등이 `ENV_BLOCKED`로 떠도 repo/skills가 정상이면 에이전트에게 CAD 생성을 맡깁니다.
 
-최종 CAD 생성까지 바로 진행해야 하는 환경이면 stricter preflight를 사용합니다.
-
-```bash
-./zen-cad doctor --cad-required
-```
-
-CoBrA worker가 다른 Python을 쓰는 경우에는 CAD가 되는 venv를 명시합니다.
+Strict CAD preflight는 final/release claim을 걸 때만 사용합니다.
 
 ```bash
 ./zen-cad doctor --cad-required --python /path/to/.venv/bin/python
@@ -44,17 +38,22 @@ NEMA17 mount plate를 만들어줘
 ./zen-cad new --maturity concept "NEMA17 mount plate를 만들어줘"
 ```
 
-milestone이 생성된 뒤 구조와 completion evidence 상태를 분리해서 확인합니다.
+milestone이 생성된 뒤 첫 CAD pass에서는 구조만 확인하고 바로 생성으로 들어갑니다.
 
 ```bash
 ./zen-cad validate --level structure milestones/<id>
+```
+
+final/release-grade 완료를 주장할 때만 completion evidence gate를 실행합니다.
+
+```bash
 ./zen-cad validate --level completion milestones/<id>
 ```
 
 검증 출력은 두 층으로 나뉩니다.
 
 - `Zen CAD validation result: PASS`: 필수 파일, schema, BOM header, milestone 구조가 유효합니다.
-- `Zen CAD completion validation result: BLOCKED`: source-lock, proxy 격리, STEP cache/export, CAD kernel checks, BOM/report evidence 중 아직 막힌 gate가 있습니다.
+- `Zen CAD completion validation result: BLOCKED`: source-lock, proxy 격리, STEP cache/export, CAD kernel checks, BOM/report evidence 중 아직 막힌 final gate가 있습니다. concept/layout 산출물에서는 정상적인 중간 상태일 수 있습니다.
 
 기존 호환 명령도 남아 있습니다. `./zen-cad validate milestones/<id>`는 구조 PASS를 exit code 0으로 유지하면서 completion blockers를 같이 출력합니다. CI나 release gate에서는 `validate-completion` 또는 `--level completion`을 사용해야 합니다.
 
@@ -77,8 +76,8 @@ Preview는 사람이 보는 리뷰 자료입니다. 완료 선언에는 재현 �
 ## 핵심 원칙
 
 1. `/agentic-cad`가 최상위 워크플로우이자 source of truth입니다.
-2. 나사, 베어링, 모터, 커넥터 같은 표준/카탈로그 부품은 생성하기 전에 먼저 소싱합니다.
-3. 생성 CAD는 하우징, 브래킷, 어댑터, 링크, 프레임, 지그, 커버, assembly glue 같은 설계 특화 부품에 한정합니다.
+2. 첫 concept/layout pass에서는 harness가 가능한 CAD를 먼저 생성하고, 표준/카탈로그 부품은 proxy 또는 unresolved sourcing으로 명확히 표시합니다.
+3. final/release 단계에서는 나사, 베어링, 모터, 커넥터 같은 표준/카탈로그 부품을 생성 CAD로 대체하지 말고 source-lock합니다.
 4. 소싱과 검증이 끝나지 않은 생성 표준품은 최종 부품이 아니라 proxy입니다.
 5. STEP 형상은 엔지니어링 인증, 정격, 재질, 수명, 안전성을 증명하지 않습니다.
 6. 뷰어 스크린샷과 GLB preview는 사람이 보기 위한 리뷰 자료일 뿐 completion evidence가 아닙니다.
@@ -86,15 +85,26 @@ Preview는 사람이 보는 리뷰 자료입니다. 완료 선언에는 재현 �
 8. 새 CAD 작업은 기본적으로 milestone으로 진행합니다.
 9. 워크플로우 개선점은 다시 `/agentic-cad`에 피드백합니다.
 
-0.5.0에는 작은 final demo가 포함되어 있습니다.
+작은 final demo가 포함되어 있습니다.
 
 ```bash
 ./zen-cad validate-completion milestones/002_nema17_mount_plate
 ```
 
-## 0.5.0 maturity and gate contract
+## 0.6.x harness-native contract
 
-Zen CAD는 one-shot CAD generator가 아니라 generation-first, evidence-gated workflow입니다. `concept`와 `layout`에서는 proxy/envelope CAD 생성을 허용하지만, `final` completion claim은 아래 gate가 PASS일 때만 가능합니다.
+Zen CAD 0.6.x의 제품 경계는 다음과 같습니다.
+
+- **Harness**: CoBrA/Codex/Claude Code/Cursor가 CAD generation, file edit, terminal, web/catalog lookup, memory, worker delegation을 수행합니다.
+- **Zen CAD skills**: `/agentic-cad`, `/spec-to-cad`, `/self-evolving-producer-verifier`가 lightweight CAD workflow policy와 role handoff를 제공합니다.
+- **Zen CAD validation core**: `./zen-cad`, `scripts/`, `schemas/`, `templates/`, `checklists/`가 milestone structure와 optional final completion evidence를 기계적으로 검사합니다.
+- **Harness adapters**: `plugins/`와 `docs/harness_adapters.md`가 각 agent harness에서 skills와 validation CLI를 연결하는 얇은 설치/운영 계약을 설명합니다. CoBrA에서는 `init --with-cobra`가 설치된 skill 옆에 `ZEN_CAD_WORKSPACE.md`를 생성해서 repo root binding을 보존합니다.
+
+즉 Zen CAD는 CAD kernel, STEP search engine, browser automation을 자체 구현하지 않습니다. 그 기능은 harness와 외부 CAD/Part RAG 도구에 맡기고, Zen CAD는 첫 CAD artifact가 나온 뒤 final/release 품질을 높이는 보조 gate로 작동합니다.
+
+## Maturity and gate contract
+
+Zen CAD는 이제 one-shot CAD generator와 경쟁하지 않고 harness-native generator를 활용합니다. `concept`와 `layout`에서는 proxy/envelope CAD 생성을 우선 허용하고, `final` completion claim은 아래 gate가 PASS일 때만 가능합니다.
 
 1. Gate 0: doctor / environment preflight
 2. Gate 1: requirement normalization
@@ -153,7 +163,9 @@ CoBrA에서 사용할 경우 bundled skills를 CoBrA skills 디렉터리로 동�
 
 이때 `/agentic-cad`, `/spec-to-cad`, `/self-evolving-producer-verifier`가 함께 설치됩니다.
 
-중요: CoBrA skill sync는 워크플로우 스킬만 설치합니다. 이 레포를 active CoBrA workspace로 자동 등록하지는 않습니다. CoBrA daemon이나 세션은 `zen-cad` 레포에서 시작하거나, 에이전트 프롬프트에서 이 레포 경로를 명시해야 합니다.
+중요: CoBrA skill sync는 워크플로우 스킬과 repo root binding을 설치합니다. CoBrA 프로세스의 현재 작업 디렉터리를 자동으로 바꾸지는 않습니다. CoBrA daemon이나 세션은 가능하면 `zen-cad` 레포에서 시작하고, repo 밖에서 skill이 호출되면 설치된 `ZEN_CAD_WORKSPACE.md`를 읽어 이 레포 경로를 복구해야 합니다.
+
+0.6.1부터 CoBrA sync는 각 설치 skill 디렉터리에 `ZEN_CAD_WORKSPACE.md`도 씁니다. CoBrA가 `/agentic-cad`를 repo 밖에서 호출해도 이 파일을 읽어 Zen CAD repo root를 복구할 수 있습니다.
 
 ## 실제 사용 흐름
 
@@ -257,8 +269,10 @@ Producer는 CAD 산출물을 만들고, verifier는 원래 요구사항과 검�
 
 ```text
 zen-cad/
-├─ docs/                  휴대 가능한 운영 문서
+├─ docs/                  휴대 가능한 운영 문서와 harness adapter contract
 ├─ skills/                `/agentic-cad`, `/spec-to-cad`, verifier 스킬
+├─ plugins/               CoBrA, Codex-style, Claude Code-style adapter notes
+├─ packages/zen_cad_core/ validation-core package boundary documentation
 ├─ prompts/               kickoff, milestone, validation, release 프롬프트
 ├─ templates/             재사용 가능한 artifact 템플릿
 ├─ schemas/               machine-checkable JSON/CSV 스키마
@@ -266,7 +280,8 @@ zen-cad/
 ├─ zen-cad                첫 실행용 repo-local CLI wrapper
 ├─ scripts/               setup, milestone 생성, 검증, release export helper
 ├─ milestones/_template/  표준 milestone skeleton
-└─ milestones/001_nema17_belt_linear_actuator/  reference seed milestone
+├─ milestones/001_nema17_belt_linear_actuator/  source-lock BLOCKED reference milestone
+└─ milestones/002_nema17_mount_plate/  final completion PASS demo milestone
 ```
 
 ## CoBrA 사용
@@ -285,7 +300,7 @@ zen-cad/
 
 ## CoBrA가 아닌 환경
 
-`docs/non_cobra_usage.md`와 `prompts/`를 일반 Markdown 운영 지침으로 사용할 수 있습니다. 파일 읽기/쓰기, CAD artifact 생성 또는 수정, 검증 스크립트 실행, evidence 보존이 가능한 에이전트 환경이라면 Zen CAD를 사용할 수 있습니다.
+`docs/non_cobra_usage.md`, `docs/harness_adapters.md`, `plugins/`, `skills/`, `prompts/`를 일반 Markdown 운영 지침으로 사용할 수 있습니다. 파일 읽기/쓰기, CAD artifact 생성 또는 수정, 검증 스크립트 실행, evidence 보존이 가능한 에이전트 환경이라면 Zen CAD를 사용할 수 있습니다.
 
 ## 현재 한계
 

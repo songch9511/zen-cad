@@ -163,6 +163,9 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
 
             for skill_name in ['agentic-cad', 'spec-to-cad', 'self-evolving-producer-verifier']:
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
+                context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'
+                self.assertTrue(context.exists(), skill_name)
+                self.assertIn(f'Repository root: {work.resolve()}', context.read_text(encoding='utf-8'))
 
 
 if __name__ == '__main__':

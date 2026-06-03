@@ -39,9 +39,9 @@ class FirstRunCliTest(unittest.TestCase):
 
             self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
             self.assertIn('Zen CAD doctor: PASS', completed.stdout)
-            self.assertIn('[WARN] CoBrA skill sync', completed.stdout)
+            self.assertIn('[WARN] CoBrA skill discovery', completed.stdout)
             self.assertIn('CAD toolchain preflight', completed.stdout)
-            self.assertIn('does not register this repository as the active CoBrA workspace', completed.stdout)
+            self.assertIn('does not change CoBrA process cwd by itself', completed.stdout)
             self.assertIn('In CoBrA/Codex/Claude Code/Cursor, ask:', completed.stdout)
             self.assertIn('Manual terminal fallback:', completed.stdout)
 
@@ -65,10 +65,36 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertIn('CoBrA skill sync: PASS', completed.stdout)
             for skill_name in ['agentic-cad', 'spec-to-cad', 'self-evolving-producer-verifier']:
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
+                context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'
+                self.assertTrue(context.exists(), skill_name)
+                self.assertIn(f'Repository root: {work.resolve()}', context.read_text(encoding='utf-8'))
 
             doctor = run_cli(work, 'doctor', '--cobra-skills-root', str(skills_root))
             self.assertEqual(doctor.returncode, 0, doctor.stderr + doctor.stdout)
-            self.assertIn('installed and fresh', doctor.stdout)
+            self.assertIn('installed, fresh, and bound to', doctor.stdout)
+
+    def test_doctor_warns_when_cobra_skill_binding_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            skills_root = Path(tmp) / 'cobra-skills'
+            copy_repo_fixture(work)
+
+            completed = run_cli(
+                work,
+                'init',
+                '--with-cobra',
+                '--cobra-skills-root',
+                str(skills_root),
+                '--skip-validation',
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
+            (skills_root / 'agentic-cad' / 'ZEN_CAD_WORKSPACE.md').unlink()
+
+            doctor = run_cli(work, 'doctor', '--cobra-skills-root', str(skills_root))
+
+            self.assertEqual(doctor.returncode, 0, doctor.stderr + doctor.stdout)
+            self.assertIn('[WARN] CoBrA workspace binding', doctor.stdout)
+            self.assertIn('missing ZEN_CAD_WORKSPACE.md for agentic-cad', doctor.stdout)
 
     def test_doctor_accepts_build123d_ocp_python_backend(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

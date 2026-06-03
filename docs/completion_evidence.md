@@ -1,10 +1,12 @@
 # Completion Evidence
 
-A milestone is not complete because a screenshot looks plausible. Completion requires reproducible artifacts:
+Completion evidence is the final/release gate, not the first CAD gate. Zen CAD 0.6.x should produce a concept/layout CAD artifact with the harness's available tools before spending excessive time on strict environment repair.
+
+A milestone is not final because a screenshot looks plausible. Final completion requires reproducible artifacts:
 
 - required files exist in the milestone folder;
 - JSON artifacts pass schema validation;
-- `./zen-cad doctor --cad-required` can pass for the CAD/mesh/kernel toolchain needed by the job, using `--python` or `ZEN_CAD_PYTHON` when CoBrA needs a specific venv;
+- `./zen-cad doctor --cad-required` can pass for final/release CAD/mesh/kernel evidence, using `--python` or `ZEN_CAD_PYTHON` when the harness needs a specific venv;
 - standard/catalog parts are source-locked before custom CAD and assembly validation proceed;
 - CAD source and final export paths are recorded;
 - CONTACT_MAP and CONNECTIONS reference known parts;
@@ -12,11 +14,15 @@ A milestone is not complete because a screenshot looks plausible. Completion req
 - validation report states checks, results, failures, and limitations;
 - final engineering report separates verified facts from assumptions.
 
+## First CAD pass is not completion
+
+For concept/layout work, acceptable evidence is simpler: CAD source/export paths exist, the assumptions/proxies are named, and `./zen-cad validate --level structure milestones/<id>` passes. `ENV_BLOCKED` from strict local CAD preflight is a final blocker, not a reason to return without a CAD artifact.
+
 ## Structure is not completion
 
 `./zen-cad validate --level structure milestones/<id>` proves only that the required milestone files, JSON schemas, BOM headers, and basic milestone structure are valid.
 
-`./zen-cad validate --level completion milestones/<id>` is the release gate. It checks the 0.5.0 completion gates:
+`./zen-cad validate --level completion milestones/<id>` is the release gate. It checks the Zen CAD completion gates:
 
 - Gate 0: doctor / environment preflight
 - Gate 1: requirement normalization

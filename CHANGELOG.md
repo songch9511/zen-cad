@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 0.6.1
+
+- Fix the CoBrA adapter boundary: `init --with-cobra` now installs a `ZEN_CAD_WORKSPACE.md` binding beside each synced skill so installed CoBrA skills can recover the Zen CAD repo root.
+- Split CoBrA skill discovery/workspace-binding diagnostics from local CAD `ENV_BLOCKED` diagnostics in `zen-cad doctor`.
+- Teach `/agentic-cad` and `/spec-to-cad` to read the CoBrA workspace binding when they are invoked from an installed skill directory instead of the Zen CAD repo root.
+- Clarify that missing CAD packages block final/release evidence gates, while missing or unbound CoBrA skills block harness discovery.
+
+## 0.6.0
+
+- Reposition Zen CAD as a harness-native, generate-first CAD skill pack: portable workflow skills plus a lightweight optional validation CLI and thin harness adapters.
+- Add `docs/harness_adapters.md` and `plugins/` adapter notes for CoBrA, Codex-style, and Claude Code-style agent harnesses.
+- Add `packages/zen_cad_core/` as the documented validation-core boundary while keeping the existing repo-local CLI and scripts stable.
+- Update README and usage docs around the harness/skills/core responsibility split: harnesses provide CAD generation/execution, Zen CAD provides lightweight workflow policy and optional final completion gates.
+- Include adapter/core documentation and the completion-PASS demo milestone in release package exports and required-file checks.
+
 ## 0.5.0
 
 - Shift Zen CAD to a generation-first workflow: concept/layout milestones may use proxy or envelope CAD while final completion remains evidence-gated.

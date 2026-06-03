@@ -7,14 +7,15 @@ description: Turn a measurable specification into a verified parametric CAD impl
 
 Use this skill when a user asks to create, improve, or validate a CAD model from a specification, reference product, drawing, benchmark, or loosely described mechanical concept. The workflow converts ambiguous requirements into a measurable spec, implements a parametric CAD/GFL/CadQuery model, and verifies it with independent test harnesses, CAD-kernel evidence, artifact checks, and, when needed, dynamic simulation.
 
-The central rule: **do not accept visual inspection, metadata-only claims, or worker reports as completion**. Completion requires reproducible CLI/JSON evidence and independent verification.
+The central rule: **create a real CAD artifact first, then be honest about its grade**. Visual inspection, metadata-only claims, or worker reports may support concept/layout review, but final completion requires reproducible CLI/JSON evidence and independent verification.
 
 ## Prerequisites
 
 - A target workspace directory is known and writable.
 - The requested CAD scope is inside the user's stated goal.
 - Irreversible, user-facing, or scope-expanding decisions use `ask_to_user` with a safe default.
-- In a Zen CAD repository, `./zen-cad doctor --cad-required` should pass before final CAD/export work. If CoBrA needs a specific venv, use `--python` or `ZEN_CAD_PYTHON`. If the CAD toolchain still does not pass, stop with `ENV_BLOCKED`.
+- In a CoBrA-installed Zen CAD skill, if sibling `ZEN_CAD_WORKSPACE.md` exists, read it and use its `Repository root:` path when the upstream `/agentic-cad` handoff did not already provide an explicit root.
+- In a Zen CAD repository, concept/layout CAD should proceed with any available harness CAD stack. Run `./zen-cad doctor --cad-required` only before final/release claims; if it blocks, report the shipped artifact plus `ENV_BLOCKED` final-gate limitations instead of stopping before CAD exists.
 - In a Zen CAD repository, sourced standard/catalog parts must pass `./zen-cad source-lock milestones/<id>` before they are used as final assembly evidence.
 - At least one CAD implementation stack is available or selectable, e.g. GFL, CadQuery, OpenCascade/OCP, FreeCAD, STEP/STL export, or another kernel-backed toolchain.
 - For mechanical assemblies, acceptance must include kernel-backed checks, not only metadata or screenshots.

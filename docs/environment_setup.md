@@ -17,7 +17,7 @@ Run this from the Zen CAD repository root:
 ./zen-cad doctor
 ```
 
-`doctor` validates required files, checks bundled JSON/CSV artifacts, reports CoBrA skill sync state, and shows CAD toolchain preflight. If you only need structure validation, missing CAD tooling is reported as `ENV_BLOCKED` but the repository can still be workflow-ready.
+`doctor` validates required files, checks bundled JSON/CSV artifacts, reports CoBrA skill discovery/workspace binding state, and shows CAD toolchain preflight. If you only need structure validation, missing CAD tooling is reported as `ENV_BLOCKED` but the repository can still be workflow-ready.
 
 Before final CAD generation or completion validation, use:
 
@@ -31,7 +31,7 @@ When CoBrA workers do not use the same Python as your terminal, pass the working
 ./zen-cad doctor --cad-required --python /path/to/.venv/bin/python
 ```
 
-If this exits `ENV_BLOCKED`, stop CAD generation and resolve the missing toolchain first. A truthful blocked report is preferred over proxy CAD that looks complete.
+If this exits `ENV_BLOCKED`, do not spend the whole project repairing the local environment before any CAD exists. For concept/layout work, continue with the harness's available CAD path and record the strict-env blocker separately. Only final/release claims require resolving this preflight.
 
 To run setup explicitly, use:
 
@@ -47,7 +47,12 @@ For CoBrA, add `--with-cobra` to copy the bundled `/agentic-cad`, `/spec-to-cad`
 ./zen-cad init --with-cobra
 ```
 
-Skill sync does not register the Zen CAD repository as the active CoBrA workspace. Start CoBrA from the Zen CAD repository root, or explicitly point the agent to this repository path.
+Skill sync writes a `ZEN_CAD_WORKSPACE.md` binding beside each installed skill. It does not change the CoBrA process working directory. Start CoBrA from the Zen CAD repository root when possible; otherwise the installed skill should read its workspace binding.
+
+Interpret blockers by layer:
+
+- Missing CoBrA skills or missing `ZEN_CAD_WORKSPACE.md`: rerun `./zen-cad init --with-cobra`.
+- Missing `numpy`, `trimesh`, `build123d`, OCP, or CadQuery: strict final CAD evidence cannot run in that Python. This does not block CoBrA skill discovery or concept/layout CAD generation.
 
 After that, milestone startup is prompt-first: the user can type a natural CAD goal such as `기어 박스를 만들고 싶어` in the agent prompt, and the agent should internally run `python3 scripts/new_milestone.py --request "<goal>"` to create the next milestone, for example `003_gearbox` titled `Gearbox` in this repository.
 

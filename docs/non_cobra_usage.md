@@ -1,6 +1,6 @@
 # Non-CoBrA Usage
 
-Zen CAD can be used in any agentic environment that can read Markdown, edit files, run scripts, and create CAD artifacts. Treat `skills/agentic-cad/SKILL.md` as the main operating manual and the files in `prompts/` as task entrypoints.
+Zen CAD can be used in any agentic environment that can read Markdown, edit files, run scripts, and create CAD artifacts. In 0.6.x, treat Zen CAD as a harness-native, generate-first skill pack: the harness provides CAD generation and execution tools, while Zen CAD provides portable skills, artifact schemas, and optional final completion gates. Treat `skills/agentic-cad/SKILL.md` as the main operating manual, `docs/harness_adapters.md` plus `plugins/` as harness adapter notes, and the files in `prompts/` as task entrypoints.
 
 ## Claude Code, Codex, Cursor, or similar tools
 
@@ -29,4 +29,4 @@ Use `./zen-cad new` only when you intentionally want to create a milestone from 
 
 For automation or scripted startup, `./zen-cad init --milestone-request "<goal>"` and `scripts/setup_zen_cad.py --milestone-request "<goal>"` are both available. When an exact folder name must be pinned, explicit `--milestone-id` and `--milestone-title` still work.
 
-CoBrA-only skill installation is not required in Claude Code or Codex because the skill file is already inside this repository.
+CoBrA-only skill installation is not required in Claude Code or Codex because the skill files are already inside this repository. If the harness supports a plugin/skill marketplace, package `skills/`, `docs/harness_adapters.md`, and the repo-local `./zen-cad` CLI as the installable payload. The default behavior should mirror text-to-cad: generate the first CAD artifact with the harness's available toolchain, then use `./zen-cad validate --level completion milestones/<id>` only for final/release claims.

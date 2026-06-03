@@ -6,8 +6,10 @@ from pathlib import Path
 
 ROOT_REQUIRED = [
     'README.md', 'VERSION', 'CHANGELOG.md',
-    'docs/philosophy.md', 'docs/operating_principles.md', 'docs/source_first_generate_second.md', 'docs/completion_evidence.md', 'docs/milestone_protocol.md', 'docs/environment_setup.md', 'docs/cobra_usage.md', 'docs/non_cobra_usage.md',
+    'docs/philosophy.md', 'docs/operating_principles.md', 'docs/source_first_generate_second.md', 'docs/completion_evidence.md', 'docs/milestone_protocol.md', 'docs/environment_setup.md', 'docs/cobra_usage.md', 'docs/non_cobra_usage.md', 'docs/harness_adapters.md',
     'skills/agentic-cad/SKILL.md', 'skills/spec-to-cad/SKILL.md', 'skills/self-evolving-producer-verifier/SKILL.md',
+    'plugins/README.md', 'plugins/cobra/README.md', 'plugins/codex/README.md', 'plugins/claude-code/README.md',
+    'packages/zen_cad_core/README.md',
     'prompts/project_kickoff.md', 'prompts/new_milestone.md', 'prompts/validation_review.md', 'prompts/release_review.md', 'prompts/feedback_to_agentic_cad_skill.md',
     'templates/PROJECT_MANIFEST.yaml', 'templates/milestone.yaml', 'templates/requirements_brief.md', 'templates/part_classification_table.md', 'templates/selected_parts_manifest.json', 'templates/custom_cad_handoff.yaml', 'templates/contact_map.json', 'templates/connections.json', 'templates/validation_report.json', 'templates/bom.csv', 'templates/final_engineering_report.md',
     'schemas/selected_parts_manifest.schema.json', 'schemas/contact_map.schema.json', 'schemas/connections.schema.json', 'schemas/validation_report.schema.json', 'schemas/bom.schema.json', 'schemas/bom.columns.json',
