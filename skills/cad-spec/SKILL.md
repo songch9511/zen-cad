@@ -63,6 +63,18 @@ Ask one focused question only when missing information makes the layout impossib
 13. If CAD generation or review is requested, spawn specialist subagents where the harness supports delegation.
 14. Write a downstream CAD handoff targeted to the active harness.
 
+## Machine-Readable Contracts
+
+Do not ask users to write JSON or YAML. When a harness needs machine-readable artifacts, derive them from the Markdown spec using the repo-level schemas:
+
+- `schemas/cad_spec.schema.json`
+- `schemas/layout_contract.schema.json`
+- `schemas/interface_signature.schema.json`
+- `schemas/inspection_report.schema.json`
+- `schemas/handoff_packet.schema.json`
+
+Use `registry/interfaces/index.json` for built-in layout-ready interface signatures before attempting external catalog research.
+
 ## Specialist Subagents
 
 Use subagents for complex assemblies, moving mechanisms, or any task where independent layout/interface/motion/review work can run in parallel. Keep the lead agent responsible for the final spec and for reconciling conflicts.
@@ -109,6 +121,7 @@ Omit a section only when it is truly out of scope, and say why.
 - Do not bury positioning facts inside prose-only descriptions. Name the datum, axis, frame, or interface primitive.
 - Do not let surface detail outrank assembly correctness in the first pass.
 - Do not crawl catalogs before writing the layout spec.
+- Do not crawl catalogs before checking the built-in interface registry for layout-ready facts.
 - Do not claim a proxy is final geometry.
 - Do not hand off CAD generation without named parameters and validation targets for critical dimensions.
 - Do not treat screenshots or viewer links as substitutes for geometry facts, measurements, frames, or mate checks.

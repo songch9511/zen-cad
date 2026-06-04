@@ -24,12 +24,14 @@ Use it when a layout spec mentions:
 ## Workflow
 
 1. Identify the component family.
-2. Extract only interface facts needed for layout.
-3. Mark each fact as standard, assumed, user-provided, or must-confirm.
-4. Define envelope geometry when useful.
-5. Name checks that can validate the interface in generated CAD.
-6. State what a proxy may simplify.
-7. State what needs datasheet or supplier evidence before final claims.
+2. Check `registry/interfaces/index.json` for a known layout-ready signature.
+3. If no exact registry or project model is available, record the miss and proceed with a documented envelope when layout is not fit-critical.
+4. Extract only interface facts needed for layout.
+5. Mark each fact as standard, assumed, user-provided, or must-confirm.
+6. Define envelope geometry when useful.
+7. Name checks that can validate the interface in generated CAD.
+8. State what a proxy may simplify.
+9. State what needs datasheet or supplier evidence before final claims.
 
 ## Signature Shape
 
@@ -53,6 +55,7 @@ Interface signature: <family/name>
 - Do not invent ratings.
 - Do not call a signature supplier-verified.
 - Do not let a missing STEP file block layout when the interface signature is enough.
+- Do not start broad catalog crawling before trying the built-in registry and documented envelope path.
 - Do not use an interface signature for final procurement identity.
 
 ## References

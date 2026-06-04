@@ -8,5 +8,7 @@
 - Use interface signatures when layout needs standard component facts but full supplier geometry is unavailable.
 - Use specialist subagents for bounded CAD subtasks when the harness supports delegation.
 - Repair generated CAD by changing the smallest responsible source-level cause, then rerun the failed checks.
+- Do not validate CAD by git diff, file size, screenshot, or viewer link alone.
+- Use built-in interface registry facts for layout when available; record misses and use documented envelopes instead of broad catalog crawling.
 - Treat proceed approval as a lock on layout facts.
 - Do not claim engineering certification from CAD geometry alone.

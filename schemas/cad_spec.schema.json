@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/cad_spec.schema.json",
+  "title": "Zen CAD Spec",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "title",
+    "maturity_target",
+    "units",
+    "coordinate_system",
+    "parameter_contract",
+    "artifact_targets",
+    "layout_contract",
+    "locked_layout_facts",
+    "inspection_plan",
+    "repair_loop",
+    "proceed_gate",
+    "downstream_handoff",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.8.0"
+    },
+    "kind": {
+      "const": "cad_spec"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "maturity_target": {
+      "type": "string",
+      "enum": ["layout_proxy", "detail_cad", "final_package"]
+    },
+    "units": {
+      "type": "string",
+      "default": "mm"
+    },
+    "coordinate_system": {
+      "type": "object",
+      "required": ["root_frame", "base_plane", "up_axis"],
+      "properties": {
+        "root_frame": { "type": "string" },
+        "base_plane": { "type": "string" },
+        "up_axis": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "parameter_contract": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/parameter" }
+    },
+    "artifact_targets": {
+      "type": "object",
+      "required": ["source_intent", "primary_artifact", "review_artifacts"],
+      "properties": {
+        "source_intent": {
+          "type": "string",
+          "enum": ["build123d", "cadquery", "freecad", "native_tool", "unknown"]
+        },
+        "primary_artifact": {
+          "type": "string"
+        },
+        "secondary_artifacts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "review_artifacts": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "layout_contract": {
+      "$ref": "layout_contract.schema.json"
+    },
+    "interface_signatures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "locked_layout_facts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/locked_fact" },
+      "minItems": 1
+    },
+    "inspection_plan": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/check" }
+    },
+    "repair_loop": {
+      "type": "object",
+      "required": ["smallest_source_change", "rerun_failed_checks", "locked_fact_change_policy"],
+      "properties": {
+        "smallest_source_change": { "type": "boolean" },
+        "rerun_failed_checks": { "type": "boolean" },
+        "locked_fact_change_policy": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "proceed_gate": {
+      "type": "object",
+      "required": ["required_user_decision", "approved_next_maturity"],
+      "properties": {
+        "required_user_decision": { "type": "string" },
+        "approved_next_maturity": {
+          "type": "string",
+          "enum": ["detail_cad", "final_package", "none"]
+        },
+        "blocked_by": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "downstream_handoff": {
+      "$ref": "handoff_packet.schema.json"
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "parameter": {
+      "type": "object",
+      "required": ["name", "units", "value", "status", "source", "drives", "validation"],
+      "properties": {
+        "name": { "type": "string" },
+        "units": { "type": "string" },
+        "value": {},
+        "range": {
+          "type": "object",
+          "properties": {
+            "min": {},
+            "max": {},
+            "step": {}
+          },
+          "additionalProperties": false
+        },
+        "status": {
+          "type": "string",
+          "enum": ["locked", "assumed", "derived"]
+        },
+        "source": {
+          "type": "string",
+          "enum": ["user", "standard_default", "derived_constraint", "layout_assumption", "project_registry"]
+        },
+        "drives": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "validation": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "locked_fact": {
+      "type": "object",
+      "required": ["fact_id", "type", "statement", "must_preserve"],
+      "properties": {
+        "fact_id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["frame", "axis", "datum", "center_distance", "clearance", "mounting_pattern", "motion_limit", "drivetrain", "interface"]
+        },
+        "statement": { "type": "string" },
+        "must_preserve": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "check": {
+      "type": "object",
+      "required": ["check_id", "check_type", "target", "expected"],
+      "properties": {
+        "check_id": { "type": "string" },
+        "check_type": {
+          "type": "string",
+          "enum": ["bbox", "label", "plane", "axis", "distance", "frame", "mate", "motion", "snapshot", "viewer"]
+        },
+        "target": { "type": "string" },
+        "expected": { "type": "string" },
+        "locked_fact_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -20,3 +20,5 @@ If the user asks to continue into CAD generation, keep `cad-spec` as the lead wo
 - generated CAD review against locked facts.
 
 Use `skills/cad-handoff/SKILL.md` when the active generator needs a concise task brief.
+
+Use `schemas/` when a harness needs machine-readable contracts, and use `registry/interfaces/` when a layout proxy needs known component interface facts without catalog crawling.

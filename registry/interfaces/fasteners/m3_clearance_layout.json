@@ -1,0 +1,66 @@
+{
+  "schema_version": "0.8.0",
+  "kind": "interface_signature",
+  "id": "fastener.m3_clearance.layout",
+  "title": "Fastener M3 Clearance Layout",
+  "units": "mm",
+  "family": "fastener",
+  "quality_label": "standard",
+  "trusted_for_layout": true,
+  "source": {
+    "type": "common_standard",
+    "note": "Common M3 normal clearance hole for first-pass layout."
+  },
+  "primary_axes": [
+    {
+      "name": "screw_axis",
+      "statement": "Clearance hole axis follows the fastener axis."
+    }
+  ],
+  "mounting_datums": [
+    {
+      "name": "clamped_face",
+      "statement": "Fastener axis is normal to the clamped mounting face unless the spec says otherwise."
+    }
+  ],
+  "critical_dimensions": [
+    {
+      "name": "normal_clearance_diameter",
+      "value": 3.4,
+      "units": "mm",
+      "status": "standard"
+    }
+  ],
+  "envelope": [
+    {
+      "name": "hole_cylinder",
+      "value": 3.4,
+      "units": "mm",
+      "status": "standard"
+    }
+  ],
+  "validation_targets": [
+    {
+      "check_type": "count",
+      "target": "m3_clearance_holes",
+      "expected": "Hole count and pattern match locked layout facts."
+    },
+    {
+      "check_type": "axis",
+      "target": "screw_axis",
+      "expected": "Each screw axis is normal to the intended mounting datum."
+    }
+  ],
+  "proxy_may_simplify": [
+    "thread detail",
+    "head recess",
+    "washer detail"
+  ],
+  "must_confirm_before_final": [
+    "clearance class",
+    "head type",
+    "counterbore or countersink",
+    "thread engagement"
+  ],
+  "extensions": {}
+}

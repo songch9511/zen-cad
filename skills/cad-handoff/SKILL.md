@@ -32,22 +32,30 @@ Use it when:
 5. State source intent, primary artifact, secondary outputs, and review artifacts.
 6. State proxy simplifications allowed for layout.
 7. State deterministic checks, snapshot/viewer expectations, and skipped-check reporting.
-8. State the repair loop and when the generator must stop and return to layout review.
+8. State source-of-truth, generated files, repair attempts, and claims that must not be made.
+9. State the repair loop and when the generator must stop and return to layout review.
 
 ## Handoff Skeleton
 
 ```text
 Task: Generate <layout proxy | detail CAD> from the attached CAD spec.
 Primary goal:
+Source-of-truth:
+Generated files:
 Locked facts:
 Parameter contract:
 Artifact targets:
 Allowed simplifications:
 Required outputs:
 Required checks:
+Validation actually run:
+Skipped checks and reasons:
+Snapshot/viewer evidence:
 Repair loop:
+Repair attempts:
 Stop conditions:
 Known assumptions:
+Claims not made:
 ```
 
 ## Non-Negotiables
@@ -56,9 +64,11 @@ Known assumptions:
 - Do not drop the parameter contract when moving from spec to generator prompt.
 - Do not ask for high-fidelity geometry during layout unless the user requested it.
 - Do not treat a screenshot or viewer link as a substitute for geometry checks.
+- Do not validate generated CAD by git diff, file size, or generated-file churn.
 - Do not let the downstream generator change approved layout facts during detail.
 - Do not claim final readiness unless the downstream tool actually produced the required outputs.
 
 ## References
 
 - `references/harness-briefs.md` — Codex, `$cad`, and generic handoff templates.
+- `references/runtime-contract.md` — keeping core specs kernel-neutral while adapter prompts map to active runtime tools.

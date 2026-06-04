@@ -30,7 +30,7 @@ Include:
 
 ## Explicit Targets
 
-Ask downstream generators for explicit file paths when they create files. Avoid vague instructions such as "generate everything in the folder."
+Ask downstream generators for explicit file paths when they create files. Avoid vague instructions such as "generate everything in the folder." Do not request directory-wide generation unless the user explicitly asks for batch conversion.
 
 For a new model, the handoff should name:
 

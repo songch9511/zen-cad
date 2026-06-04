@@ -10,6 +10,7 @@ Preserve locked facts exactly.
 Use named parameters for critical dimensions, clearances, and motion controls.
 Use the available CAD stack in this workspace.
 Return source path, primary CAD artifact path, checks run, failed or skipped checks, and limitations.
+Return source-of-truth, generated files, repair attempts, and claims not made.
 If a check fails, make the smallest responsible source-level repair, regenerate, and rerun the failed check.
 Do not claim final engineering validity.
 ```
@@ -22,8 +23,9 @@ Use this when the `earthtojake/text-to-cad` CAD skill is installed:
 Use $cad to generate STEP-first CAD from this CAD-native spec.
 Create build123d/Python source when generating new geometry.
 Use named parameters, datums, labels, and source-level joints where useful.
-Run refs/facts/planes/positioning inspection, plus targeted measure, frame, mate, or diff checks when relevant.
-Run snapshot or viewer review when available for visible generated or updated CAD.
+Run deterministic geometry inspection first: refs/facts/planes/positioning plus targeted measure, frame, mate, or diff checks when relevant.
+If visible primary CAD was created or updated and snapshot/viewer tooling is available, return saved snapshots or viewer links; if skipped, state why.
+Do not treat viewer links or screenshots as substitutes for geometry checks.
 Repair the smallest source-level cause of any failed check, then regenerate and rerun dependent checks.
 Hand supported artifacts to $cad-viewer when available.
 Stop instead of changing locked layout facts.
@@ -38,5 +40,6 @@ Generate a low-detail assembly layout from this spec.
 Use simple solids for proxies.
 Preserve coordinate frames, axes, center distances, mounting faces, pitch references, clearances, and motion relationships.
 Use named parameters and return the primary artifact path, inspection evidence, skipped checks, and limitations.
+State generated files as derived artifacts and identify the source/spec as authoritative.
 Report any missing information instead of inventing final details.
 ```

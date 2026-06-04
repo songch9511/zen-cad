@@ -1,0 +1,72 @@
+{
+  "schema_version": "0.8.0",
+  "kind": "interface_signature",
+  "id": "belt.gt2_6mm.layout",
+  "title": "Belt Gt2 6Mm Layout",
+  "units": "mm",
+  "family": "belt",
+  "quality_label": "standard",
+  "trusted_for_layout": true,
+  "source": {
+    "type": "common_standard",
+    "note": "GT2 timing belt layout facts for pitch-line positioning. Belt length and tooth count remain design-specific."
+  },
+  "primary_axes": [
+    {
+      "name": "belt_mid_plane",
+      "statement": "Belt runs in a single mid-plane shared by pulleys and idlers."
+    }
+  ],
+  "mounting_datums": [
+    {
+      "name": "pulley_pitch_contact",
+      "statement": "Belt path is tangent to pulley pitch circles, not outer cosmetic teeth."
+    }
+  ],
+  "critical_dimensions": [
+    {
+      "name": "pitch",
+      "value": 2.0,
+      "units": "mm",
+      "status": "standard"
+    },
+    {
+      "name": "belt_width",
+      "value": 6.0,
+      "units": "mm",
+      "status": "standard"
+    }
+  ],
+  "envelope": [
+    {
+      "name": "belt_width_envelope",
+      "value": 6.0,
+      "units": "mm",
+      "status": "standard"
+    }
+  ],
+  "validation_targets": [
+    {
+      "check_type": "plane",
+      "target": "belt_mid_plane",
+      "expected": "All pulley pitch references share the belt mid-plane."
+    },
+    {
+      "check_type": "distance",
+      "target": "pulley_center_distance",
+      "expected": "Center distance is derived from pulley pitch diameters and belt path assumptions."
+    }
+  ],
+  "proxy_may_simplify": [
+    "tooth shape",
+    "belt thickness",
+    "mesh detail"
+  ],
+  "must_confirm_before_final": [
+    "belt length",
+    "pulley tooth counts",
+    "tensioner strategy",
+    "belt manufacturer profile details"
+  ],
+  "extensions": {}
+}

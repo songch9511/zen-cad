@@ -4,7 +4,7 @@ Read this when CAD generation, review, or detail upgrade is requested.
 
 ## Principle
 
-Generated CAD should be checked against the spec, not against visual plausibility alone. Programmatic facts, dimensions, planes, frames, mating deltas, and labels are stronger evidence than screenshots. Visual snapshots are useful review aids and should be converted into geometry checks before becoming claims.
+Generated CAD should be checked against the spec, not against visual plausibility alone. Programmatic facts, dimensions, planes, frames, mating deltas, and labels are stronger evidence than screenshots or viewer links. Visual snapshots are useful review aids and should be converted into geometry checks before becoming claims.
 
 ## Inspection Plan
 
@@ -16,7 +16,7 @@ Before handoff, state what the downstream generator or reviewer should check:
 - major planes, axes, bores, shafts, pitch references, and mounting faces are present;
 - part-local frames and world placements preserve locked layout facts;
 - motion poses, travel limits, gear or belt relationships, and keep-outs are plausible;
-- visual snapshot or viewer review is included when the active tool supports it.
+- visual snapshot or viewer review is included when the active tool supports it, or skipped with a reason.
 
 ## Inspection Hierarchy
 
@@ -29,6 +29,7 @@ Use the strongest available evidence in this order:
 5. prose caveats for checks that could not run.
 
 Do not report a check as passed unless it actually ran or is directly supported by generated source facts.
+Do not validate CAD by git diff, file size, screenshot, or viewer link alone.
 
 ## Repair Loop
 

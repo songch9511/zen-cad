@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.8.0",
+  "kind": "interface_registry_index",
+  "description": "Layout-ready interface signatures for first-pass assembly proxies. These records are not procurement identity, supplier geometry, or final engineering evidence.",
+  "entries": [
+    "motors/nema_17_layout.json",
+    "belts/gt2_6mm_layout.json",
+    "bearings/608_layout.json",
+    "fasteners/m3_clearance_layout.json",
+    "shafts/shaft_bore_8mm_layout.json",
+    "linear_rails/mgn12_layout.json"
+  ]
+}
