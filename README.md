@@ -15,7 +15,7 @@ The core idea is simple:
 
 1. Convert a natural-language mechanical request into a CAD-native spec.
 2. Define coordinate frames, datums, interface primitives, motion relationships, and locked layout facts before generation.
-3. Ask Codex, CoBrA, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another harness to generate a low-detail `layout_proxy`.
+3. Ask the active CAD harness, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another generator to create a low-detail `layout_proxy`.
 4. Let the user review positioning, connections, and drivetrain structure while detail is still cheap.
 5. Proceed to detail CAD only after the assembly contract is approved.
 
@@ -28,7 +28,7 @@ The first CAD artifact should not be judged by surface polish. It should be judg
 | [`cad-spec`](skills/cad-spec/SKILL.md) | Core 0.8 skill. Turns prose into a CAD-native spec with coordinate frames, interface primitives, locked facts, proxy fidelity boundaries, proceed gate, and downstream CAD handoff. |
 | [`assembly-layout`](skills/assembly-layout/SKILL.md) | Defines and reviews low-detail assembly layout contracts: root frames, contacts, connections, motion relationships, locked facts, and proceed review checklists. |
 | [`interface-signatures`](skills/interface-signatures/SKILL.md) | Defines layout-ready interface signatures for common component families without requiring full source-locked STEP geometry. |
-| [`cad-handoff`](skills/cad-handoff/SKILL.md) | Converts a CAD-native spec into a concise downstream brief for Codex, CoBrA, `$cad`, text-to-cad, build123d, or another CAD generator. |
+| [`cad-handoff`](skills/cad-handoff/SKILL.md) | Converts a CAD-native spec into a concise downstream brief for the active CAD harness, `$cad`, text-to-cad, build123d, or another CAD generator. |
 | [`agentic-cad`](skills/agentic-cad/SKILL.md) | Deprecated compatibility entrypoint. Route new work to `cad-spec` plus focused companion skills. |
 
 Legacy 0.7 skills for source-lock, spec-to-CAD execution, kinematics, artifact review, manufacturing preflight, and producer/verifier loops remain in the repository while the 0.8 spec-first architecture is introduced.
@@ -59,7 +59,7 @@ The spec should include:
 Then hand off to the active CAD harness:
 
 ```text
-Use $cad-handoff to generate a layout brief for Codex/CoBrA/$cad from this spec.
+Use $cad-handoff to generate a layout brief for the active CAD harness from this spec.
 ```
 
 The CAD generator should create a low-detail layout proxy first. It may simplify teeth, fillets, threads, supplier body contours, cable sweeps, and cosmetic surfaces. It must preserve locked facts such as axes, datums, mounting faces, bores, pitch references, center distances, clearances, and motion relationships.

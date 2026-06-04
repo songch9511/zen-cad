@@ -13,7 +13,7 @@ version: 0.8.0
 - Use `/cad-spec` first for natural-language mechanical requests, assembly-first specs, coordinate frames, interface primitives, locked layout facts, proxy fidelity policy, proceed gates, and downstream CAD handoffs.
 - Use `/assembly-layout` when the task is specifically about assembly graph, contacts, connections, motion relationships, layout review, or locked-fact drift.
 - Use `/interface-signatures` when standard component interface facts are needed before source-locked STEP geometry exists.
-- Use `/cad-handoff` when an approved spec needs to be handed to Codex, CoBrA, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another generator.
+- Use `/cad-handoff` when an approved spec needs to be handed to the active CAD harness, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another generator.
 
 Legacy 0.7 skills such as `/source-step-parts`, `/spec-to-cad`, `/mechanism-kinematics`, `/cad-artifact-reviewer`, `/manufacturing-preflight`, and `/self-evolving-producer-verifier` remain available for existing milestone/evidence workflows, but they are no longer the default starting point.
 

@@ -23,7 +23,7 @@ Keep these paths explicit:
 - **CAD source directory**: usually `milestones/<id>/03_cad/`.
 - **Validation directory**: `milestones/<id>/05_validation/`.
 
-If this skill is installed into CoBrA and a sibling `ZEN_CAD_WORKSPACE.md` exists, read its `Repository root:` line and use that checkout unless the user gives another root. In Codex, Claude Code, or another repo-local harness, use the current repository root.
+Use the current repository root unless the user explicitly provides another Zen CAD root.
 
 Do not create project artifacts in unrelated workspace paths. All Zen CAD milestone artifacts should stay under the active milestone unless the user explicitly asks for a separate export location.
 

@@ -34,7 +34,7 @@ L1 is not a small GEPA: no candidate pool, no Pareto frontier, no multi-axis tou
 
 ## Harness Primitive: `emit_loop`
 
-`emit_loop`, `complete_sequence`, `assign_task`, CoMeT memory, `/producer-verifier-loop`, and `/gepa` are optional harness primitives. They are not shipped by Zen CAD itself. CoBrA-style environments may provide them; Codex, Claude Code, and simple terminal/file harnesses may not.
+`emit_loop`, `complete_sequence`, `assign_task`, CoMeT memory, `/producer-verifier-loop`, and `/gepa` are optional harness primitives. They are not shipped by Zen CAD itself. Some harness environments may provide them; Codex, Claude Code, and simple terminal/file harnesses may not.
 
 When these primitives are unavailable, do not pretend the autonomous loop ran. Use the fallback procedure below and record the producer/verifier artifacts as files.
 

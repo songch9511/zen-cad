@@ -18,21 +18,21 @@
 
 ## 0.6.6
 
-- Tighten `/agentic-cad` startup semantics so prompt-first milestone creation depends on a resolved Zen CAD workspace root, not CoBrA daemon/session cwd.
+- Tighten `/agentic-cad` startup semantics so prompt-first milestone creation depends on a resolved Zen CAD workspace root, not an external harness cwd.
 - Document equivalent milestone creation commands using explicit command cwd or `--root`.
-- Add regression coverage against ambiguous "running inside a Zen CAD repository" and "from the Zen CAD repository root" wording in the CoBrA startup contract.
+- Add regression coverage against ambiguous "running inside a Zen CAD repository" and "from the Zen CAD repository root" wording in the startup contract.
 
 ## 0.6.5
 
-- Clarify the CoBrA adapter boundary: the Zen CAD repository is not the CoBrA daemon cwd.
-- Update `doctor`, `init --with-cobra`, and CoBrA docs to use `ZEN_CAD_WORKSPACE.md` plus explicit command cwd/`--root` for Zen CAD work.
-- Add regression coverage so stale "Start CoBrA from this repo" guidance cannot return.
+- Clarify the external adapter boundary: the Zen CAD repository is not the harness runtime cwd.
+- Update `doctor`, init guidance, and adapter docs around explicit command cwd/`--root` for Zen CAD work.
+- Add regression coverage so stale "start this harness from the repo" guidance cannot return.
 
 ## 0.6.4
 
 - Add focused companion skills inspired by the text-to-cad skill split: `/source-step-parts`, `/cad-artifact-reviewer`, `/manufacturing-preflight`, and `/mechanism-kinematics`.
 - Route `/agentic-cad` to the new companion skills for source-locking, artifact review, manufacturing preflight, and kinematic contracts.
-- Extend CoBrA sync, doctor freshness checks, required-file validation, and regression tests to cover all bundled Zen CAD skills.
+- Extend required-file validation and regression tests to cover all bundled Zen CAD skills.
 - Update README and adapter docs to describe the expanded skill pack without turning Zen CAD into a CAD kernel or manufacturing certification tool.
 
 ## 0.6.3
@@ -40,7 +40,7 @@
 - Rewrite `/spec-to-cad` as a Zen CAD milestone-first, text-to-cad-first execution skill with canonical artifact paths.
 - Remove stale GFL/PM160/private-path assumptions from the shipped CAD execution skill.
 - Align `/agentic-cad` required artifacts, Gate 0 environment evidence, and validation report examples with the 0.6.x completion gates.
-- Add portable fallback guidance to `/self-evolving-producer-verifier` for harnesses without CoBrA loop primitives.
+- Add portable fallback guidance to `/self-evolving-producer-verifier` for harnesses without loop primitives.
 - Add skill contract regression tests for text-to-cad guidance, canonical milestone paths, portable producer-verifier fallback, and skill versions.
 
 ## 0.6.2
@@ -55,15 +55,15 @@
 
 ## 0.6.1
 
-- Fix the CoBrA adapter boundary: `init --with-cobra` now installs a `ZEN_CAD_WORKSPACE.md` binding beside each synced skill so installed CoBrA skills can recover the Zen CAD repo root.
-- Split CoBrA skill discovery/workspace-binding diagnostics from local CAD `ENV_BLOCKED` diagnostics in `zen-cad doctor`.
-- Teach `/agentic-cad` and `/spec-to-cad` to read the CoBrA workspace binding when they are invoked from an installed skill directory instead of the Zen CAD repo root.
-- Clarify that missing CAD packages block final/release evidence gates, while missing or unbound CoBrA skills block harness discovery.
+- Fix the external adapter boundary so installed skills can recover the Zen CAD repo root.
+- Split harness discovery diagnostics from local CAD `ENV_BLOCKED` diagnostics in `zen-cad doctor`.
+- Teach `/agentic-cad` and `/spec-to-cad` to recover the workspace root when invoked from an installed skill directory instead of the Zen CAD repo root.
+- Clarify that missing CAD packages block final/release evidence gates, while missing harness bindings block harness discovery.
 
 ## 0.6.0
 
 - Reposition Zen CAD as a harness-native, generate-first CAD skill pack: portable workflow skills plus a lightweight optional validation CLI and thin harness adapters.
-- Add `docs/harness_adapters.md` and `plugins/` adapter notes for CoBrA, Codex-style, and Claude Code-style agent harnesses.
+- Add `docs/harness_adapters.md` and `plugins/` adapter notes for repository-local agent harnesses.
 - Add `packages/zen_cad_core/` as the documented validation-core boundary while keeping the existing repo-local CLI and scripts stable.
 - Update README and usage docs around the harness/skills/core responsibility split: harnesses provide CAD generation/execution, Zen CAD provides lightweight workflow policy and optional final completion gates.
 - Include adapter/core documentation and the completion-PASS demo milestone in release package exports and required-file checks.
@@ -72,8 +72,8 @@
 
 - Shift Zen CAD to a generation-first workflow: concept/layout milestones may use proxy or envelope CAD while final completion remains evidence-gated.
 - Add `concept`, `layout`, and `final` milestone maturity modes across milestone creation, validation, source-lock severity, templates, and schemas.
-- Promote build123d plus OCP to the preferred CAD/export backend in `zen-cad doctor`, with `--python` and `ZEN_CAD_PYTHON` support for CoBrA worker/runtime alignment.
-- Add CoBrA skill freshness checks that compare installed skill files against the repository source and warn when stale skills are in use.
+- Promote build123d plus OCP to the preferred CAD/export backend in `zen-cad doctor`, with `--python` and `ZEN_CAD_PYTHON` support for alternate CAD runtimes.
+- Add skill freshness checks that compare installed skill files against the repository source and warn when stale skills are in use.
 - Add a final, completion-PASS `002_nema17_mount_plate` demo milestone with build123d source, STEP/STL exports, OCP load evidence, BOM, and final report.
 - Fix milestone template placeholder replacement for all text artifacts created by `scripts/new_milestone.py`.
 
@@ -88,7 +88,7 @@
 - Update `/agentic-cad`, `/spec-to-cad`, README, docs, and checklists around evidence-gated workflow, truthful BLOCKED reports, and proxy isolation.
 
 - Add a repo-local `./zen-cad` first-run CLI with `doctor`, `init`, `new`, and `validate` commands.
-- Clarify that CoBrA skill sync installs workflow skills but does not bind the active workspace to the Zen CAD repository.
+- Clarify that external skill sync does not bind the active workspace to the Zen CAD repository.
 - Add human-readable PASS/BLOCKED summaries for first-run validation and completion evidence state.
 - Strengthen required-file and schema validation across every milestone directory.
 - Remove committed release snapshots and generated smoke milestones from the source tree.

@@ -1,6 +1,6 @@
 # Downstream CAD Handoff
 
-Read this when handing a CAD-native spec to Codex, CoBrA, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another generator.
+Read this when handing a CAD-native spec to the active CAD harness, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another generator.
 
 ## Handoff Rule
 
@@ -41,10 +41,6 @@ Codex can edit files and run local tools. Ask it to:
 - run available deterministic checks;
 - return artifact paths and limitations;
 - avoid final claims unless final evidence is explicitly requested.
-
-## CoBrA Handoff
-
-CoBrA may invoke installed skills from a workspace unrelated to the project root. Include absolute project paths when paths matter. Keep this detail in the handoff, not in the core spec.
 
 ## text-to-cad / `$cad` Handoff
 

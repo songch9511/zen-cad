@@ -9,7 +9,7 @@ Zen CAD 0.8 is a CAD-native spec skill pack. The harness supplies CAD generation
 - `skills/interface-signatures`: standard interface facts for layout.
 - `skills/cad-handoff`: harness-specific downstream briefs.
 - `skills/agentic-cad`: deprecated compatibility shim.
-- `plugins/`: thin adapter notes for Codex, CoBrA, and Claude Code style environments.
+- `plugins/`: thin adapter notes for generic repository-local harnesses.
 - `./zen-cad`: legacy milestone/evidence CLI retained during transition.
 
 ## Adapter Contract

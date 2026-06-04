@@ -83,7 +83,7 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             'Proceed Gate',
             'Downstream CAD Handoff',
             'Do not source-lock or crawl for catalog parts before writing the layout spec',
-            'Do not embed Zen CAD repository paths, milestone folders, or CoBrA workspace paths',
+            'Do not embed Zen CAD repository paths, milestone folders, or harness workspace paths',
         ]:
             self.assertIn(phrase, text)
         for phrase in [
@@ -182,7 +182,7 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             path.read_text(encoding='utf-8')
             for path in [
                 ROOT / 'README.md',
-                ROOT / 'docs/cobra_usage.md',
+                ROOT / 'docs/generic_usage.md',
                 ROOT / 'docs/environment_setup.md',
                 ROOT / 'docs/operating_principles.md',
                 ROOT / 'prompts/project_kickoff.md',
@@ -303,40 +303,28 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             self.assertIn('additional property not allowed: unexpected', completed.stdout)
             self.assertIn('$.parts[0].geometry_match: expected boolean, got string', completed.stdout)
 
-    def test_cobra_sync_installs_companion_skills(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            work = Path(tmp) / 'zen-cad-kit'
-            copy_repo_fixture(work)
-            skills_root = Path(tmp) / 'cobra-skills'
-
-            subprocess.run(
-                [
-                    sys.executable,
-                    'scripts/setup_zen_cad.py',
-                    '--sync-cobra-skill',
-                    '--cobra-skill-dir',
-                    str(skills_root / 'cad-spec'),
-                    '--skip-validation',
-                ],
-                cwd=work,
-                text=True,
-                capture_output=True,
-                check=True,
-            )
-
-            for skill_name in SHIPPED_SKILLS:
-                self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
-                source_dir = work / 'skills' / skill_name
-                for source_file in (path for path in source_dir.rglob('*') if path.is_file()):
-                    rel = source_file.relative_to(source_dir)
-                    self.assertTrue((skills_root / skill_name / rel).exists(), f'{skill_name}/{rel}')
-                context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'
-                self.assertTrue(context.exists(), skill_name)
-                context_text = context.read_text(encoding='utf-8')
-                self.assertIn(f'Repository root: {work.resolve()}', context_text)
-                self.assertIn('Start new CAD work with /cad-spec', context_text)
-                self.assertIn('The CoBrA daemon/session cwd is not the Zen CAD workspace contract.', context_text)
-                self.assertIn('python3 "<repository-root>/scripts/new_milestone.py" --root "<repository-root>" --request "<goal>"', context_text)
+    def test_no_harness_specific_workspace_binding_surface(self) -> None:
+        forbidden = ['Co' + 'BrA', 'co' + 'bra', 'ZEN_CAD' + '_WORKSPACE', 'with-' + 'co' + 'bra', 'CO' + 'BRA' + '_']
+        checked_roots = [
+            ROOT / 'README.md',
+            ROOT / 'docs',
+            ROOT / 'plugins',
+            ROOT / 'prompts',
+            ROOT / 'scripts',
+            ROOT / 'skills',
+            ROOT / 'templates',
+        ]
+        files: list[Path] = []
+        text_suffixes = {'.md', '.py', '.yaml', '.yml', '.json', '.csv', '.txt'}
+        for root in checked_roots:
+            if root.is_file():
+                files.append(root)
+            else:
+                files.extend(path for path in root.rglob('*') if path.is_file() and path.suffix in text_suffixes)
+        for path in files:
+            text = path.read_text(encoding='utf-8')
+            for phrase in forbidden:
+                self.assertNotIn(phrase, text, str(path.relative_to(ROOT)))
 
 
 if __name__ == '__main__':

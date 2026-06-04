@@ -1,8 +1,8 @@
-# Non-CoBrA Usage
+# Generic Usage
 
 Zen CAD 0.8 can be used in any agentic environment that can read Markdown and hand work to a CAD-generation toolchain.
 
-## Codex, Claude Code, Cursor, Or Similar
+## Spec-First Workflow
 
 Open this repository as the workspace and start with:
 

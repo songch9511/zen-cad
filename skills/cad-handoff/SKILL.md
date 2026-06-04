@@ -1,6 +1,6 @@
 ---
 name: cad-handoff
-description: Convert a CAD-native spec into a concise downstream brief for a CAD-generation harness. Use for Codex, CoBrA, text-to-cad/$cad, build123d, CadQuery, FreeCAD, or other generators, especially when preserving layout locked facts through detail modeling.
+description: Convert a CAD-native spec into a concise downstream brief for a CAD-generation harness. Use for Codex, text-to-cad/$cad, build123d, CadQuery, FreeCAD, or other generators, especially when preserving layout locked facts through detail modeling.
 version: 0.8.0
 ---
 
@@ -10,7 +10,7 @@ version: 0.8.0
 
 Use this skill after `cad-spec` has produced a CAD-native spec and the next step is to ask a CAD-generation harness to create or update geometry.
 
-This skill is adapter-specific. Keep Codex, CoBrA, `$cad`, file paths, tool launchers, and environment details here instead of in the core `cad-spec` skill.
+This skill is adapter-specific. Keep harness names, `$cad`, file paths, tool launchers, and environment details here instead of in the core `cad-spec` skill.
 
 ## Use This Skill When
 
@@ -19,7 +19,7 @@ Use it when:
 - the user wants to proceed from spec to CAD;
 - a layout proxy should be generated from locked facts;
 - a detail model should preserve an approved layout;
-- the target harness is Codex, CoBrA, text-to-cad, build123d, CadQuery, FreeCAD, or unknown.
+- the target harness is Codex, text-to-cad, build123d, CadQuery, FreeCAD, or unknown.
 
 ## Workflow
 
@@ -52,4 +52,4 @@ Known assumptions:
 
 ## References
 
-- `references/harness-briefs.md` — Codex, CoBrA, `$cad`, and generic handoff templates.
+- `references/harness-briefs.md` — Codex, `$cad`, and generic handoff templates.

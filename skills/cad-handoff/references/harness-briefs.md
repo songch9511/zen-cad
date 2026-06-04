@@ -12,19 +12,6 @@ Return source path, primary CAD artifact path, checks run, and limitations.
 Do not claim final engineering validity.
 ```
 
-## CoBrA
-
-Use absolute project paths when CoBrA may run outside the project cwd:
-
-```text
-Project root: <absolute path if known>
-Spec path: <absolute path or pasted spec>
-Target: layout proxy
-Preserve locked facts:
-Allowed proxy simplifications:
-Return generated files and review notes.
-```
-
 ## text-to-cad / $cad
 
 Use this when the `earthtojake/text-to-cad` CAD skill is installed:

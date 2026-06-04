@@ -17,7 +17,7 @@ Run this setup check with the Zen CAD repository as the command cwd:
 ./zen-cad doctor
 ```
 
-`doctor` validates required files, checks bundled JSON/CSV artifacts, reports CoBrA skill discovery/workspace binding state, and shows CAD toolchain preflight. If you only need structure validation, missing CAD tooling is reported as `ENV_BLOCKED` but the repository can still be workflow-ready.
+`doctor` validates required files, checks bundled JSON/CSV artifacts, and shows CAD toolchain preflight. If you only need structure validation, missing CAD tooling is reported as `ENV_BLOCKED` but the repository can still be workflow-ready.
 
 Before final CAD generation or completion validation, use:
 
@@ -25,7 +25,7 @@ Before final CAD generation or completion validation, use:
 ./zen-cad doctor --cad-required
 ```
 
-When CoBrA workers do not use the same Python as your terminal, pass the working CAD venv explicitly:
+When the active CAD runtime does not use the same Python as your terminal, pass the working CAD venv explicitly:
 
 ```bash
 ./zen-cad doctor --cad-required --python /path/to/.venv/bin/python
@@ -41,18 +41,10 @@ To run setup explicitly, use:
 
 The setup helper validates required files, checks bundled JSON/CSV artifacts, and validates every legacy milestone skeleton under `milestones/`.
 
-For CoBrA, add `--with-cobra` to copy the bundled Zen CAD skills into the CoBrA skills directory before validation.
-
-```bash
-./zen-cad init --with-cobra
-```
-
-Skill sync writes a `ZEN_CAD_WORKSPACE.md` binding beside each installed skill. It does not change the CoBrA process working directory. Do not use the Zen CAD repository as the CoBrA daemon cwd; start or restart CoBrA from its normal installation, then let installed skills read the workspace binding and run Zen CAD commands with that root as cwd or `--root`.
-
 Interpret blockers by layer:
 
-- Missing CoBrA skills or missing `ZEN_CAD_WORKSPACE.md`: rerun `./zen-cad init --with-cobra`.
-- Missing `numpy`, `trimesh`, `build123d`, OCP, or CadQuery: strict final CAD evidence cannot run in that Python. This does not block CoBrA skill discovery or concept/layout CAD generation.
+- Missing required repository files or invalid schemas: fix the repo before claiming workflow readiness.
+- Missing `numpy`, `trimesh`, `build123d`, OCP, or CadQuery: strict final CAD evidence cannot run in that Python. This does not block concept/layout spec work.
 
 After that, new CAD work should start with `/cad-spec`. Write a CAD-native spec first, then use `/cad-handoff` to ask the active CAD harness for a low-detail layout proxy.
 

@@ -1,6 +1,6 @@
 ---
 name: cad-spec
-description: Write CAD-native mechanical specs from natural-language design requests before CAD generation. Use for assembly-first layout specs, interface definitions, coordinate frames, datums, motion/drivetrain relationships, proxy fidelity boundaries, proceed gates, and downstream handoffs to Codex, CoBrA, text-to-cad, build123d, or other CAD-generation harnesses.
+description: Write CAD-native mechanical specs from natural-language design requests before CAD generation. Use for assembly-first layout specs, interface definitions, coordinate frames, datums, motion/drivetrain relationships, proxy fidelity boundaries, proceed gates, and downstream handoffs to CAD-generation harnesses such as Codex, text-to-cad, build123d, or FreeCAD.
 version: 0.8.0
 ---
 
@@ -22,7 +22,7 @@ Use `cad-spec` when the user asks for:
 - an assembly with motors, bearings, belts, pulleys, gears, rails, shafts, fasteners, or moving interfaces;
 - a first-pass layout proxy whose coupling structure must be correct;
 - a proceed/review checkpoint before detail modeling;
-- a downstream handoff to Codex, CoBrA, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another CAD generator.
+- a downstream handoff to the active CAD harness, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another CAD generator.
 
 Do not use this skill for CAM, G-code, visual concept art, FEA, procurement-ready sourcing, or manufacturing certification unless the user first needs a CAD-native spec for those downstream tasks.
 
@@ -84,7 +84,7 @@ Omit a section only when it is truly out of scope, and say why.
 - Do not claim a proxy is final geometry.
 - Do not allow detail modeling to change locked layout facts without returning to the proceed gate.
 - Do not present CAD validation, viewer screenshots, or generated geometry as engineering certification.
-- Do not embed Zen CAD repository paths, milestone folders, or CoBrA workspace paths in the core spec unless the downstream handoff specifically requires them.
+- Do not embed Zen CAD repository paths, milestone folders, or harness workspace paths in the core spec unless the downstream handoff specifically requires them.
 
 ## Progressive References
 
@@ -96,7 +96,7 @@ Load these files only when the trigger applies:
 - `references/motion-and-drivetrain.md` — belts, pulleys, gears, screws, sliders, rotary axes, limits, and transmission relationships.
 - `references/proxy-fidelity.md` — what layout proxies may simplify and what they must preserve.
 - `references/proceed-gate.md` — user approval, locked facts, and detail-stage drift rules.
-- `references/downstream-cad-handoff.md` — Codex, CoBrA, `$cad`, text-to-cad, and generic CAD generator handoffs.
+- `references/downstream-cad-handoff.md` — active harness, `$cad`, text-to-cad, and generic CAD generator handoffs.
 
 ## Final Response
 

@@ -4,7 +4,7 @@ Use `/cad-spec` as the top-level workflow. Treat this repository as a portable Z
 
 ## Spec-First Startup
 
-If the user starts a new CoBrA/agent session by stating a CAD goal, treat that as a spec-start request. Do not ask the user to choose file formats or write JSON/YAML. Use `/cad-spec` to produce a CAD-native layout spec with coordinate frames, interface primitives, proxy fidelity policy, locked layout facts, and a proceed gate.
+If the user starts a new agent session by stating a CAD goal, treat that as a spec-start request. Do not ask the user to choose file formats or write JSON/YAML. Use `/cad-spec` to produce a CAD-native layout spec with coordinate frames, interface primitives, proxy fidelity policy, locked layout facts, and a proceed gate.
 
 Zen CAD is harness-native and spec-first. The first generated artifact should usually be a `layout_proxy` whose assembly positioning and interfaces are correct, even if surface quality is intentionally low. Reserve final completion claims for `maturity: final` evidence.
 

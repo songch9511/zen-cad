@@ -4,7 +4,6 @@ These adapter notes show how to use Zen CAD 0.8 as a portable CAD-native spec sk
 
 Adapters included in 0.8:
 
-- `cobra/`: sync bundled skills into CoBrA and keep repository paths explicit when needed.
 - `codex/`: use Zen CAD as a Codex-style skill workspace.
 - `claude-code/`: use Zen CAD as a Claude Code-style skill workspace.
 
