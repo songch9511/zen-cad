@@ -13,7 +13,7 @@
 
 Harness-native CAD workflow for source-aware mechanical design agents
 
-[![Version](https://img.shields.io/badge/version-0.6.6-4A5568?style=for-the-badge)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.7.0-4A5568?style=for-the-badge)](VERSION)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](docs/environment_setup.md)
 [![STEP](https://img.shields.io/badge/STEP-first-00A676?style=for-the-badge)](skills/spec-to-cad/SKILL.md)
 [![CoBrA](https://img.shields.io/badge/CoBrA-adapter-2F80ED?style=for-the-badge)](plugins/cobra/README.md)
@@ -27,14 +27,14 @@ Harness-native CAD workflow for source-aware mechanical design agents
 
 Zen CAD is a portable CAD harness for agentic mechanical design. It is not a CAD kernel, STEP part search engine, or one-shot text-to-CAD model. It gives CoBrA, Codex, Claude Code, Cursor, and similar agents a shared operating contract for turning natural-language mechanical goals into milestone-scoped CAD artifacts with sourcing records, validation evidence, BOMs, blockers, and final engineering reports.
 
-The default 0.6.x model is **generate first, gate later**:
+The default 0.7.0 model is **interface-first, assembly-first, detail-later**:
 
 1. Start from a natural-language CAD goal.
 2. Create a milestone workspace automatically.
-3. Let the harness use its available CAD tools to produce concept/layout CAD.
-4. Source standard/catalog parts before final claims.
-5. Generate only design-specific custom CAD as final geometry.
-6. Validate final/release claims with reproducible evidence gates.
+3. Generate a fast, low-detail `layout_proxy` whose assembly interfaces, axes, datums, center distances, clearance envelopes, and CONTACT_MAP/CONNECTIONS are correct.
+4. Review and approve positioning and connection structure while iteration is cheap.
+5. After approval, source standard/catalog parts and generate high-fidelity design-specific geometry in `detail_finalize`.
+6. Package final STEP, validation evidence, BOM, sourcing report, and final engineering report only for the approved structure.
 
 Zen CAD is designed to wrap a STEP-first CAD runner. When [earthtojake/text-to-cad](https://github.com/earthtojake/text-to-cad) or an equivalent CAD skill is available, use it as the preferred generation, inspection, and snapshot path. Zen CAD provides the surrounding milestone, source-lock, evidence, BOM, report, and release contract.
 
@@ -42,7 +42,7 @@ Zen CAD is designed to wrap a STEP-first CAD runner. When [earthtojake/text-to-c
 
 | Skill | Summary | Source |
 | --- | --- | --- |
-| Agentic CAD | Top-level sourcing-aware orchestrator for requirements, research, part classification, CAD handoff, validation, BOM, and reporting. | [skills/agentic-cad](skills/agentic-cad/SKILL.md) |
+| Agentic CAD | Top-level interface-first, sourcing-aware orchestrator for fast layout proxies, locked assembly interfaces, detail upgrades, validation, BOM, and reporting. | [skills/agentic-cad](skills/agentic-cad/SKILL.md) |
 | Source STEP Parts | Source-locks standard/catalog parts with supplier identity, STEP/STP cache paths, datasheets, dimensions, ratings evidence, and blockers. | [skills/source-step-parts](skills/source-step-parts/SKILL.md) |
 | Spec-to-CAD | Downstream CAD execution skill for measurable specs, STEP/STL exports, CONTACT_MAP/CONNECTIONS, and kernel-backed evidence. | [skills/spec-to-cad](skills/spec-to-cad/SKILL.md) |
 | Mechanism Kinematics | Captures joints, frames, axes, limits, transmissions, and optional URDF/SDF/SRDF handoff contracts for moving assemblies. | [skills/mechanism-kinematics](skills/mechanism-kinematics/SKILL.md) |

@@ -1,7 +1,7 @@
 ---
 name: self-evolving-producer-verifier
 description: "/self-evolving-producer-verifier: Producer-verifier loop where the producer maintains and evolves a persistent approach document each iteration, so verifier critiques compound across iterations instead of being treated independently. General-purpose; layer domain specifics on top."
-version: 0.6.6
+version: 0.7.0
 ---
 
 # Self-Evolving Producer-Verifier (/self-evolving-producer-verifier)

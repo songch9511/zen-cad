@@ -1,7 +1,7 @@
 ---
 name: agentic-cad
-description: Sourcing-aware mechanical CAD workflow that orchestrates Zen CAD milestones, source-locks, STEP-first custom CAD, validation evidence, BOM, and engineering reporting.
-version: 0.6.6
+description: Interface-first, sourcing-aware mechanical CAD workflow that generates fast assembly proxies, locks positioning/connection facts, then upgrades detail with validation evidence, BOM, and engineering reporting.
+version: 0.7.0
 ---
 
 # Agentic CAD
@@ -12,7 +12,9 @@ version: 0.6.6
 
 It is not trying to replace text-to-CAD generators. It leverages the host harness and available CAD plugins/tools first, then uses Zen CAD conventions to keep assumptions, proxies, sourcing gaps, and final evidence honest.
 
-Core principle: **Generate concept/layout CAD early; enforce source-lock and completion evidence only for final/release claims.**
+Core principle: **Generate an interface-accurate concept/layout CAD artifact early; keep detail fidelity cheap until assembly positioning and connection structure are approved; enforce source-lock and completion evidence only for final/release claims.**
+
+For assemblies, the first useful artifact should be a low visual/manufacturing-fidelity but high interface-fidelity model: simple bodies are acceptable, but axes, datums, mating primitives, center distances, contact references, and clearance envelopes must be trustworthy.
 
 ## When to use
 
@@ -20,6 +22,7 @@ Use `/agentic-cad` when the task is a mechanical design project that needs more 
 
 - ambiguous natural-language mechanical requirements;
 - mechanisms, assemblies, frames, housings, brackets, adapters, fixtures, links, plates, shafts, or moving interfaces;
+- assembly-first jobs where axes, datums, center distances, mating features, bolt patterns, clearances, and kinematic relationships must be correct before high-detail surface geometry is worth generating;
 - motors, bearings, screws, rails, connectors, sensors, O-rings, springs, belts, pulleys, fasteners, or catalog components;
 - engineering calculations, load/speed/torque/clearance sizing, or design assumptions;
 - CAD files plus BOM, sourcing notes, validation evidence, and final reporting;
@@ -55,8 +58,9 @@ For non-trivial mechanical CAD projects, run `/agentic-cad` as an orchestration 
 - **Requirements / Systems Engineer** — extracts goals, constraints, units, interfaces, loads, envelope, and acceptance criteria.
 - **Research / Standards / Catalog Engineer** — finds reference designs, catalog parts, datasheets, standards, and credible manufacturer sources.
 - **Mechanical Sizing Engineer** — performs first-order engineering calculations, sizing, margins, and assumptions.
+- **Interface / Assembly Positioning Engineer** — defines datum frames, axes, mating primitives, center distances, clearances, connection graph, and the low-fidelity/high-fidelity boundary before detail CAD starts.
 - **Part Sourcing / STEP RAG Worker via `/source-step-parts`** — searches for off-the-shelf STEP/catalog parts and records source, metadata, dimensions, and limitations.
-- **CAD Generator via `/spec-to-cad`** — generates only design-specific custom parts and assembly glue from a measurable handoff.
+- **CAD Generator via `/spec-to-cad`** — generates phase-tagged `layout_proxy` and `detail_finalize` CAD for design-specific custom parts and assembly glue from a measurable handoff.
 - **Mechanism Kinematics Worker via `/mechanism-kinematics`** — records joints, frames, axes, limits, and motion handoff data when the assembly moves.
 - **Assembly / Validation Worker** — verifies fit, interfaces, CONTACT_MAP, CONNECTIONS, collisions, units, and export integrity.
 - **Independent Verifier via `/cad-artifact-reviewer`** — reviews whether evidence supports completion claims and flags unverified engineering assumptions.
@@ -80,7 +84,7 @@ For small tasks, these roles may collapse into one executor, but the same gates 
 - `CONTACT_MAP` and `CONNECTIONS` describing intended mating/contact/attachment relationships;
 - validation criteria and expected machine-readable evidence.
 
-`/spec-to-cad` then generates the custom CAD, integrates sourced STEP parts, builds the assembly glue, and produces reproducible CAD-kernel/CLI/JSON/test evidence where applicable.
+`/spec-to-cad` then generates the custom CAD in the requested maturity phase, integrates sourced STEP parts, builds the assembly glue, and produces reproducible CAD-kernel/CLI/JSON/test evidence where applicable. For assemblies, `/agentic-cad` should usually ask `/spec-to-cad` for a fast `layout_proxy` first, then a `detail_finalize` pass only after the interface/positioning review is accepted.
 
 `/spec-to-cad` must not silently replace selected catalog parts with generated lookalikes. If `/agentic-cad` says a part is sourced, `/spec-to-cad` should use the sourced STEP file or return a blocker explaining why it cannot.
 
@@ -119,7 +123,25 @@ The Part RAG layer finds candidate parts, ranks them, downloads/caches STEP geom
 5. **Screenshots are not completion evidence.** Viewer snapshots are human review artifacts only. They may help communicate design state but do not prove completion.
 6. **Completion requires reproducible evidence.** Final claims require CLI/JSON/CAD-kernel/test evidence via `/spec-to-cad` where applicable.
 7. **Do not conflate analysis domains.** Always distinguish CAD validation from FEA, thermal, vibration, fatigue, bearing life, manufacturability, compliance, and certification. CAD checks can prove geometry/connectivity/interference properties; they do not certify real-world performance by themselves.
-8. **Make uncertainty visible.** Any proxy, placeholder, unverified rating, missing datasheet, untested load case, or non-manufacturing-ready feature must be explicitly flagged.
+8. **Interface fidelity before surface fidelity.** For assemblies, the first draft may simplify teeth, fillets, curvature, cable sweeps, chamfers, cosmetic detail, and final STEP resolution, but must preserve the locating interfaces: coordinate frames, axes, center distances, bores, bolt patterns, mating planes/cylinders, pitch/contact references, clearance envelopes, and kinematic relationships.
+9. **Lock approved assembly facts.** After user/verifier approval of `layout_proxy`, high-fidelity generation must preserve CONTACT_MAP/CONNECTIONS, part transforms, datum frames, and critical interface dimensions. Any required interface change loops back to layout review.
+10. **Make uncertainty visible.** Any proxy, placeholder, unverified rating, missing datasheet, untested load case, or non-manufacturing-ready feature must be explicitly flagged.
+
+## Interface-first assembly maturity model
+
+For assemblies, separate two kinds of quality:
+
+- **Assembly/interface quality** — datum frames, axes, origins, center distances, bores/shafts, bearing seats, bolt patterns, mating faces, gear/pulley pitch references, cable/wire endpoints, keep-outs, clearances, joints, limits, and part transforms. This quality must be high from the first useful artifact.
+- **Surface/detail/manufacturing quality** — smooth involute teeth, high segment counts, fillets, chamfers, thread detail, aesthetic curvature, fine cable sweeps, material/process details, optimized STEP tessellation/export size, and final report packaging. This quality may be intentionally low during early layout.
+
+Use a maturity split when assembly positioning or user-facing layout risk is material:
+
+1. **`layout_proxy` / assembly-first draft** — produce a fast, low-detail CAD assembly whose purpose is positioning, mating, clearance, and mechanism review. Proxy bodies may be boxes, cylinders, simplified teeth, coarse sweeps, or envelopes, but every critical interface must be dimensionally meaningful and traceable to CONTACT_MAP/CONNECTIONS. This phase is completion-ineligible unless the user explicitly asked only for a proxy/layout deliverable.
+2. **Positioning review gate** — the user, verifier, or project gate checks whether the coupling structure, drivetrain, axes, clearances, and assembly relationships are correct. If not, revise the proxy and contract while iteration is still cheap.
+3. **`detail_finalize` / quality upgrade** — only after approval, lock the accepted assembly facts and spend time on high-fidelity geometry, smoother surfaces, real sourced STEP replacement, fillets/chamfers, manufacturing-relevant details, and final export quality.
+4. **`final_package` / release bundle** — run source-lock, CAD-kernel validation, BOM, sourcing report, final engineering report, and independent review before making completion claims.
+
+A low-detail assembly proxy is not a low-discipline artifact. It is allowed to be visually rough, but it must be structurally honest about how parts locate, mate, rotate, slide, fasten, clear, and transfer motion or load.
 
 ## Workflow
 
@@ -162,6 +184,8 @@ Decompose the system into assemblies, subassemblies, functional interfaces, coor
 
 Identify which components carry loads, which locate geometry, which transfer motion/power, which are protective/enclosure parts, and which are purchased/catalog items.
 
+For assembly-first work, explicitly mark **locked interface facts** that must survive later detail upgrades: datum frames, axes, origins, center distances, bores, shaft fits, bearing seats, pitch/contact references, mounting faces, bolt patterns, clearance envelopes, keep-outs, and joint degrees of freedom.
+
 ### 6. Classify every part
 
 Classify each part before CAD generation:
@@ -198,7 +222,19 @@ For every retrieved STEP file:
 
 Normalization is an evidence-producing step, not a cosmetic conversion.
 
-### 9. Specify custom CAD parts
+### 9. Generate interface-first assembly proxy when positioning is in scope
+
+Before high-detail CAD, create a `layout_proxy` assembly when the project has meaningful multi-part positioning, mechanisms, or uncertain user-facing layout. The proxy should be fast to generate and easy to revise, while preserving hard assembly facts:
+
+- exact coordinate frames, axes, origins, center distances, bores, shafts, pitch/contact references, mounting faces, bolt patterns, clearances, keep-outs, cable/wire routing envelopes, and joint degrees of freedom;
+- simplified bodies for expensive details: rough teeth, cylinders/cones/boxes, low segment counts, simple sweeps, suppressed fillets/chamfers, simplified thread/fastener envelopes, and placeholder catalog envelopes when allowed;
+- visible labels or metadata for every proxy/placeholder and for every interface fact that is intended to survive finalization.
+
+The proxy must be reviewed against CONTACT_MAP/CONNECTIONS and accepted by a user, verifier, or explicit project gate before expensive `detail_finalize` CAD. If the review changes interfaces or transforms, update the assembly contract and regenerate the proxy; do not proceed by only polishing the wrong layout.
+
+If the job is a single isolated part or the user explicitly requests one-shot final detail, record why the proxy pass was skipped.
+
+### 10. Specify custom CAD parts
 
 Generate only custom design-specific parts and required assembly glue. Typical generated parts include housings, brackets, adapters, frames, links, fixtures, custom plates, custom shafts, mechanism-specific structures, guards, covers, and mounting plates.
 
@@ -211,7 +247,7 @@ For each custom part, provide:
 - mounting holes, axes, datum frames, clearances, and fastener strategy;
 - validation criteria.
 
-### 10. Prepare `CONTACT_MAP` and `CONNECTIONS`
+### 11. Prepare `CONTACT_MAP` and `CONNECTIONS`
 
 Create a source-aware assembly contract:
 
@@ -222,21 +258,31 @@ Create a source-aware assembly contract:
 
 These maps must be machine-checkable where possible and human-readable enough for review.
 
-### 11. Hand off to `/spec-to-cad`
+### 12. Hand off to `/spec-to-cad`
 
-Pass `/spec-to-cad` a complete handoff bundle containing measurable spec, selected parts manifest, normalized STEP file paths, custom parts list, CONTACT_MAP, CONNECTIONS, and validation criteria.
+Pass `/spec-to-cad` a phase-tagged handoff bundle containing measurable spec, selected parts manifest, normalized STEP file paths, custom parts list, CONTACT_MAP, CONNECTIONS, locked interface facts, fidelity boundaries, and validation criteria.
+
+Include `generation_phase: layout_proxy | detail_finalize | final_package`.
+
+- For `layout_proxy`, require fast assembly/positioning evidence and explicitly allow simplified surface/detail geometry while preserving critical interfaces.
+- For `detail_finalize`, require the final geometry to preserve the accepted CONTACT_MAP/CONNECTIONS, part transforms, datum frames, and critical interface dimensions unless the workflow loops back to layout review.
+- For `final_package`, require source-lock, kernel-backed validation, BOM, sourcing report, and final engineering report evidence.
 
 The handoff must say which parts are prohibited from generation because they are sourced standard/catalog parts.
 
-### 12. Run CAD generation, assembly, and kernel validation
+### 13. Run CAD generation, assembly, and kernel validation
 
-Use `/spec-to-cad` to generate custom CAD, assemble sourced STEP parts and custom parts, and run kernel-backed checks. Required checks depend on the project, but usually include file loadability, units, solids validity, non-empty geometry, bounding boxes, placement transforms, connection references, interference checks, clearance checks, and export reproducibility.
+Use `/spec-to-cad` to generate the requested maturity phase, assemble sourced STEP parts and custom parts, and run kernel-backed checks.
 
-### 13. Obtain independent verifier evidence
+For `layout_proxy`, prioritize fast checks for file loadability, units, non-empty geometry, bounding boxes, placement transforms, axes, center distances, mating references, clearance envelopes, collision expectations, and CONTACT_MAP/CONNECTIONS reference integrity.
+
+For `detail_finalize` and `final_package`, add full solids validity, export reproducibility, artifact hashes, final STEP/STP load checks, source-lock checks, and any higher-fidelity geometry inspections required by the design.
+
+### 14. Obtain independent verifier evidence
 
 Have an independent verifier check the outputs against the original requirements, artifacts, manifests, and validation evidence. The verifier must inspect reproducible evidence, not just narrative claims or screenshots.
 
-### 14. Produce BOM, sourcing report, and final engineering report
+### 15. Produce BOM, sourcing report, and final engineering report
 
 Create a BOM and sourcing report that distinguish sourced parts, generated custom parts, semi-standard/customized parts, and proxies. Include part numbers, manufacturers, source URLs, datasheets, STEP file paths, rating verification status, quantities, and unresolved sourcing risks.
 
@@ -251,10 +297,14 @@ A complete `/agentic-cad` project should produce or update these canonical Zen C
 - `02_parts/part_classification_table.md`: every part classified as `off_the_shelf`, `semi_standard_configurable`, `custom_design_specific`, or `placeholder_proxy`;
 - `02_parts/selected_parts_manifest.json`: selected off-the-shelf/catalog parts with source, datasheet, STEP path, dimensions, interfaces, `geometry_match`, and `engineering_rating_verified`;
 - `02_parts/normalized_step_metadata.json`: units, bounding boxes, axes, mating features, connection points, and metadata extracted from retrieved STEP files when standard parts are in scope;
-- `03_cad/custom_cad_handoff.yaml`: complete downstream bundle for `/spec-to-cad`;
+- `03_cad/layout_proxy_handoff.yaml`: optional phase-specific handoff for fast assembly/interface proxy generation, including locked interface facts and fidelity boundaries;
+- `03_cad/custom_cad_handoff.yaml`: complete downstream bundle for `/spec-to-cad`, including `generation_phase` when a phased workflow is used;
 - `03_cad/<source>` and `03_cad/exports/<primary>.step`: generated custom CAD source and primary STEP-first exports from `/spec-to-cad`;
+- `03_cad/exports/<primary>_layout_proxy.step`: optional low-detail, interface-accurate assembly proxy export for review; completion-ineligible unless proxy-only delivery was explicitly requested;
 - `04_assembly/contact_map.json`: contacts, mating surfaces, clearances, keep-outs, and interference expectations;
 - `04_assembly/connections.json`: joints, fasteners, bearings, shafts, connectors, degrees of freedom, and assembly relationships;
+- `04_assembly/assembly_positioning_review.md`: optional review record showing layout proxy acceptance, requested interface changes, or rationale for skipping the proxy pass;
+- `05_validation/interface_validation_report.json`: optional fast proxy/layout checks for transforms, axes, center distances, mating references, clearance envelopes, and CONTACT_MAP/CONNECTIONS integrity;
 - `05_validation/validation_report.json`: command-backed validation checks with evidence type, command metadata, artifact paths, sizes, hashes, results, and limitations;
 - `06_bom/bom.csv`: quantities, part numbers, source/manufacturing method, and status;
 - `07_report/final_engineering_report.md`: verified claims, limitations, next engineering steps, and delivery summary.
@@ -404,10 +454,13 @@ Example proxy record:
 The handoff to `/spec-to-cad` must be explicit and machine-readable. Include:
 
 - project title, goal, units, coordinate conventions, and target output formats;
+- `generation_phase`: `layout_proxy`, `detail_finalize`, or `final_package`;
 - measurable spec and assumptions;
 - selected sourced parts manifest with cached STEP paths and normalized metadata;
 - list of parts that must not be generated because they are sourced catalog/standard parts;
 - custom parts list with functional requirements, dimensions, materials/manufacturing assumptions, datums, interfaces, and tolerances;
+- locked interface facts that must survive detail upgrades: datum frames, axes, origins, center distances, bores, shaft fits, bearing seats, pitch/contact references, mounting faces, bolt patterns, clearance envelopes, keep-outs, and joint degrees of freedom;
+- fidelity boundary: what may be simplified in `layout_proxy` and what must be upgraded in `detail_finalize`;
 - CONTACT_MAP and CONNECTIONS;
 - expected assembly tree and part naming conventions;
 - validation criteria and required evidence files;
@@ -416,14 +469,15 @@ The handoff to `/spec-to-cad` must be explicit and machine-readable. Include:
 Expected `/spec-to-cad` outputs:
 
 - generated custom CAD files;
+- `layout_proxy` source/export plus `05_validation/interface_validation_report.json` when the requested phase is layout proxy;
 - assembly files integrating sourced and custom geometry;
 - normalized exports as required by the project;
-- `05_validation/validation_report.json` with reproducible command metadata, evidence types, and hash-backed artifacts;
+- `05_validation/validation_report.json` with reproducible command metadata, evidence types, and hash-backed artifacts for final/detail phases;
 - failure report with exact blockers if generation or validation cannot complete.
 
 ## Validation gates
 
-Zen CAD uses a generation-first, maturity-aware order. Structure validation and completion validation are different. `./zen-cad validate --level structure milestones/<id>` may pass while `./zen-cad validate --level completion milestones/<id>` is blocked. That is acceptable for concept/layout work. Never present final completion while an upstream final gate remains blocked.
+Zen CAD uses a generation-first, maturity-aware order. Structure validation, interface/layout validation, detail validation, and completion validation are different. `./zen-cad validate --level structure milestones/<id>` may pass while `./zen-cad validate --level completion milestones/<id>` is blocked. That is acceptable for concept/layout work and for `layout_proxy` review. Never present final completion while an upstream final gate remains blocked.
 
 ### Gate 0: Doctor / environment preflight
 
@@ -469,13 +523,17 @@ Proxy shape:
 
 Run `./zen-cad source-lock milestones/<id>` before treating standard parts as final evidence.
 
-### Gate 3: Custom CAD generation
+### Gate 3: Custom CAD generation and fidelity phase
 
-Pass only when generated geometry is design-specific custom CAD, not generated lookalikes for standard parts. Proxy STL/debug geometry may be useful for layout but is completion-ineligible. For final PASS, `05_validation/validation_report.json` must include `cad_generation` evidence with command metadata and matching source/export artifact hashes.
+Pass only when generated geometry is design-specific custom CAD, not generated lookalikes for standard parts. `layout_proxy` geometry may simplify teeth, curvature, fillets, chamfers, threads, cable sweeps, and visual detail, but it must preserve locked interface facts and must be marked completion-ineligible. Proxy STL/debug geometry may be useful for layout but is completion-ineligible. For `detail_finalize` or final PASS, `05_validation/validation_report.json` must include `cad_generation` evidence with command metadata and matching source/export artifact hashes.
 
-### Gate 4: Assembly contract
+### Gate 4: Assembly contract and positioning approval
 
 Pass only when CONTACT_MAP and CONNECTIONS reference known sourced and custom parts, include expected contacts/connections, state clearances, fasteners, joints, or unresolved assumptions, and link each row to passing geometry evidence with `evidence_check_ids`.
+
+For assembly-first work, `05_validation/interface_validation_report.json` or the main validation report must check placement transforms, axes, center distances, mating references, clearance envelopes, collision expectations, joint references, and CONTACT_MAP/CONNECTIONS reference integrity before expensive detail finalization.
+
+If a `layout_proxy` was approved, detail/final runs must preserve approved CONTACT_MAP/CONNECTIONS, part transforms, datum frames, and critical interface dimensions. Any change to those facts returns the workflow to layout review rather than silently polishing a different assembly.
 
 ### Gate 5: Export/cache verification
 
@@ -532,6 +590,7 @@ A project using `/agentic-cad` is complete only when all in-scope deliverables a
 - no credible off-the-shelf standard part was replaced by generated geometry without a documented exception;
 - sourced STEP geometry has source metadata and normalized geometry metadata;
 - any engineering rating claim has datasheet/calculation/test evidence, not just STEP geometry;
+- for assemblies, an interface-first `layout_proxy` was reviewed or skipped with rationale, and approved assembly facts were preserved in final/detail geometry;
 - custom parts were generated from measurable specs and integrated with sourced parts;
 - CONTACT_MAP and CONNECTIONS exist and are reflected in assembly validation;
 - `/spec-to-cad` or equivalent tooling produced reproducible CLI/JSON/CAD-kernel/test evidence;
@@ -550,6 +609,9 @@ Viewer snapshots, screenshots, and rendered images may be included for human rev
 - Selecting catalog parts without datasheet/source URLs when ratings matter.
 - Inventing part numbers, ratings, dimensions, or manufacturer claims.
 - Failing to mark proxies and placeholders.
+- Treating a `layout_proxy`, placeholder envelope, or rough review model as final manufacturing/detail geometry.
+- Spending high-fidelity/final-package generation on an unreviewed assembly layout when positioning/connection correctness is the main risk and a proxy pass is feasible.
+- Changing locked CONTACT_MAP/CONNECTIONS, transforms, datum frames, or critical interface dimensions during detail upgrade without returning to layout review.
 - Allowing `/spec-to-cad` to generate sourced standard parts silently.
 - Omitting CONTACT_MAP or CONNECTIONS for assemblies.
 - Reporting CAD validation as if it were FEA, thermal, vibration, fatigue, bearing life, manufacturability, tolerance, compliance, certification, procurement, or physical-test validation.
@@ -557,6 +619,6 @@ Viewer snapshots, screenshots, and rendered images may be included for human rev
 
 ## Short form
 
-`/agentic-cad` = requirements → research/datasheets → calculations → architecture → classify every part → retrieve standard/catalog STEP parts with Part RAG → generate only custom design-specific CAD → normalize sourced STEP metadata → define CONTACT_MAP/CONNECTIONS → hand off to `/spec-to-cad` → run kernel/CLI/JSON/test validation → independent verifier → BOM/sourcing report → final engineering report.
+`/agentic-cad` = requirements → research/datasheets → calculations → architecture → classify every part → retrieve standard/catalog STEP parts with Part RAG → define CONTACT_MAP/CONNECTIONS + locked interface facts → generate fast `layout_proxy` for assembly/positioning review when useful → after approval, generate only custom design-specific high-detail CAD → normalize sourced STEP metadata → hand off phase-tagged bundles to `/spec-to-cad` → run interface/kernel/CLI/JSON/test validation → independent verifier → BOM/sourcing report → final engineering report.
 
 Remember: **Do not generate standard parts when credible off-the-shelf STEP/catalog parts can be retrieved.** STEP files prove geometry only; ratings need datasheets/calculations/tests. Viewer snapshots are for humans, not completion. CAD validation is not FEA, thermal, vibration, fatigue, bearing life, manufacturability, or certification.

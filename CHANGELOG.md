@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.7.0
+
+- Upgrade `/agentic-cad` to an interface-first / assembly-first workflow: generate fast low-detail `layout_proxy` assemblies with accurate datums, axes, mating primitives, center distances, CONTACT_MAP/CONNECTIONS, clearances, and part transforms before expensive detail CAD.
+- Add phase-aware CAD maturity guidance for `layout_proxy`, `detail_finalize`, and `final_package`, including locked interface facts, positioning review, and completion-ineligible proxy artifacts.
+- Document new optional layout artifacts: `03_cad/layout_proxy_handoff.yaml`, `03_cad/exports/<primary>_layout_proxy.step`, `04_assembly/assembly_positioning_review.md`, and `05_validation/interface_validation_report.json`.
+
 ## 0.6.6
 
 - Tighten `/agentic-cad` startup semantics so prompt-first milestone creation depends on a resolved Zen CAD workspace root, not CoBrA daemon/session cwd.

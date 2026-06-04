@@ -24,7 +24,7 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
     def test_shipped_skills_have_release_versions(self) -> None:
         for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
             text = (ROOT / f'skills/{skill_name}/SKILL.md').read_text(encoding='utf-8')
-            self.assertIn('version: 0.6.6', text, skill_name)
+            self.assertIn('version: 0.7.0', text, skill_name)
 
     def test_text_to_cad_inspired_companion_skills_exist(self) -> None:
         expected = {
@@ -69,6 +69,23 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             '/manufacturing-preflight',
             '/mechanism-kinematics',
             'Do not load every companion skill automatically',
+        ]:
+            self.assertIn(phrase, text)
+
+    def test_agentic_cad_documents_interface_first_maturity_split(self) -> None:
+        text = (ROOT / 'skills/agentic-cad/SKILL.md').read_text(encoding='utf-8')
+        for phrase in [
+            'Interface-first assembly maturity model',
+            'Assembly/interface quality',
+            '`layout_proxy` / assembly-first draft',
+            'Positioning review gate',
+            '`detail_finalize` / quality upgrade',
+            '`final_package` / release bundle',
+            '03_cad/layout_proxy_handoff.yaml',
+            '04_assembly/assembly_positioning_review.md',
+            '05_validation/interface_validation_report.json',
+            'generation_phase: layout_proxy | detail_finalize | final_package',
+            'Changing locked CONTACT_MAP/CONNECTIONS, transforms, datum frames, or critical interface dimensions during detail upgrade without returning to layout review',
         ]:
             self.assertIn(phrase, text)
 
