@@ -7,11 +7,12 @@ Agentic mechanical design을 위한 harness-native CAD specification skill pack.
 [![Assembly First](https://img.shields.io/badge/assembly--first-layout-2F80ED?style=for-the-badge)](skills/assembly-layout/SKILL.md)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-Zen CAD는 Codex, text-to-cad, build123d, CadQuery, FreeCAD 같은 CAD 생성 harness가 더 나은 첫 CAD 결과를 만들도록 돕는 작은 스킬 팩입니다.
+Zen CAD는 Cobra, Codex, Claude Code 같은 General Purpose 에이전트가 더 나은 CAD 결과를 만들도록 돕는 스킬 팩입니다.
 
-이 레포는 CAD 커널, 부품 카탈로그 크롤러, 검증 서버, 또는 원샷 text-to-CAD 모델이 아닙니다. 목표는 자연어 요청을 바로 형상으로 밀어 넣는 것이 아니라, 먼저 CAD-native spec을 작성해 어셈블리의 위치 관계, 결합부, 구동계, 파라미터, 검사 계획을 잠그는 것입니다.
+이 레포의 목표는 자연어 요청을 바로 형상으로 밀어 넣는 것이 아니라, 먼저 CAD-native spec을 작성해 어셈블리의 위치 관계, 결합부, 구동계, 파라미터, 검사 계획을 잠그는 것입니다.
 
-핵심 철학은 단순합니다. 첫 모델은 표면 품질보다 어셈블리 계약을 맞추는 데 집중합니다. 즉, 복잡한 곡면이나 미려한 외형보다 좌표계, datum, 축, bore, shaft, bolt pattern, pitch reference, clearance, motion relationship이 먼저 맞아야 합니다. 사용자가 layout proxy를 보고 proceed하면, 그 locked facts를 유지한 채 detail CAD로 넘어갑니다.
+핵심 철학은 단순합니다. 처음 생성되는 모델은 표면 품질보다 어셈블리 계약을 맞추는 데 집중합니다. 즉, 복잡한 곡면이나 미려한 외형보다 좌표계, datum, 축, bore, shaft, bolt pattern, pitch reference, clearance, motion relationship이 먼저 맞아야 합니다. 
+이후 사용자가 layout proxy를 보고 proceed하면, 그 locked facts를 유지한 채 detail CAD로 넘어가 최종적으로 패키징하게 됩니다.
 
 ## Workflow
 
