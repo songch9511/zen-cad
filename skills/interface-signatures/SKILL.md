@@ -27,8 +27,9 @@ Use it when a layout spec mentions:
 2. Extract only interface facts needed for layout.
 3. Mark each fact as standard, assumed, user-provided, or must-confirm.
 4. Define envelope geometry when useful.
-5. State what a proxy may simplify.
-6. State what needs datasheet or supplier evidence before final claims.
+5. Name checks that can validate the interface in generated CAD.
+6. State what a proxy may simplify.
+7. State what needs datasheet or supplier evidence before final claims.
 
 ## Signature Shape
 
@@ -41,6 +42,7 @@ Interface signature: <family/name>
 - primary axes:
 - mounting datums:
 - critical dimensions:
+- validation targets:
 - envelope:
 - proxy may simplify:
 - must confirm before final:

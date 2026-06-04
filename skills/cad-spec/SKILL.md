@@ -1,6 +1,6 @@
 ---
 name: cad-spec
-description: Write CAD-native mechanical specs from natural-language design requests and orchestrate CAD work through specialist subagents when available. Use for assembly-first layout specs, interface definitions, coordinate frames, datums, motion/drivetrain relationships, proxy fidelity boundaries, proceed gates, subagent delegation, and downstream CAD handoffs.
+description: Write CAD-native mechanical specs from natural-language design requests and orchestrate CAD work through specialist subagents when available. Use for assembly-first layout specs, parameter contracts, artifact targets, inspection plans, interface definitions, coordinate frames, datums, motion/drivetrain relationships, proxy fidelity boundaries, repair loops, proceed gates, subagent delegation, and downstream CAD handoffs.
 version: 0.8.0
 ---
 
@@ -8,9 +8,9 @@ version: 0.8.0
 
 ## Purpose
 
-Use this skill before asking a CAD-generation agent or CAD toolchain to create geometry. It converts a user's natural-language mechanical request into a CAD-native spec that a downstream harness can model, inspect, and revise.
+Use this skill before asking a CAD-generation agent or CAD toolchain to create geometry. It converts a user's natural-language mechanical request into a CAD-native spec that a downstream harness can model, inspect, repair, and revise.
 
-This skill owns the spec and assembly contract. It may also coordinate CAD work by delegating bounded specialist subtasks when the harness supports subagents. It should not perform catalog crawling, manufacturing certification, or broad report packaging.
+This skill owns the spec and assembly contract. It also defines the parameter contract, artifact targets, inspection plan, repair rules, and downstream handoff. It may coordinate CAD work by delegating bounded specialist subtasks when the harness supports subagents. It should not perform catalog crawling, manufacturing certification, or broad report packaging.
 
 Core rule: **spec the assembly contract before generating CAD.** For assemblies, prioritize coordinate frames, datums, axes, mating primitives, center distances, clearances, transmission relationships, and locked layout facts over surface fidelity.
 
@@ -22,6 +22,8 @@ Use `cad-spec` when the user asks for:
 - an assembly with motors, bearings, belts, pulleys, gears, rails, shafts, fasteners, or moving interfaces;
 - a first-pass layout proxy whose coupling structure must be correct;
 - a proceed/review checkpoint before detail modeling;
+- a parameterized CAD brief with named dimensions, derived relationships, and validation targets;
+- artifact targets for source, STEP/STP, snapshots, viewer links, or secondary exports;
 - specialist subagents for layout, interfaces, motion, CAD generation, or review;
 - a downstream handoff to the active CAD harness, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another CAD generator.
 
@@ -39,6 +41,8 @@ Use these defaults unless the user specifies otherwise:
 - First artifact target: low-detail `layout_proxy`.
 - Surface fidelity: intentionally low for layout; boxes, cylinders, envelopes, simplified teeth, and coarse sweeps are acceptable.
 - Interface fidelity: high from the first pass; axes, bores, mounting faces, bolt patterns, pitch references, and clearances must be explicit.
+- Primary artifact intent: STEP/STP when the active CAD generator supports it.
+- Parameter policy: named parameters with units, source, locked status, driven features, and validation targets.
 
 Ask one focused question only when missing information makes the layout impossible, fit-critical, safety-critical, or compliance-bound. Otherwise proceed with named assumptions and mark them as not locked.
 
@@ -48,13 +52,16 @@ Ask one focused question only when missing information makes the layout impossib
 2. Load only the relevant references listed below.
 3. Write a concise CAD-native Markdown spec. Do not ask the user to provide JSON/YAML.
 4. Define the coordinate system, root frame, part-local frames, and dominant datums.
-5. Define the assembly graph: parts, roles, fixed/moving relationships, and repeated component families.
-6. Define interface primitives: planes, cylinders, bores, shafts, bolt circles, pitch circles, rails, slots, belt planes, gear mesh references, cable/keep-out envelopes, and fastener axes.
-7. Define motion or drivetrain relationships when present.
-8. Define proxy fidelity boundaries: what may be simplified and what must remain dimensionally meaningful.
-9. Define locked layout facts and a proceed gate so the user can approve positioning before detail modeling.
-10. If CAD generation or review is requested, spawn specialist subagents where the harness supports delegation.
-11. Write a downstream CAD handoff targeted to the active harness.
+5. Define named parameters, units, selected values, locked/assumed/derived status, driven features, and validation targets.
+6. Define artifact targets: maturity, CAD source intent, primary CAD artifact, secondary outputs, and review evidence.
+7. Define the assembly graph: parts, roles, fixed/moving relationships, and repeated component families.
+8. Define interface primitives: planes, cylinders, bores, shafts, bolt circles, pitch circles, rails, slots, belt planes, gear mesh references, cable/keep-out envelopes, and fastener axes.
+9. Define motion or drivetrain relationships when present.
+10. Define proxy fidelity boundaries: what may be simplified and what must remain dimensionally meaningful.
+11. Define locked layout facts and a proceed gate so the user can approve positioning before detail modeling.
+12. Define an inspection plan and repair loop for generated CAD.
+13. If CAD generation or review is requested, spawn specialist subagents where the harness supports delegation.
+14. Write a downstream CAD handoff targeted to the active harness.
 
 ## Specialist Subagents
 
@@ -64,9 +71,10 @@ Default specialist roles:
 
 - `layout-specialist`: root frame, part-local frames, assembly graph, contacts, connections, locked layout facts.
 - `interface-specialist`: standard component interface signatures, bolt patterns, bores, shafts, rails, belts, envelopes, and must-confirm facts.
+- `parameter-specialist`: named parameters, defaults, derived values, allowed ranges, driven features, and validation targets.
 - `motion-specialist`: joints, travel, transmission ratios, gear/belt/screw relationships, motion limits, and keep-outs.
 - `cad-generator`: low-detail layout proxy or detail CAD from the approved spec, preserving locked facts.
-- `cad-reviewer`: compare generated CAD against locked facts, proceed gate, allowed simplifications, and stated assumptions.
+- `cad-reviewer`: compare generated CAD against parameters, locked facts, inspection plan, proceed gate, allowed simplifications, and stated assumptions.
 
 Spawn only bounded tasks. Give each subagent the minimum relevant spec sections, expected output, and stop conditions. Do not ask subagents to browse broadly for parts, invent final ratings, or rewrite the whole spec. If subagents are unavailable, perform the same roles as sequential local passes.
 
@@ -79,12 +87,16 @@ Every useful spec should include:
 
 ## Intent
 ## Coordinate System
+## Parameter Contract
+## Artifact Targets
 ## Parts And Roles
 ## Assembly Graph
 ## Interface Primitives
 ## Motion And Drivetrain
 ## Proxy Fidelity Policy
 ## Locked Layout Facts
+## Inspection Plan
+## Repair Loop
 ## Assumptions And Open Questions
 ## Proceed Gate
 ## Downstream CAD Handoff
@@ -98,6 +110,8 @@ Omit a section only when it is truly out of scope, and say why.
 - Do not let surface detail outrank assembly correctness in the first pass.
 - Do not crawl catalogs before writing the layout spec.
 - Do not claim a proxy is final geometry.
+- Do not hand off CAD generation without named parameters and validation targets for critical dimensions.
+- Do not treat screenshots or viewer links as substitutes for geometry facts, measurements, frames, or mate checks.
 - Do not allow detail modeling to change locked layout facts without returning to the proceed gate.
 - Do not present CAD validation, viewer screenshots, or generated geometry as engineering certification.
 - Do not embed repository paths or harness workspace paths in the core spec unless the downstream handoff specifically requires them.
@@ -107,10 +121,13 @@ Omit a section only when it is truly out of scope, and say why.
 Load these files only when the trigger applies:
 
 - `references/natural-language-to-cad-spec.md` — converting prose requests into a CAD-native spec.
+- `references/parameter-contract.md` — named parameters, units, locked/assumed/derived status, and validation targets.
+- `references/export-targets.md` — layout/detail/final maturity, source intent, primary artifacts, secondary exports, and review evidence.
 - `references/assembly-positioning.md` — root frames, part-local datums, mating primitives, center distances, and locked facts.
 - `references/interface-primitives.md` — planes, cylinders, bores, shafts, bolt patterns, pitch references, rails, slots, and fastener axes.
 - `references/motion-and-drivetrain.md` — belts, pulleys, gears, screws, sliders, rotary axes, limits, and transmission relationships.
 - `references/proxy-fidelity.md` — what layout proxies may simplify and what they must preserve.
+- `references/inspection-and-repair.md` — generated CAD checks, snapshot/viewer expectations, failure classes, and repair loops.
 - `references/proceed-gate.md` — user approval, locked facts, and detail-stage drift rules.
 - `references/specialist-subagents.md` — when and how to delegate CAD work to specialist subagents.
 - `references/downstream-cad-handoff.md` — active harness, `$cad`, text-to-cad, and generic CAD generator handoffs.

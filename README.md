@@ -12,16 +12,18 @@ Zen CAD is a compact skill pack for getting better first-pass CAD from agentic h
 The workflow is:
 
 1. Turn the user's natural-language request into a CAD-native spec.
-2. Lock coordinate frames, datums, interface primitives, motion relationships, and proxy fidelity before generation.
-3. Use specialist subagents when the harness supports them: layout, interface, motion, CAD generation, and review.
-4. Generate a low-detail layout proxy whose assembly positioning is correct before surface quality is high.
-5. Proceed to detail CAD only after the user approves the assembly contract.
+2. Define named parameters, artifact targets, inspection checks, and repair rules before generation.
+3. Lock coordinate frames, datums, interface primitives, motion relationships, and proxy fidelity.
+4. Use specialist subagents when the harness supports them: layout, parameters, interfaces, motion, CAD generation, inspection, and review.
+5. Generate a low-detail layout proxy whose assembly positioning is correct before surface quality is high.
+6. Inspect, repair, and rerun checks against locked facts.
+7. Proceed to detail CAD only after the user approves the assembly contract.
 
 ## Skills
 
 | Skill | Summary |
 | --- | --- |
-| [`cad-spec`](skills/cad-spec/SKILL.md) | Default entrypoint. Writes CAD-native specs and orchestrates specialist subagents for layout, interface, motion, handoff, generation, and review work. |
+| [`cad-spec`](skills/cad-spec/SKILL.md) | Default entrypoint. Writes CAD-native specs and orchestrates specialist subagents for layout, parameters, interface, motion, handoff, generation, inspection, and review work. |
 | [`assembly-layout`](skills/assembly-layout/SKILL.md) | Defines and reviews root frames, assembly graphs, contacts, connections, motion relationships, locked facts, and proceed readiness. |
 | [`interface-signatures`](skills/interface-signatures/SKILL.md) | Captures layout-ready interface facts for common component families without requiring full supplier geometry. |
 | [`cad-handoff`](skills/cad-handoff/SKILL.md) | Converts an approved spec into a concise downstream brief for the active CAD generator. |
@@ -32,7 +34,7 @@ The workflow is:
 Use $cad-spec to turn this mechanical request into a CAD-native layout spec:
 <request>
 
-If CAD generation is requested, spawn specialist subagents for layout, interfaces, motion/drivetrain, CAD generation, and review where the harness supports delegation.
+If CAD generation is requested, spawn specialist subagents for layout, parameters, interfaces, motion/drivetrain, CAD generation, inspection, and review where the harness supports delegation.
 ```
 
 ## Development Checks

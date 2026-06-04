@@ -12,6 +12,8 @@ Extract the mechanical facts that control CAD generation:
 - functional parts and repeated families;
 - fixed and moving relationships;
 - critical dimensions, missing dimensions, and safe assumptions;
+- named parameters, derived relationships, and validation targets;
+- intended CAD source and primary artifact targets;
 - interfaces that locate parts;
 - motion or drivetrain behavior;
 - validation or user-review targets.
@@ -56,9 +58,13 @@ Before handing off to CAD generation, confirm the spec names:
 
 - root frame;
 - units;
+- parameter contract;
+- artifact maturity and primary output intent;
 - fixed component;
 - part list;
 - interface primitives for all positioning-sensitive relationships;
+- inspection plan;
+- repair loop;
 - proxy fidelity policy;
 - locked layout facts;
 - proceed gate.

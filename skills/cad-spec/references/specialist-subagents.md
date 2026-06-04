@@ -1,6 +1,6 @@
 # Specialist Subagents
 
-Read this when the user asks to continue from spec into CAD work, or when the assembly is complex enough that layout, interfaces, motion, generation, and review should be separated.
+Read this when the user asks to continue from spec into CAD work, or when the assembly is complex enough that layout, parameters, interfaces, motion, generation, inspection, and review should be separated.
 
 ## Delegation Rule
 
@@ -11,6 +11,7 @@ Good subagent tasks:
 - independent enough to run without blocking the lead;
 - small enough to return a concrete artifact or review note;
 - tied to named spec sections and locked facts;
+- tied to expected parameters, artifacts, or checks;
 - limited to one specialty.
 
 Poor subagent tasks:
@@ -42,6 +43,16 @@ Ask for:
 - assumptions labeled `trusted_for_layout`, `must_confirm_before_detail`, or `must_confirm_before_final`;
 - facts that should not block layout proxy generation.
 
+### Parameter Specialist
+
+Ask for:
+
+- named dimensions and motion controls;
+- units, default values, allowed ranges, and locked/assumed/derived status;
+- which part, feature, datum, joint, or clearance each parameter drives;
+- validation targets for critical parameters;
+- derived relationships that should replace visual tuning.
+
 ### Motion Specialist
 
 Ask for:
@@ -59,13 +70,24 @@ Ask for:
 - low-detail layout proxy first;
 - simple solids where surface fidelity is not important;
 - explicit preservation of locked layout facts;
-- source paths, generated artifact paths, assumptions, and checks run;
+- source path, primary artifact path, assumptions, and checks run;
 - stop if a locked fact must change.
+
+### Inspection Specialist
+
+Ask for:
+
+- source-level parameter and label checks;
+- generated artifact facts, bounding boxes, planes, and axes;
+- targeted measurements, frame checks, mate checks, or diffs where supported;
+- snapshot or viewer review when available;
+- failed/skipped checks with reasons and smallest repair step.
 
 ### CAD Reviewer
 
 Ask for:
 
+- comparison against the parameter contract and inspection plan;
 - comparison against locked layout facts;
 - interface and motion relationship checks;
 - drift from the proceed gate;
@@ -78,6 +100,7 @@ After subagents return:
 
 1. Merge only facts that are supported by the spec or clearly marked assumptions.
 2. Resolve conflicts in frames, axes, dimensions, or clearances before handoff.
-3. Update locked layout facts explicitly.
-4. Keep rejected or uncertain facts in open questions.
-5. Do not proceed to detail CAD until positioning and interface blockers are resolved.
+3. Merge the parameter contract, artifact targets, inspection plan, and repair rules.
+4. Update locked layout facts explicitly.
+5. Keep rejected or uncertain facts in open questions.
+6. Do not proceed to detail CAD until positioning, interface, and inspection blockers are resolved.

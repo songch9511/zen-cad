@@ -20,6 +20,7 @@ Use it when a task needs:
 - root frame and part-local frame decisions;
 - contacts, connections, joints, clearances, keep-outs, or motion limits;
 - proceed review after a layout proxy;
+- source-level positioning, measurement, frame, or mate-check expectations;
 - drift checks between approved layout and detail CAD.
 
 ## Workflow
@@ -29,8 +30,9 @@ Use it when a task needs:
 3. List each part's role: structure, locator, driver, driven, guide, fastener, cover, sensor, proxy.
 4. Define contacts and connections as relationships, not file-format rows.
 5. Name locked facts that detail CAD must preserve.
-6. Define the proceed review checklist.
-7. If reviewing a generated layout, compare it only against the locked facts and layout intent.
+6. Define measurement, frame, mate, or snapshot checks that can prove positioning.
+7. Define the proceed review checklist.
+8. If reviewing a generated layout, compare it only against the locked facts and layout intent.
 
 ## Relationship Types
 
@@ -44,6 +46,7 @@ Use clear relationship names:
 
 - Do not approve detail modeling if the assembly graph is still unclear.
 - Do not treat a pretty surface as evidence that a mate or drivetrain is correct.
+- Do not rely on visual placement alone when a distance, axis, frame, or mating check can be named.
 - Do not change locked facts during detail upgrade without returning to layout review.
 - Do not require supplier STEP files for layout review when interface signatures are sufficient.
 

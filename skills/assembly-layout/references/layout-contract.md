@@ -12,6 +12,7 @@ A layout contract describes how an assembly is organized before detail geometry 
 - connection relationships;
 - motion relationships;
 - clearance and keep-out envelopes;
+- inspection targets for positioning facts;
 - locked facts;
 - proxy parts and their trustworthy interfaces.
 
@@ -52,3 +53,14 @@ Locked facts should be stable enough to drive detail modeling:
 - clearances;
 - travel limits;
 - fixed/moving hierarchy.
+
+## Inspection Targets
+
+For every positioning-sensitive locked fact, name at least one check the downstream generator can run or report:
+
+- bounding box for footprint and height;
+- distance or center-distance measurement;
+- coaxial, flush, centered, or parallel mate check;
+- world frame for a moving child, fastener pattern, rail, or shaft;
+- plane or axis presence for mounting faces, bores, slots, and pitch references;
+- snapshot or viewer review for visible layout semantics when supported.

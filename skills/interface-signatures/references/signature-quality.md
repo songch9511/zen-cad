@@ -17,6 +17,7 @@ A signature is layout-ready when it defines the interfaces that locate the part:
 - mounting datum;
 - primary axis;
 - mating dimensions;
+- generated-CAD validation targets;
 - envelope or keep-out;
 - assumptions that could affect detail.
 

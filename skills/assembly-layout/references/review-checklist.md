@@ -15,6 +15,17 @@ Ask the user to inspect:
 - Are clearance and keep-out envelopes visible and plausible?
 - Are proxies acceptable for this stage?
 
+## Generator Evidence
+
+Ask the generator or reviewer to return:
+
+- source-level placement method: joints, transforms, constraints, or explicit coordinates;
+- generated artifact path;
+- bounding box and top-level labels;
+- checks for locked distances, axes, frames, or mating relationships;
+- snapshot or viewer link when supported;
+- failed or skipped checks with reasons.
+
 ## Detail May Change
 
 Detail modeling may change:

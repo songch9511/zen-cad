@@ -11,9 +11,12 @@ Use skills/cad-spec/SKILL.md to write a CAD-native spec for: <goal>
 If the user asks to continue into CAD generation, keep `cad-spec` as the lead workflow and delegate bounded specialist tasks when the harness supports subagents:
 
 - layout contract review;
+- parameter contract review;
 - interface signature extraction;
 - motion and drivetrain relationship checks;
 - layout proxy generation;
+- generated artifact inspection;
+- repair-loop review;
 - generated CAD review against locked facts.
 
 Use `skills/cad-handoff/SKILL.md` when the active generator needs a concise task brief.

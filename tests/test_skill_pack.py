@@ -62,6 +62,7 @@ class SkillPackTest(unittest.TestCase):
             "Specialist Subagents",
             "layout-specialist",
             "interface-specialist",
+            "parameter-specialist",
             "motion-specialist",
             "cad-generator",
             "cad-reviewer",
@@ -75,6 +76,36 @@ class SkillPackTest(unittest.TestCase):
         reference_text = reference.read_text(encoding="utf-8")
         self.assertIn("Spawn subagents only when the harness supports them", reference_text)
         self.assertIn("Lead Reconciliation", reference_text)
+
+    def test_cad_spec_instructs_generation_quality_loop(self) -> None:
+        text = (ROOT / "skills/cad-spec/SKILL.md").read_text(encoding="utf-8")
+        for phrase in [
+            "Parameter Contract",
+            "Artifact Targets",
+            "Inspection Plan",
+            "Repair Loop",
+            "Primary artifact intent: STEP/STP when the active CAD generator supports it.",
+            "references/parameter-contract.md",
+            "references/export-targets.md",
+            "references/inspection-and-repair.md",
+        ]:
+            self.assertIn(phrase, text)
+
+        for rel in [
+            "skills/cad-spec/references/parameter-contract.md",
+            "skills/cad-spec/references/export-targets.md",
+            "skills/cad-spec/references/inspection-and-repair.md",
+        ]:
+            self.assertTrue((ROOT / rel).exists(), rel)
+
+        handoff = (ROOT / "skills/cad-handoff/SKILL.md").read_text(encoding="utf-8")
+        for phrase in [
+            "Parameter contract:",
+            "Artifact targets:",
+            "Required checks:",
+            "Repair loop:",
+        ]:
+            self.assertIn(phrase, handoff)
 
     def test_no_committed_example_specs(self) -> None:
         for path in tracked_files():
