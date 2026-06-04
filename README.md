@@ -1,229 +1,107 @@
 # Zen CAD
 
-<div align="center">
+Harness-native CAD specification skills for agentic mechanical design.
 
-<pre>
-███████╗███████╗███╗   ██╗      ██████╗ █████╗ ██████╗
-╚══███╔╝██╔════╝████╗  ██║     ██╔════╝██╔══██╗██╔══██╗
-  ███╔╝ █████╗  ██╔██╗ ██║     ██║     ███████║██║  ██║
- ███╔╝  ██╔══╝  ██║╚██╗██║     ██║     ██╔══██║██║  ██║
-███████╗███████╗██║ ╚████║     ╚██████╗██║  ██║██████╔╝
-╚══════╝╚══════╝╚═╝  ╚═══╝      ╚═════╝╚═╝  ╚═╝╚═════╝
-</pre>
-
-Harness-native CAD workflow for source-aware mechanical design agents
-
-[![Version](https://img.shields.io/badge/version-0.7.0-4A5568?style=for-the-badge)](VERSION)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](docs/environment_setup.md)
-[![STEP](https://img.shields.io/badge/STEP-first-00A676?style=for-the-badge)](skills/spec-to-cad/SKILL.md)
-[![CoBrA](https://img.shields.io/badge/CoBrA-adapter-2F80ED?style=for-the-badge)](plugins/cobra/README.md)
-[![Codex](https://img.shields.io/badge/Codex-adapter-000000?style=for-the-badge)](plugins/codex/README.md)
-[![Claude_Code](https://img.shields.io/badge/Claude_Code-adapter-6B46C1?style=for-the-badge)](plugins/claude-code/README.md)
+[![Version](https://img.shields.io/badge/version-0.8.0-4A5568?style=for-the-badge)](VERSION)
+[![Spec First](https://img.shields.io/badge/CAD--native-spec--first-00A676?style=for-the-badge)](skills/cad-spec/SKILL.md)
+[![Assembly First](https://img.shields.io/badge/assembly--first-layout-2F80ED?style=for-the-badge)](skills/assembly-layout/SKILL.md)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-
-</div>
 
 ## Overview
 
-Zen CAD is a portable CAD harness for agentic mechanical design. It is not a CAD kernel, STEP part search engine, or one-shot text-to-CAD model. It gives CoBrA, Codex, Claude Code, Cursor, and similar agents a shared operating contract for turning natural-language mechanical goals into milestone-scoped CAD artifacts with sourcing records, validation evidence, BOMs, blockers, and final engineering reports.
+Zen CAD 0.8.0 is a skill pack for writing better CAD-generation briefs. It is not a CAD kernel, STEP part search engine, validation server, or one-shot text-to-CAD model.
 
-The default 0.7.0 model is **interface-first, assembly-first, detail-later**:
+The core idea is simple:
 
-1. Start from a natural-language CAD goal.
-2. Create a milestone workspace automatically.
-3. Generate a fast, low-detail `layout_proxy` whose assembly interfaces, axes, datums, center distances, clearance envelopes, and CONTACT_MAP/CONNECTIONS are correct.
-4. Review and approve positioning and connection structure while iteration is cheap.
-5. After approval, source standard/catalog parts and generate high-fidelity design-specific geometry in `detail_finalize`.
-6. Package final STEP, validation evidence, BOM, sourcing report, and final engineering report only for the approved structure.
+1. Convert a natural-language mechanical request into a CAD-native spec.
+2. Define coordinate frames, datums, interface primitives, motion relationships, and locked layout facts before generation.
+3. Ask Codex, CoBrA, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another harness to generate a low-detail `layout_proxy`.
+4. Let the user review positioning, connections, and drivetrain structure while detail is still cheap.
+5. Proceed to detail CAD only after the assembly contract is approved.
 
-Zen CAD is designed to wrap a STEP-first CAD runner. When [earthtojake/text-to-cad](https://github.com/earthtojake/text-to-cad) or an equivalent CAD skill is available, use it as the preferred generation, inspection, and snapshot path. Zen CAD provides the surrounding milestone, source-lock, evidence, BOM, report, and release contract.
+The first CAD artifact should not be judged by surface polish. It should be judged by whether the assembly's axes, mating primitives, center distances, clearances, belt/gear/rail relationships, and fixed/moving structure are correct.
 
 ## Skills
 
-| Skill | Summary | Source |
-| --- | --- | --- |
-| Agentic CAD | Top-level interface-first, sourcing-aware orchestrator for fast layout proxies, locked assembly interfaces, detail upgrades, validation, BOM, and reporting. | [skills/agentic-cad](skills/agentic-cad/SKILL.md) |
-| Source STEP Parts | Source-locks standard/catalog parts with supplier identity, STEP/STP cache paths, datasheets, dimensions, ratings evidence, and blockers. | [skills/source-step-parts](skills/source-step-parts/SKILL.md) |
-| Spec-to-CAD | Downstream CAD execution skill for measurable specs, STEP/STL exports, CONTACT_MAP/CONNECTIONS, and kernel-backed evidence. | [skills/spec-to-cad](skills/spec-to-cad/SKILL.md) |
-| Mechanism Kinematics | Captures joints, frames, axes, limits, transmissions, and optional URDF/SDF/SRDF handoff contracts for moving assemblies. | [skills/mechanism-kinematics](skills/mechanism-kinematics/SKILL.md) |
-| CAD Artifact Reviewer | Independently checks validation reports, artifact hashes, STEP/STP exports, evidence links, and final claims before completion. | [skills/cad-artifact-reviewer](skills/cad-artifact-reviewer/SKILL.md) |
-| Manufacturing Preflight | Reviews STEP/DXF/STL/3MF/BOM/material/process handoff risks without claiming certification or production approval. | [skills/manufacturing-preflight](skills/manufacturing-preflight/SKILL.md) |
-| Self-Evolving Producer Verifier | Producer/verifier workflow for independent review, failure-driven iteration, and workflow feedback. | [skills/self-evolving-producer-verifier](skills/self-evolving-producer-verifier/SKILL.md) |
+| Skill | Summary |
+| --- | --- |
+| [`cad-spec`](skills/cad-spec/SKILL.md) | Core 0.8 skill. Turns prose into a CAD-native spec with coordinate frames, interface primitives, locked facts, proxy fidelity boundaries, proceed gate, and downstream CAD handoff. |
+| [`assembly-layout`](skills/assembly-layout/SKILL.md) | Defines and reviews low-detail assembly layout contracts: root frames, contacts, connections, motion relationships, locked facts, and proceed review checklists. |
+| [`interface-signatures`](skills/interface-signatures/SKILL.md) | Defines layout-ready interface signatures for common component families without requiring full source-locked STEP geometry. |
+| [`cad-handoff`](skills/cad-handoff/SKILL.md) | Converts a CAD-native spec into a concise downstream brief for Codex, CoBrA, `$cad`, text-to-cad, build123d, or another CAD generator. |
+| [`agentic-cad`](skills/agentic-cad/SKILL.md) | Deprecated compatibility entrypoint. Route new work to `cad-spec` plus focused companion skills. |
 
-## Harness Adapters
+Legacy 0.7 skills for source-lock, spec-to-CAD execution, kinematics, artifact review, manufacturing preflight, and producer/verifier loops remain in the repository while the 0.8 spec-first architecture is introduced.
 
-| Harness | Adapter | How Zen CAD is applied |
-| --- | --- | --- |
-| CoBrA | [plugins/cobra](plugins/cobra/README.md) | `./zen-cad init --with-cobra` installs bundled skills and writes `ZEN_CAD_WORKSPACE.md` beside each installed skill. |
-| Codex | [plugins/codex](plugins/codex/README.md) | Open this repository as the workspace. Use Codex file edits, terminal execution, and installed CAD skills such as text-to-cad. |
-| Claude Code | [plugins/claude-code](plugins/claude-code/README.md) | Open this repository as the project. Keep the active milestone and validation commands explicit. |
+## Recommended Flow
 
-See [docs/harness_adapters.md](docs/harness_adapters.md) for the shared adapter contract.
+Use `cad-spec` first:
 
-## Quickstart
+```text
+Use $cad-spec to turn this mechanical request into a CAD-native layout spec:
+<request>
+```
 
-Clone the repository and run the first-run check:
+The spec should include:
+
+- intent;
+- units and coordinate system;
+- parts and roles;
+- assembly graph;
+- interface primitives;
+- motion and drivetrain relationships;
+- proxy fidelity policy;
+- locked layout facts;
+- assumptions and open questions;
+- proceed gate;
+- downstream CAD handoff.
+
+Then hand off to the active CAD harness:
+
+```text
+Use $cad-handoff to generate a layout brief for Codex/CoBrA/$cad from this spec.
+```
+
+The CAD generator should create a low-detail layout proxy first. It may simplify teeth, fillets, threads, supplier body contours, cable sweeps, and cosmetic surfaces. It must preserve locked facts such as axes, datums, mounting faces, bores, pitch references, center distances, clearances, and motion relationships.
+
+## Proceed Gate
+
+The user's approval point should be explicit:
+
+```text
+Review the rough layout for positioning, interfaces, and drivetrain structure.
+If the axes, center distances, belt/gear/rail relationships, clearances, and mounting faces are correct, say "proceed" and detail modeling can preserve these locked facts.
+```
+
+After proceed, detail CAD may improve surface fidelity and replace proxies, but it must not change locked layout facts without returning to layout review.
+
+## Relationship To text-to-cad
+
+Zen CAD 0.8 is intended to sit in front of CAD-generation tools such as [earthtojake/text-to-cad](https://github.com/earthtojake/text-to-cad). `text-to-cad` provides practical CAD generation, inspection, viewer, and STEP workflows. Zen CAD provides the spec discipline that makes those generators more likely to produce correct assemblies on the first layout pass.
+
+Use `$cad` from text-to-cad when available for STEP-first generation and inspection. Use Zen CAD skills to write the CAD-native spec, interface signatures, layout contract, proceed gate, and downstream handoff.
+
+## Legacy CLI
+
+The repository still includes the 0.7 milestone/evidence CLI:
 
 ```bash
-git clone https://github.com/songch9511/zen-cad.git
-cd zen-cad
 ./zen-cad doctor
-```
-
-For CoBrA, install the bundled skills:
-
-```bash
-./zen-cad init --with-cobra
-```
-
-For Codex or Claude Code, open this repository as the workspace/project root.
-
-Then ask the agent for CAD in natural language:
-
-```text
-기어 박스를 만들고 싶어
-```
-
-The agent should treat that as a prompt-first milestone start and internally run:
-
-```bash
-python3 scripts/new_milestone.py --request "<goal>"
-```
-
-Manual terminal fallback:
-
-```bash
-./zen-cad new --maturity concept "기어 박스를 만들고 싶어"
-```
-
-## Milestone Workflow
-
-Each CAD job lives under `milestones/<id>/`:
-
-```text
-milestones/003_gearbox/
-├─ 00_requirements/requirements_brief.md
-├─ 01_research/research_log.md
-├─ 02_parts/part_classification_table.md
-├─ 02_parts/selected_parts_manifest.json
-├─ 03_cad/custom_cad_handoff.yaml
-├─ 04_assembly/contact_map.json
-├─ 04_assembly/connections.json
-├─ 05_validation/validation_report.json
-├─ 06_bom/bom.csv
-└─ 07_report/final_engineering_report.md
-```
-
-The milestone folder is the durable source of truth for requirements, research, sourced parts, CAD handoff, assembly contract, validation evidence, BOM, blockers, and final report.
-
-## Validation
-
-Structure validation checks required files, schemas, BOM headers, and milestone skeletons:
-
-```bash
+./zen-cad new "<goal>"
 ./zen-cad validate --level structure milestones/<id>
-```
-
-Completion validation checks final evidence gates:
-
-```bash
 ./zen-cad validate --level completion milestones/<id>
 ```
 
-Equivalent explicit commands:
-
-```bash
-./zen-cad validate-structure milestones/<id>
-./zen-cad validate-completion milestones/<id>
-./zen-cad source-lock milestones/<id>
-./zen-cad blocked-report --write milestones/<id>
-```
-
-The two results are intentionally separate:
-
-- `Zen CAD validation result: PASS` means the repository and milestone structure are valid.
-- `Zen CAD completion validation result: PASS` means source-lock, CAD exports, assembly contract, command-backed CAD evidence, BOM, and final report gates are complete.
-- `BLOCKED` is a valid truthful result for concept/layout milestones.
-
-## Evidence Contract
-
-Final completion requires reproducible evidence. These do not count as final evidence by themselves:
-
-- screenshots
-- GLB or viewer previews
-- worker summaries
-- proxy/envelope geometry
-- metadata-only PASS claims
-
-A final milestone should include:
-
-- CAD source
-- STEP/STL exports
-- source-lock records for standard/catalog parts
-- CONTACT_MAP and CONNECTIONS
-- kernel/export/loadability checks
-- validation JSON with command metadata, result status, evidence type, artifact paths, file sizes, and SHA-256 hashes
-- at least `cad_generation`, `step_load`, and `geometry_inspection` evidence types for completion PASS
-- local `doctor --cad-required` success, or command-backed `environment` evidence from the CAD runtime that generated the final artifacts
-- BOM
-- final engineering report
-
-Zen CAD separates CAD validation from engineering certification. STEP geometry does not prove structural safety, rating, material, fatigue life, manufacturability, compliance, or certification unless the relevant analysis was actually performed.
-
-## Included Demo
-
-The repository includes a small final demo milestone:
-
-```bash
-./zen-cad validate-completion milestones/002_nema17_mount_plate
-```
-
-The demo is intentionally small, but its PASS is hash-backed: the validation report records command metadata and matching artifact hashes for CAD source, STEP/STL exports, geometry inspection JSON, CONTACT_MAP/CONNECTIONS, BOM, and final report.
-
-The original reference milestone remains intentionally blocked until standard parts, generated CAD, STEP cache, and final validation evidence are completed:
-
-```bash
-./zen-cad validate-completion milestones/001_nema17_belt_linear_actuator
-```
-
-## Repository Layout
-
-```text
-zen-cad/
-├─ docs/                  Operating docs and harness adapter contract
-├─ plugins/               CoBrA, Codex, and Claude Code adapter notes
-├─ skills/                Portable CAD workflow skills
-├─ prompts/               Kickoff, milestone, validation, and release prompts
-├─ templates/             Reusable milestone artifact templates
-├─ schemas/               Machine-checkable JSON and CSV schemas
-├─ checklists/            Intake, sourcing, CAD, assembly, validation, release
-├─ packages/              Validation-core packaging contract
-├─ scripts/               Setup, milestone, validation, and release helpers
-├─ milestones/_template/  Standard milestone skeleton
-└─ zen-cad                Repo-local CLI wrapper
-```
+Treat this CLI as a legacy compatibility harness during the 0.8 transition. It is useful for existing milestone demos and final-evidence experiments, but it is not the core 0.8 user experience.
 
 ## Development Checks
 
-Run the local test suite:
+Run:
 
 ```bash
 python3 -m unittest discover -s tests
-```
-
-Run repository validation:
-
-```bash
 ./zen-cad doctor
 ./zen-cad validate
 ```
 
-For final/release-grade claims, require CAD tooling:
-
-```bash
-./zen-cad doctor --cad-required
-```
-
-## Current Boundary
-
-Zen CAD does not ship a full CAD kernel, STEP part search engine, or browser viewer. It expects the harness to supply those capabilities directly or through installed tools such as text-to-cad, build123d, CadQuery, FreeCAD, OpenSCAD, or a project-approved CAD stack. Zen CAD's job is to make that work milestone-scoped, source-aware, reproducible, and honest about completion.
+No example CAD specs are committed in 0.8. Spec examples should be created as temporary test fixtures or curated separately before inclusion.

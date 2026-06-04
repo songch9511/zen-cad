@@ -1,20 +1,18 @@
 # Codex-Style Adapter
 
-Use Zen CAD as a Codex-style skill/plugin workspace rather than as a standalone CAD app.
+Use Zen CAD as a spec-first skill workspace.
 
-1. Open the Zen CAD repository as the working directory.
-2. Load `skills/agentic-cad/SKILL.md` as the top-level CAD workflow instruction.
-3. For custom CAD implementation handoffs, load `skills/spec-to-cad/SKILL.md`.
-4. For focused work, load only the companion skill in scope: source parts, kinematics, artifact review, manufacturing preflight, or producer/verifier iteration.
-5. Let Codex use its normal file editing, terminal execution, and available CAD/generation tools.
-6. Deliver a concept/layout CAD artifact first; reserve strict Zen CAD gates for final claims.
-
-If the earthtojake/text-to-cad CAD skill or plugin is installed in the Codex environment, use it as the preferred STEP-first CAD execution path. Zen CAD supplies the milestone and evidence harness around that CAD execution. For final claims, record command-backed `cad_generation`, `step_load`, and `geometry_inspection` checks with artifact sizes and SHA-256 hashes in the active milestone.
+1. Open this repository as the working directory.
+2. Start new work with `skills/cad-spec/SKILL.md`.
+3. Use `skills/assembly-layout/SKILL.md` for layout/proceed review.
+4. Use `skills/interface-signatures/SKILL.md` for layout-ready standard interface facts.
+5. Use `skills/cad-handoff/SKILL.md` to brief Codex, `$cad`, text-to-cad, build123d, or another CAD generator.
 
 Suggested first prompt:
 
 ```text
-Use skills/agentic-cad/SKILL.md in this repository. Create a prompt-first Zen CAD milestone for: <goal>. Generate the first CAD artifact with the available Codex/CAD toolchain. Mark unresolved sourcing/env issues as concept/layout blockers, not as a reason to stop before CAD exists. Before any final claim, write command-backed validation evidence with artifact hashes and run ./zen-cad validate --level completion milestones/<id>.
+Use skills/cad-spec/SKILL.md to write a CAD-native layout spec for: <goal>.
+Focus on coordinate frames, interface primitives, motion/drivetrain relationships, locked layout facts, proxy fidelity, and the proceed gate. Do not generate final CAD yet.
 ```
 
-If the Codex environment supports plugin manifests, package `skills/`, `docs/harness_adapters.md`, and the `./zen-cad` wrapper as the installable payload. The validation CLI should remain callable from the checked-out repository root for structure checks and optional final/release gates.
+Legacy `./zen-cad` milestone commands remain available only for older evidence-harness workflows.

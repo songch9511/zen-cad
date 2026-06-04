@@ -1,8 +1,9 @@
 # Operating Principles
 
-- Use `/agentic-cad` as the top-level workflow.
-- Prefer milestones over one-off unstructured CAD tasks.
-- Keep sourced parts, generated custom parts, and proxies visibly separate.
-- Record assumptions and limitations where they occur.
+- Use `/cad-spec` as the default starting skill.
+- Write the CAD-native spec before asking a harness to generate geometry.
+- Preserve assembly positioning, interface primitives, and drivetrain facts before improving surface fidelity.
+- Use interface signatures for layout when full sourced STEP geometry is not yet available.
+- Treat proceed approval as a lock on layout facts.
+- Keep harness-specific paths and commands in adapter/handoff layers, not in core specs.
 - Do not claim engineering certification from CAD geometry alone.
-- End every milestone with machine-readable evidence and a human-readable report.

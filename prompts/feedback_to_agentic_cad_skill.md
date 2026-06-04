@@ -1,3 +1,3 @@
-# Feedback to `/agentic-cad`
+# Feedback to Zen CAD Skills
 
-Summarize any workflow improvement discovered during a Zen CAD milestone. Include the milestone id, failure or friction, proposed skill change, evidence, and whether the change affects source-first/generate-second, Part RAG fallback, validation evidence, or final reporting.
+Summarize any workflow improvement discovered during Zen CAD work. Include the skill name, failure or friction, proposed change, evidence, and whether the change affects spec quality, layout locking, interface signatures, source-locking, validation evidence, or final reporting.

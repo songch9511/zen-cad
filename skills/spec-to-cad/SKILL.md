@@ -1,14 +1,14 @@
 ---
 name: spec-to-cad
 description: Milestone-first CAD execution skill for turning measurable mechanical specs into STEP-first CAD artifacts with command-backed Zen CAD validation evidence.
-version: 0.7.0
+version: 0.8.0
 ---
 
 # Spec-to-CAD
 
 ## Purpose
 
-`/spec-to-cad` is the downstream CAD execution skill for Zen CAD. It receives a measurable handoff from `/agentic-cad`, creates or updates design-specific CAD, and records the command-backed evidence needed for Zen CAD completion gates.
+`/spec-to-cad` is the downstream CAD execution skill for Zen CAD legacy milestones. It receives a measurable handoff from `/cad-spec` or the deprecated `/agentic-cad` shim, creates or updates design-specific CAD, and records the command-backed evidence needed for Zen CAD completion gates.
 
 The central rule is: **produce a real CAD artifact first, then grade it honestly**. Concept/layout work may be incomplete or environment-blocked. Final/release work must produce reproducible validation evidence, not a screenshot, worker summary, or metadata-only PASS.
 

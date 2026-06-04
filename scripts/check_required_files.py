@@ -7,6 +7,10 @@ from pathlib import Path
 ROOT_REQUIRED = [
     'README.md', 'VERSION', 'CHANGELOG.md',
     'docs/philosophy.md', 'docs/operating_principles.md', 'docs/source_first_generate_second.md', 'docs/completion_evidence.md', 'docs/milestone_protocol.md', 'docs/environment_setup.md', 'docs/cobra_usage.md', 'docs/non_cobra_usage.md', 'docs/harness_adapters.md',
+    'skills/cad-spec/SKILL.md', 'skills/cad-spec/agents/openai.yaml', 'skills/cad-spec/references/natural-language-to-cad-spec.md', 'skills/cad-spec/references/assembly-positioning.md', 'skills/cad-spec/references/interface-primitives.md', 'skills/cad-spec/references/motion-and-drivetrain.md', 'skills/cad-spec/references/proxy-fidelity.md', 'skills/cad-spec/references/proceed-gate.md', 'skills/cad-spec/references/downstream-cad-handoff.md',
+    'skills/assembly-layout/SKILL.md', 'skills/assembly-layout/references/layout-contract.md', 'skills/assembly-layout/references/review-checklist.md',
+    'skills/interface-signatures/SKILL.md', 'skills/interface-signatures/references/common-families.md', 'skills/interface-signatures/references/signature-quality.md',
+    'skills/cad-handoff/SKILL.md', 'skills/cad-handoff/references/harness-briefs.md',
     'skills/agentic-cad/SKILL.md', 'skills/cad-artifact-reviewer/SKILL.md', 'skills/manufacturing-preflight/SKILL.md', 'skills/mechanism-kinematics/SKILL.md', 'skills/spec-to-cad/SKILL.md', 'skills/self-evolving-producer-verifier/SKILL.md', 'skills/source-step-parts/SKILL.md',
     'plugins/README.md', 'plugins/cobra/README.md', 'plugins/codex/README.md', 'plugins/claude-code/README.md',
     'packages/zen_cad_core/README.md',

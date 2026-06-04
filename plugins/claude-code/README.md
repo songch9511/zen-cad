@@ -1,21 +1,16 @@
 # Claude Code-Style Adapter
 
-Use Zen CAD as repository-local skills plus an optional validation CLI.
+Use Zen CAD as repository-local spec skills plus an optional legacy CLI.
 
 1. Open the Zen CAD repository in Claude Code or a similar coding harness.
-2. Ask the agent to follow `skills/agentic-cad/SKILL.md` for the CAD workflow.
-3. Keep each CAD job in `milestones/<id>/`.
-4. Load focused companion skills only when needed for sourcing, CAD generation, kinematics, artifact review, manufacturing preflight, or producer/verifier iteration.
-5. Use the harness for CAD generation, web/catalog lookup, file edits, CAD script execution, and review loops.
-6. Run `./zen-cad validate --level structure milestones/<id>` after milestone/artifact creation.
+2. Start with `skills/cad-spec/SKILL.md`.
+3. Use `skills/assembly-layout/SKILL.md`, `skills/interface-signatures/SKILL.md`, and `skills/cad-handoff/SKILL.md` only when their focused scope applies.
+4. Let the harness or installed CAD tools generate geometry from the resulting spec.
 
-First deliverable target: a real concept/layout CAD source/export created by the available harness toolchain.
+First deliverable target: a CAD-native layout spec with a proceed gate. The first CAD artifact, if generated, should be a low-detail layout proxy whose assembly positioning and interfaces are correct.
 
-If earthtojake/text-to-cad is available to Claude Code, use that CAD skill for STEP-first generation, deterministic inspection, and snapshot review. Otherwise use a project-approved build123d, CadQuery, FreeCAD, OpenSCAD, or equivalent kernel-backed path. Final evidence must record command-backed `cad_generation`, `step_load`, and `geometry_inspection` checks with matching artifact sizes and SHA-256 hashes.
-
-Final CAD completion still requires CLI evidence from the shipped milestone path, not a screenshot or verbal report:
+Legacy final-evidence validation is still available through:
 
 ```bash
-./zen-cad doctor --cad-required
 ./zen-cad validate --level completion milestones/<id>
 ```

@@ -17,7 +17,11 @@ from pathlib import Path
 
 COMPANION_SKILLS = [
     'agentic-cad',
+    'assembly-layout',
+    'cad-handoff',
+    'cad-spec',
     'cad-artifact-reviewer',
+    'interface-signatures',
     'manufacturing-preflight',
     'mechanism-kinematics',
     'spec-to-cad',
@@ -468,10 +472,9 @@ def check_cobra_skills(root: Path, skills_root: Path) -> CheckResult:
     unbound = []
     wrong_root = []
     for skill_name in COMPANION_SKILLS:
-        source = root / 'skills' / skill_name / 'SKILL.md'
+        source_dir = root / 'skills' / skill_name
         target_dir = skills_root / skill_name
-        target = target_dir / 'SKILL.md'
-        if file_hash(source) != file_hash(target):
+        if not skill_payload_is_fresh(source_dir, target_dir):
             stale.append(skill_name)
         bound_root = cobra_context_bound_root(target_dir)
         if bound_root is None:
@@ -493,6 +496,15 @@ def check_cobra_skills(root: Path, skills_root: Path) -> CheckResult:
             f'installed skills point at a different Zen CAD root: {"; ".join(wrong_root)}; rerun ./zen-cad init --with-cobra from {root}',
         )
     return CheckResult('CoBrA skill sync', 'PASS', f'installed, fresh, and bound to {root} under {skills_root}')
+
+
+def skill_payload_is_fresh(source_dir: Path, target_dir: Path) -> bool:
+    for source in sorted(path for path in source_dir.rglob('*') if path.is_file()):
+        rel = source.relative_to(source_dir)
+        target = target_dir / rel
+        if not target.exists() or file_hash(source) != file_hash(target):
+            return False
+    return True
 
 
 def cobra_context_bound_root(skill_dir: Path) -> Path | None:
@@ -566,9 +578,9 @@ def command_doctor(args: argparse.Namespace) -> int:
 
     print_section('Zen CAD doctor: PASS')
     print('Next:')
-    print('- In CoBrA/Codex/Claude Code/Cursor, ask: NEMA17 mount plate를 만들어줘')
-    print('- Generate the first concept/layout CAD artifact with the harness available CAD toolchain.')
-    print('- Manual terminal fallback: ./zen-cad new "기어 박스를 만들고 싶어"')
+    print('- In CoBrA/Codex/Claude Code/Cursor, ask $cad-spec to write a CAD-native spec for your request.')
+    print('- Hand the approved spec to the active CAD harness for a low-detail layout proxy.')
+    print('- Legacy milestone fallback: ./zen-cad new "<goal>"')
     print('- First-pass check: ./zen-cad validate --level structure milestones/<id>')
     print('- Final/release gate: ./zen-cad validate --level completion milestones/<id>')
     return 0
@@ -579,7 +591,7 @@ def command_init(args: argparse.Namespace) -> int:
     setup_args: list[str] = ['--root', str(root)]
     if args.with_cobra:
         skills_root = Path(args.cobra_skills_root).expanduser() if args.cobra_skills_root else default_cobra_skills_root()
-        setup_args.extend(['--sync-cobra-skill', '--cobra-skill-dir', str(skills_root / 'agentic-cad')])
+        setup_args.extend(['--sync-cobra-skill', '--cobra-skill-dir', str(skills_root / 'cad-spec')])
     if args.milestone_request:
         setup_args.extend(['--milestone-request', args.milestone_request])
     if args.milestone_id or args.milestone_title:
@@ -610,7 +622,7 @@ def command_init(args: argparse.Namespace) -> int:
         print('Start/restart CoBrA from its normal install, then run Zen CAD commands with this root as cwd or --root.')
     print('Next:')
     print('- Check the environment: ./zen-cad doctor')
-    print('- Create a milestone: ./zen-cad new "기어 박스를 만들고 싶어"')
+    print('- Start with /cad-spec, or create a legacy milestone with: ./zen-cad new "<goal>"')
     return 0
 
 
@@ -653,7 +665,7 @@ def command_new(args: argparse.Namespace) -> int:
         print(f'Active milestone: {rel}')
         print('Next:')
         print(f'- Open: {rel}/00_requirements/requirements_brief.md')
-        print(f'- Continue with /agentic-cad using {rel} as the active CAD job.')
+        print(f'- Continue with /cad-spec using {rel} as the active CAD job.')
         print(f'- Validate structure and evidence: ./zen-cad validate {rel}')
     return 0
 
@@ -1560,7 +1572,7 @@ def build_parser() -> argparse.ArgumentParser:
     init = subparsers.add_parser('init', help='Run setup and optionally sync CoBrA skills.')
     add_root_argument(init)
     init.add_argument('--with-cobra', action='store_true', help='Sync bundled Zen CAD skills into CoBrA.')
-    init.add_argument('--cobra-skills-root', help='CoBrA skills root. The agentic-cad skill is installed as a child of this directory.')
+    init.add_argument('--cobra-skills-root', help='CoBrA skills root. The cad-spec skill is installed as a child of this directory.')
     init.add_argument('--milestone-request', help='Create a milestone from a natural-language request during init.')
     init.add_argument('--milestone-id', help='Explicit milestone id, e.g. 002_gearbox.')
     init.add_argument('--milestone-title', help='Human-readable title for --milestone-id.')
@@ -1598,7 +1610,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate_completion.add_argument('--python', help='Python interpreter to probe for completion gates. Defaults to ZEN_CAD_PYTHON or the current interpreter.')
     validate_completion.set_defaults(func=command_validate_completion)
 
-    source_lock = subparsers.add_parser('source-lock', help='Audit standard-part source-lock status before CAD generation.')
+    source_lock = subparsers.add_parser('source-lock', help='Audit standard-part source-lock status before final CAD evidence.')
     add_root_argument(source_lock)
     source_lock.add_argument('milestones', nargs='*', help='Milestone paths to audit. Defaults to all milestones.')
     source_lock.add_argument('--maturity', choices=sorted(MATURITY_LEVELS), help='Override milestone maturity for source-lock severity.')

@@ -1,7 +1,7 @@
 ---
 name: mechanism-kinematics
 description: Build and review Zen CAD mechanism kinematic contracts from assemblies, frames, joints, axes, travel limits, CONTACT_MAP, CONNECTIONS, and optional URDF/SDF/SRDF handoff data.
-version: 0.7.0
+version: 0.8.0
 ---
 
 # Mechanism Kinematics
@@ -10,7 +10,7 @@ version: 0.7.0
 
 `/mechanism-kinematics` captures the motion contract for Zen CAD assemblies. Use it when a milestone includes moving parts, joints, actuators, belts, rails, linkages, hinges, sliders, couplers, or robot-style frames.
 
-This skill does not replace CAD generation. It turns geometry and assembly intent into explicit frames, axes, joints, limits, and validation checks that `/agentic-cad` and `/spec-to-cad` can use.
+This skill does not replace CAD generation. It turns geometry and assembly intent into explicit frames, axes, joints, limits, and validation checks that `/cad-spec`, `/assembly-layout`, and `/spec-to-cad` can use.
 
 The core contract is explicit joints, frames, axes, limits, and evidence links.
 

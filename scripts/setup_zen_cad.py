@@ -34,12 +34,11 @@ def sync_cobra_skills(root: Path, agentic_cad_dir: Path) -> list[Path]:
         if not source.exists():
             continue
         target_dir = skills_root / source_dir.name
-        target_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
         target = target_dir / 'SKILL.md'
-        shutil.copy2(source, target)
         write_cobra_workspace_context(root, target_dir, source_dir.name)
         synced.append(target)
-        print(f'Synced /{source_dir.name} skill to: {target}')
+        print(f'Synced /{source_dir.name} skill to: {target_dir}')
     if not synced:
         raise SystemExit(f'ERROR: missing bundled skills under {root / "skills"}')
     return synced
@@ -60,8 +59,10 @@ def write_cobra_workspace_context(root: Path, target_dir: Path, skill_name: str)
                 'When this skill runs in CoBrA, use the repository root above as the',
                 'Zen CAD workspace unless the user explicitly provides a different root.',
                 'The CoBrA daemon/session cwd is not the Zen CAD workspace contract.',
-                'Create prompt-first milestones with the repository root as command cwd,',
-                'or pass the root explicitly:',
+                'Start new CAD work with /cad-spec. Use milestone commands only when',
+                'the user explicitly needs the legacy evidence harness. When running',
+                'legacy milestone commands, use the repository root as command cwd or',
+                'pass the root explicitly:',
                 '',
                 '```bash',
                 'cd "<repository-root>" && python3 scripts/new_milestone.py --request "<goal>"',
@@ -72,8 +73,8 @@ def write_cobra_workspace_context(root: Path, target_dir: Path, skill_name: str)
                 '',
                 'Use the last form only when the current command cwd is already the',
                 'resolved repository root. Run structure checks with the repository root',
-                'as command cwd before reporting first artifact paths, and reserve',
-                'completion gates for final/release claims:',
+                'as command cwd for legacy milestones, and reserve completion gates for',
+                'final/release claims:',
                 '',
                 '```bash',
                 './zen-cad validate --level structure milestones/<id>',
@@ -160,10 +161,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description='One-command Zen CAD setup helper for any milestone-based CAD job.')
     parser.add_argument('--root', default=None, help='Zen CAD repository root. Defaults to this script\'s parent repository.')
     parser.add_argument('--sync-cobra-skill', action='store_true', help='Copy bundled Zen CAD skills into a CoBrA skills directory.')
-    parser.add_argument('--cobra-skill-dir', default='~/.cobra/workspace/skills/agentic-cad', help='Target directory for CoBrA /agentic-cad skill sync. Companion skills sync to sibling directories.')
+    parser.add_argument('--cobra-skill-dir', default='~/.cobra/workspace/skills/cad-spec', help='Target directory for CoBrA /cad-spec skill sync. Companion skills sync to sibling directories.')
     parser.add_argument('--milestone-id', help='Optional explicit lowercase snake_case milestone id, e.g. 002_gearbox.')
     parser.add_argument('--milestone-title', help='Human-readable title for --milestone-id.')
-    parser.add_argument('--milestone-request', help='Optional natural-language first CAD request; derives milestone id/title automatically, e.g. "기어 박스를 만들고 싶어".')
+    parser.add_argument('--milestone-request', help='Optional legacy milestone request; derives milestone id/title automatically.')
     parser.add_argument('--maturity', choices=['concept', 'layout', 'final'], default='concept', help='Initial maturity for a created milestone. Defaults to concept.')
     parser.add_argument('--skip-validation', action='store_true', help='Skip built-in required-file/schema/milestone validation.')
     args = parser.parse_args()
@@ -190,7 +191,7 @@ def main() -> int:
     print(f'Repository root: {root}')
     if milestone is not None:
         print(f'Milestone ready: {milestone}')
-    print('Next: tell your agent what you want to design, or open prompts/new_milestone.md and skills/agentic-cad/SKILL.md.')
+    print('Next: tell your agent what you want to design, or open skills/cad-spec/SKILL.md to write a CAD-native spec.')
     return 0
 
 

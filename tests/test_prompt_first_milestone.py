@@ -11,6 +11,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+SHIPPED_SKILLS = [
+    'agentic-cad',
+    'assembly-layout',
+    'cad-artifact-reviewer',
+    'cad-handoff',
+    'cad-spec',
+    'interface-signatures',
+    'manufacturing-preflight',
+    'mechanism-kinematics',
+    'self-evolving-producer-verifier',
+    'source-step-parts',
+    'spec-to-cad',
+]
+
 
 def copy_repo_fixture(target: Path) -> None:
     shutil.copytree(
@@ -22,9 +36,9 @@ def copy_repo_fixture(target: Path) -> None:
 
 class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
     def test_shipped_skills_have_release_versions(self) -> None:
-        for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
+        for skill_name in SHIPPED_SKILLS:
             text = (ROOT / f'skills/{skill_name}/SKILL.md').read_text(encoding='utf-8')
-            self.assertIn('version: 0.7.0', text, skill_name)
+            self.assertIn('version: 0.8.0', text, skill_name)
 
     def test_text_to_cad_inspired_companion_skills_exist(self) -> None:
         expected = {
@@ -60,51 +74,48 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             for phrase in phrases:
                 self.assertIn(phrase, text, skill_name)
 
-    def test_agentic_cad_routes_to_companion_skills(self) -> None:
-        text = (ROOT / 'skills/agentic-cad/SKILL.md').read_text(encoding='utf-8')
+    def test_cad_spec_is_core_spec_first_entrypoint(self) -> None:
+        text = (ROOT / 'skills/cad-spec/SKILL.md').read_text(encoding='utf-8')
         for phrase in [
-            'Companion skill routing',
-            '/source-step-parts',
-            '/cad-artifact-reviewer',
-            '/manufacturing-preflight',
-            '/mechanism-kinematics',
-            'Do not load every companion skill automatically',
-        ]:
-            self.assertIn(phrase, text)
-
-    def test_agentic_cad_documents_interface_first_maturity_split(self) -> None:
-        text = (ROOT / 'skills/agentic-cad/SKILL.md').read_text(encoding='utf-8')
-        for phrase in [
-            'Interface-first assembly maturity model',
-            'Assembly/interface quality',
-            '`layout_proxy` / assembly-first draft',
-            'Positioning review gate',
-            '`detail_finalize` / quality upgrade',
-            '`final_package` / release bundle',
-            '03_cad/layout_proxy_handoff.yaml',
-            '04_assembly/assembly_positioning_review.md',
-            '05_validation/interface_validation_report.json',
-            'generation_phase: layout_proxy | detail_finalize | final_package',
-            'Changing locked CONTACT_MAP/CONNECTIONS, transforms, datum frames, or critical interface dimensions during detail upgrade without returning to layout review',
-        ]:
-            self.assertIn(phrase, text)
-
-    def test_agentic_cad_startup_does_not_conflate_cobra_cwd_with_workspace(self) -> None:
-        text = (ROOT / 'skills/agentic-cad/SKILL.md').read_text(encoding='utf-8')
-        for phrase in [
-            'after this skill resolves a Zen CAD workspace root',
-            'The CoBrA daemon cwd, CoBrA session cwd, and terminal cwd are not the Zen CAD workspace contract',
-            'Use the resolved Zen CAD root as the command cwd or pass it explicitly with `--root`',
-            'python3 "<zen-cad-root>/scripts/new_milestone.py" --root "<zen-cad-root>" --request "<goal>"',
-            '"<zen-cad-root>/zen-cad" --root "<zen-cad-root>" new "<goal>"',
-            'Use the last form only when the current command cwd is already the resolved Zen CAD root',
+            'spec the assembly contract before generating CAD',
+            'Interface Primitives',
+            'Locked Layout Facts',
+            'Proceed Gate',
+            'Downstream CAD Handoff',
+            'Do not source-lock or crawl for catalog parts before writing the layout spec',
+            'Do not embed Zen CAD repository paths, milestone folders, or CoBrA workspace paths',
         ]:
             self.assertIn(phrase, text)
         for phrase in [
-            'When running inside a Zen CAD repository',
-            'from the Zen CAD repository root, internally run',
+            'milestones/<id>',
+            './zen-cad validate',
+            'selected_parts_manifest.json',
+            'validation_report.json',
         ]:
             self.assertNotIn(phrase, text)
+
+    def test_focused_08_skills_are_local_and_non_generating(self) -> None:
+        expected = {
+            'assembly-layout': [
+                'it focuses only on how parts locate, mate, move, clear, and connect',
+                'does not generate CAD',
+                'locked facts',
+            ],
+            'interface-signatures': [
+                'does not source-lock catalog parts',
+                'trusted_for_layout',
+                'must confirm before final',
+            ],
+            'cad-handoff': [
+                'adapter-specific',
+                'Preserve locked facts verbatim',
+                'Stop conditions',
+            ],
+        }
+        for skill_name, phrases in expected.items():
+            text = (ROOT / f'skills/{skill_name}/SKILL.md').read_text(encoding='utf-8')
+            for phrase in phrases:
+                self.assertIn(phrase, text, skill_name)
 
     def test_spec_to_cad_is_milestone_first_and_text_to_cad_first(self) -> None:
         text = (ROOT / 'skills/spec-to-cad/SKILL.md').read_text(encoding='utf-8')
@@ -135,23 +146,23 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
         for phrase in forbidden_phrases:
             self.assertNotIn(phrase, text)
 
-    def test_agentic_cad_uses_canonical_milestone_paths(self) -> None:
+    def test_agentic_cad_is_deprecated_compatibility_shim(self) -> None:
         text = (ROOT / 'skills/agentic-cad/SKILL.md').read_text(encoding='utf-8')
         for phrase in [
-            '00_requirements/requirements_brief.md',
-            '02_parts/selected_parts_manifest.json',
-            '03_cad/custom_cad_handoff.yaml',
-            '04_assembly/contact_map.json',
-            '05_validation/validation_report.json',
-            '06_bom/bom.csv',
-            '07_report/final_engineering_report.md',
-            'evidence_type: "environment"',
+            'Deprecated Zen CAD compatibility entrypoint',
+            '`agentic-cad` is deprecated in Zen CAD 0.8.0',
+            '/cad-spec',
+            '/assembly-layout',
+            '/interface-signatures',
+            '/cad-handoff',
+            'This shim must stay small',
         ]:
             self.assertIn(phrase, text)
         for phrase in [
-            '`requirements.md` or `requirements.json`',
-            '`CONTACT_MAP.json`',
-            '`BOM.csv` or `BOM.json`',
+            '00_requirements/requirements_brief.md',
+            '02_parts/selected_parts_manifest.json',
+            '05_validation/validation_report.json',
+            'evidence_type: "environment"',
         ]:
             self.assertNotIn(phrase, text)
 
@@ -166,26 +177,31 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
         ]:
             self.assertIn(phrase, text)
 
-    def test_agent_creates_milestone_from_prompt_after_setup(self) -> None:
+    def test_cad_spec_first_docs_and_legacy_milestone_helper(self) -> None:
         searchable_text = '\n'.join(
             path.read_text(encoding='utf-8')
             for path in [
                 ROOT / 'README.md',
                 ROOT / 'docs/cobra_usage.md',
                 ROOT / 'docs/environment_setup.md',
+                ROOT / 'docs/operating_principles.md',
                 ROOT / 'prompts/project_kickoff.md',
                 ROOT / 'prompts/new_milestone.md',
-                ROOT / 'skills/agentic-cad/SKILL.md',
+                ROOT / 'skills/cad-spec/SKILL.md',
+                ROOT / 'templates/milestone.yaml',
             ]
         ).casefold()
         for phrase in [
-            'prompt-first milestone startup',
-            'do not ask the user to run',
+            'use `/cad-spec` as the default starting skill',
+            'cad-native spec',
+            'low-detail layout proxy',
+            'proceed gate',
+            'legacy milestone',
             'python3 scripts/new_milestone.py --request "<goal>"',
-            '기어 박스를 만들고 싶어',
-            '003_gearbox',
+            'workflow: /cad-spec',
         ]:
             self.assertIn(phrase.casefold(), searchable_text)
+        self.assertNotIn('003_gearbox', searchable_text)
         self.assertNotIn('create the milestone with `--milestone-request` before editing artifacts', searchable_text)
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -200,7 +216,9 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
             )
             self.assertIn('Milestone id: 003_gearbox', completed.stdout)
             self.assertIn('Title: Gearbox', completed.stdout)
-            self.assertTrue((work / 'milestones/003_gearbox/milestone.yaml').exists())
+            created_milestone = work / 'milestones/003_gearbox/milestone.yaml'
+            self.assertTrue(created_milestone.exists())
+            self.assertIn('workflow: /cad-spec', created_milestone.read_text(encoding='utf-8'))
 
             explicit = subprocess.run(
                 [
@@ -297,7 +315,7 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
                     'scripts/setup_zen_cad.py',
                     '--sync-cobra-skill',
                     '--cobra-skill-dir',
-                    str(skills_root / 'agentic-cad'),
+                    str(skills_root / 'cad-spec'),
                     '--skip-validation',
                 ],
                 cwd=work,
@@ -306,12 +324,17 @@ class PromptFirstMilestoneWorkflowTest(unittest.TestCase):
                 check=True,
             )
 
-            for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
+            for skill_name in SHIPPED_SKILLS:
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
+                source_dir = work / 'skills' / skill_name
+                for source_file in (path for path in source_dir.rglob('*') if path.is_file()):
+                    rel = source_file.relative_to(source_dir)
+                    self.assertTrue((skills_root / skill_name / rel).exists(), f'{skill_name}/{rel}')
                 context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'
                 self.assertTrue(context.exists(), skill_name)
                 context_text = context.read_text(encoding='utf-8')
                 self.assertIn(f'Repository root: {work.resolve()}', context_text)
+                self.assertIn('Start new CAD work with /cad-spec', context_text)
                 self.assertIn('The CoBrA daemon/session cwd is not the Zen CAD workspace contract.', context_text)
                 self.assertIn('python3 "<repository-root>/scripts/new_milestone.py" --root "<repository-root>" --request "<goal>"', context_text)
 

@@ -12,6 +12,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+SHIPPED_SKILLS = [
+    'agentic-cad',
+    'assembly-layout',
+    'cad-artifact-reviewer',
+    'cad-handoff',
+    'cad-spec',
+    'interface-signatures',
+    'manufacturing-preflight',
+    'mechanism-kinematics',
+    'self-evolving-producer-verifier',
+    'source-step-parts',
+    'spec-to-cad',
+]
+
 
 def copy_repo_fixture(target: Path) -> None:
     shutil.copytree(
@@ -45,8 +59,8 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertIn('does not change CoBrA process cwd by itself', completed.stdout)
             self.assertIn('Do not treat the Zen CAD repo as the CoBrA daemon cwd', completed.stdout)
             self.assertNotIn('Start CoBrA from this repo', completed.stdout)
-            self.assertIn('In CoBrA/Codex/Claude Code/Cursor, ask:', completed.stdout)
-            self.assertIn('Manual terminal fallback:', completed.stdout)
+            self.assertIn('In CoBrA/Codex/Claude Code/Cursor, ask $cad-spec', completed.stdout)
+            self.assertIn('Legacy milestone fallback:', completed.stdout)
 
     def test_init_with_cobra_syncs_companion_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -68,12 +82,17 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertIn('CoBrA skill sync: PASS', completed.stdout)
             self.assertIn('Do not treat the Zen CAD repo as the CoBrA daemon cwd', completed.stdout)
             self.assertNotIn('Start CoBrA from this repo', completed.stdout)
-            for skill_name in ['agentic-cad', 'cad-artifact-reviewer', 'manufacturing-preflight', 'mechanism-kinematics', 'spec-to-cad', 'self-evolving-producer-verifier', 'source-step-parts']:
+            for skill_name in SHIPPED_SKILLS:
                 self.assertTrue((skills_root / skill_name / 'SKILL.md').exists(), skill_name)
+                source_dir = work / 'skills' / skill_name
+                for source_file in (path for path in source_dir.rglob('*') if path.is_file()):
+                    rel = source_file.relative_to(source_dir)
+                    self.assertTrue((skills_root / skill_name / rel).exists(), f'{skill_name}/{rel}')
                 context = skills_root / skill_name / 'ZEN_CAD_WORKSPACE.md'
                 self.assertTrue(context.exists(), skill_name)
                 context_text = context.read_text(encoding='utf-8')
                 self.assertIn(f'Repository root: {work.resolve()}', context_text)
+                self.assertIn('Start new CAD work with /cad-spec', context_text)
                 self.assertIn('The CoBrA daemon/session cwd is not the Zen CAD workspace contract.', context_text)
                 self.assertIn('python3 "<repository-root>/scripts/new_milestone.py" --root "<repository-root>" --request "<goal>"', context_text)
 
@@ -96,13 +115,37 @@ class FirstRunCliTest(unittest.TestCase):
                 '--skip-validation',
             )
             self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
-            (skills_root / 'agentic-cad' / 'ZEN_CAD_WORKSPACE.md').unlink()
+            (skills_root / 'cad-spec' / 'ZEN_CAD_WORKSPACE.md').unlink()
 
             doctor = run_cli(work, 'doctor', '--cobra-skills-root', str(skills_root))
 
             self.assertEqual(doctor.returncode, 0, doctor.stderr + doctor.stdout)
             self.assertIn('[WARN] CoBrA workspace binding', doctor.stdout)
-            self.assertIn('missing ZEN_CAD_WORKSPACE.md for agentic-cad', doctor.stdout)
+            self.assertIn('missing ZEN_CAD_WORKSPACE.md for cad-spec', doctor.stdout)
+
+    def test_doctor_warns_when_synced_skill_reference_is_stale(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / 'zen-cad-kit'
+            skills_root = Path(tmp) / 'cobra-skills'
+            copy_repo_fixture(work)
+
+            completed = run_cli(
+                work,
+                'init',
+                '--with-cobra',
+                '--cobra-skills-root',
+                str(skills_root),
+                '--skip-validation',
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
+            stale_reference = skills_root / 'cad-spec' / 'references' / 'proxy-fidelity.md'
+            stale_reference.write_text('stale\n', encoding='utf-8')
+
+            doctor = run_cli(work, 'doctor', '--cobra-skills-root', str(skills_root))
+
+            self.assertEqual(doctor.returncode, 0, doctor.stderr + doctor.stdout)
+            self.assertIn('[WARN] CoBrA skill freshness', doctor.stdout)
+            self.assertIn('stale cad-spec', doctor.stdout)
 
     def test_doctor_accepts_build123d_ocp_python_backend(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -146,8 +189,10 @@ class FirstRunCliTest(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
             self.assertIn('Milestone creation: PASS', completed.stdout)
             self.assertIn('Active milestone: milestones/003_gearbox', completed.stdout)
-            self.assertIn('Continue with /agentic-cad', completed.stdout)
-            self.assertTrue((work / 'milestones/003_gearbox/milestone.yaml').exists())
+            self.assertIn('Continue with /cad-spec', completed.stdout)
+            milestone = work / 'milestones/003_gearbox/milestone.yaml'
+            self.assertTrue(milestone.exists())
+            self.assertIn('workflow: /cad-spec', milestone.read_text(encoding='utf-8'))
 
     def test_validate_splits_structure_pass_from_completion_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

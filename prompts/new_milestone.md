@@ -1,16 +1,16 @@
 # New Milestone Prompt
 
-Create a new Zen CAD milestone for the requested mechanical design.
+Create a new legacy Zen CAD milestone for the requested mechanical design only when the user needs the milestone/evidence harness.
 
-For prompt-first milestone startup, the user may only provide a CAD goal such as `기어 박스를 만들고 싶어`. Do not ask the user to run a Python command or manually choose a milestone id/title. Internally run this from the Zen CAD repository root:
+For normal Zen CAD 0.8 work, start with `/cad-spec` instead of creating a milestone. If a legacy milestone is required, the user may provide only a CAD goal. Do not ask the user to run a Python command or manually choose a milestone id/title. Internally run this from the Zen CAD repository root:
 
 ```bash
 python3 scripts/new_milestone.py --request "<goal>"
 ```
 
-That command derives the next available milestone id and title automatically, for example `003_gearbox` and `Gearbox` in this repository.
+That command derives the next available milestone id and title automatically.
 
-New milestones default to `maturity: concept`. Generate useful CAD first, mark proxies/envelopes as non-final, and switch to `maturity: final` only when source-lock and validation evidence are ready.
+New legacy milestones default to `maturity: concept` and `workflow: /cad-spec`. Generate a useful layout proxy first, mark proxies/envelopes as non-final, and switch to `maturity: final` only when source-lock and validation evidence are ready.
 
 For automation or exact naming, the existing explicit path still works:
 

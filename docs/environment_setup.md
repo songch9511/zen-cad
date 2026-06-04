@@ -39,7 +39,7 @@ To run setup explicitly, use:
 ./zen-cad init
 ```
 
-The setup helper validates required files, checks bundled JSON/CSV artifacts, and validates every milestone skeleton under `milestones/`.
+The setup helper validates required files, checks bundled JSON/CSV artifacts, and validates every legacy milestone skeleton under `milestones/`.
 
 For CoBrA, add `--with-cobra` to copy the bundled Zen CAD skills into the CoBrA skills directory before validation.
 
@@ -54,13 +54,13 @@ Interpret blockers by layer:
 - Missing CoBrA skills or missing `ZEN_CAD_WORKSPACE.md`: rerun `./zen-cad init --with-cobra`.
 - Missing `numpy`, `trimesh`, `build123d`, OCP, or CadQuery: strict final CAD evidence cannot run in that Python. This does not block CoBrA skill discovery or concept/layout CAD generation.
 
-After that, milestone startup is prompt-first: the user can type a natural CAD goal such as `기어 박스를 만들고 싶어` in the agent prompt, and the agent should internally run `python3 scripts/new_milestone.py --request "<goal>"` to create the next milestone, for example `003_gearbox` titled `Gearbox` in this repository.
+After that, new CAD work should start with `/cad-spec`. Write a CAD-native spec first, then use `/cad-handoff` to ask the active CAD harness for a low-detail layout proxy.
 
-For automation, CI, or non-interactive setup, the helper can still create a first milestone during setup from a natural-language request:
+For legacy milestone automation, CI, or final-evidence experiments, the helper can still create a first milestone during setup from a natural-language request:
 
 ```bash
 ./zen-cad init \
-  --milestone-request "기어 박스를 만들고 싶어"
+  --milestone-request "<goal>"
 ```
 
 The explicit id/title path also remains available when you must pin an exact folder name:
@@ -71,4 +71,4 @@ The explicit id/title path also remains available when you must pin an exact fol
   --milestone-title "Desktop CNC workholding fixture"
 ```
 
-The milestone can be a gearbox stage, robot arm joint, watch mechanism, drone frame, enclosure, fixture, actuator, or any other CAD job. The examples are not presets.
+The legacy milestone can be any CAD job. It is not the default 0.8 user experience; use it only when you need the milestone/evidence harness.

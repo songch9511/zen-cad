@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.8.0
+
+- Reposition Zen CAD around focused, harness-native spec skills instead of a monolithic `/agentic-cad` workflow.
+- Add `/cad-spec` as the default entrypoint for CAD-native specs with coordinate frames, interface primitives, locked layout facts, proxy fidelity policy, proceed gates, and downstream CAD handoffs.
+- Add `/assembly-layout`, `/interface-signatures`, and `/cad-handoff` for narrow layout review, standard interface facts, and harness-specific generation briefs.
+- Convert `/agentic-cad` into a deprecated compatibility shim that routes new work to the focused 0.8 skills.
+- Keep the `./zen-cad` milestone/evidence CLI as a legacy compatibility layer for final/release evidence workflows.
+
 ## 0.7.0
 
 - Upgrade `/agentic-cad` to an interface-first / assembly-first workflow: generate fast low-detail `layout_proxy` assemblies with accurate datums, axes, mating primitives, center distances, CONTACT_MAP/CONNECTIONS, clearances, and part transforms before expensive detail CAD.

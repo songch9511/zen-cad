@@ -109,7 +109,7 @@ def create_milestone(root: Path, milestone_id: str, title: str, maturity: str) -
 
 def main() -> int:
     parser = argparse.ArgumentParser(description='Create a Zen CAD milestone from explicit id/title or a natural-language CAD request.')
-    parser.add_argument('request_words', nargs='*', help='Natural-language CAD request, e.g. "기어 박스를 만들고 싶어"')
+    parser.add_argument('request_words', nargs='*', help='Natural-language CAD request')
     parser.add_argument('--request', help='Natural-language CAD request. The script derives the next milestone id and title.')
     parser.add_argument('--id', help='Explicit milestone id, e.g. 002_gearbox')
     parser.add_argument('--title', help='Explicit human-readable milestone title')
