@@ -10,5 +10,6 @@
 - Repair generated CAD by changing the smallest responsible source-level cause, then rerun the failed checks.
 - Do not validate CAD by git diff, file size, screenshot, or viewer link alone.
 - Use built-in interface registry facts for layout when available; record misses and use documented envelopes instead of broad catalog crawling.
+- Validate machine-readable contract packages before treating them as generator-ready.
 - Treat proceed approval as a lock on layout facts.
 - Do not claim engineering certification from CAD geometry alone.

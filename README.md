@@ -56,6 +56,7 @@ Zen CAD 0.8.0은 Markdown spec을 기본 사용자 경험으로 유지하지만,
 
 - [`schemas/`](schemas): CAD spec, layout contract, interface signature, inspection report, handoff packet JSON Schemas.
 - [`registry/interfaces/`](registry/interfaces): first-pass layout proxy에 필요한 built-in interface signatures.
+- [`tools/validate_contract.py`](tools/validate_contract.py): schema surface, interface registry, optional contract package를 검사하는 dependency-free validator.
 
 이 registry는 부품 카탈로그가 아닙니다. supplier identity, SKU, 가격, 재고, rating, certification, 최종 STEP geometry를 보장하지 않습니다. 목적은 웹서치 없이도 layout 단계에서 축, datum, bore, shaft, pitch reference, clearance, envelope를 빠르게 잡는 것입니다.
 
@@ -73,6 +74,7 @@ motion/drivetrain, CAD generation, inspection, review specialist subagents를 �
 
 ```bash
 python3 -m unittest discover -s tests
+python3 tools/validate_contract.py
 ```
 
 예시 CAD spec은 메인에 커밋하지 않습니다. 예시는 테스트용 임시 fixture나 별도 curated artifact로 관리합니다.
