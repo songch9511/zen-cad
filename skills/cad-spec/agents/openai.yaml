@@ -1,4 +1,4 @@
 interface:
   display_name: "CAD Spec"
-  short_description: "Write CAD-native specs before generation."
-  default_prompt: "Use $cad-spec to turn this mechanical request into a CAD-native layout spec with coordinate frames, interface primitives, locked facts, a proceed gate, and a downstream CAD handoff."
+  short_description: "Spec CAD and delegate specialist work."
+  default_prompt: "Use $cad-spec to turn this mechanical request into a CAD-native layout spec with coordinate frames, interface primitives, locked facts, specialist subagent tasks, a proceed gate, and a downstream CAD handoff."

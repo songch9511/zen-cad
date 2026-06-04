@@ -34,7 +34,7 @@ Interface signature: NEMA17 face
 - shaft axis: normal to motor face
 ```
 
-Signatures are layout facts, not procurement evidence. They can drive layout proxies before source-locked STEP files exist.
+Signatures are layout facts, not procurement proof. They can drive layout proxies before supplier STEP files exist.
 
 ## Quality Rules
 

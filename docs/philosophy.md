@@ -1,3 +1,5 @@
 # Philosophy
 
-Zen CAD treats mechanical CAD as an evidence-producing workflow, not a single text-to-3D generation event. The repository standardizes how an agent frames requirements, researches parts, chooses source-first versus generate-second, creates custom CAD, records assembly relationships, validates artifacts, and reports limitations.
+Zen CAD treats CAD generation as an assembly-contract problem first. The first model should prove that parts locate, mate, move, and clear correctly. Surface detail, supplier geometry, manufacturing polish, and packaging come later.
+
+The key artifact is the CAD-native spec: a concise statement of coordinate frames, datums, interface primitives, motion relationships, proxy fidelity policy, locked layout facts, and proceed gate. Good specs make downstream CAD generators faster because they remove ambiguity before geometry is produced.

@@ -1,6 +1,6 @@
 ---
 name: assembly-layout
-description: Define and review low-detail mechanical assembly layouts before detail CAD. Use for assembly graphs, root frames, CONTACT/CONNECTION concepts, locked interface facts, positioning review, drivetrain layout review, and proceed-gate readiness. Does not generate CAD or final evidence.
+description: Define and review low-detail mechanical assembly layouts before detail CAD. Use for assembly graphs, root frames, contact/connection concepts, locked interface facts, positioning review, drivetrain layout review, and proceed-gate readiness.
 version: 0.8.0
 ---
 
@@ -10,7 +10,7 @@ version: 0.8.0
 
 Use this skill to define or review the low-detail assembly contract that should be correct before detail CAD begins. It is narrower than `cad-spec`: it focuses only on how parts locate, mate, move, clear, and connect.
 
-This skill does not generate CAD, source parts, run final validation, or create milestone artifacts.
+This skill does not generate CAD, source parts, or replace the lead CAD spec.
 
 ## Use This Skill When
 
@@ -45,7 +45,7 @@ Use clear relationship names:
 - Do not approve detail modeling if the assembly graph is still unclear.
 - Do not treat a pretty surface as evidence that a mate or drivetrain is correct.
 - Do not change locked facts during detail upgrade without returning to layout review.
-- Do not require source-locked supplier STEP files for layout review when interface signatures are sufficient.
+- Do not require supplier STEP files for layout review when interface signatures are sufficient.
 
 ## References
 

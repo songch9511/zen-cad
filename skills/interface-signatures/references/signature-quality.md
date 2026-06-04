@@ -22,9 +22,9 @@ A signature is layout-ready when it defines the interfaces that locate the part:
 
 ## Final Boundary
 
-An interface signature is not final evidence. Before final claims, the project may need:
+An interface signature is not final proof. Before final claims, the project may need:
 
-- source-locked supplier or manufacturer identity;
+- supplier or manufacturer identity;
 - exact part number or SKU;
 - datasheet;
 - cached STEP/STP;

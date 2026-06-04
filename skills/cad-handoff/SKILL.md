@@ -48,7 +48,7 @@ Known assumptions:
 - Do not hide locked facts in a summary; include them explicitly.
 - Do not ask for high-fidelity geometry during layout unless the user requested it.
 - Do not let the downstream generator change approved layout facts during detail.
-- Do not claim final evidence unless the downstream tool actually produced it.
+- Do not claim final readiness unless the downstream tool actually produced the required outputs.
 
 ## References
 

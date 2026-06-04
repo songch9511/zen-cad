@@ -40,7 +40,7 @@ Codex can edit files and run local tools. Ask it to:
 - keep the spec and generated source separate;
 - run available deterministic checks;
 - return artifact paths and limitations;
-- avoid final claims unless final evidence is explicitly requested.
+- avoid final claims unless the required final checks are explicitly requested and completed.
 
 ## text-to-cad / `$cad` Handoff
 

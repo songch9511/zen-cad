@@ -1,9 +1,10 @@
 # Operating Principles
 
-- Use `/cad-spec` as the default starting skill.
-- Write the CAD-native spec before asking a harness to generate geometry.
-- Preserve assembly positioning, interface primitives, and drivetrain facts before improving surface fidelity.
-- Use interface signatures for layout when full sourced STEP geometry is not yet available.
+- Start with `/cad-spec`.
+- Spec the assembly contract before generating CAD.
+- Use low-detail layout proxies for first-pass positioning.
+- Preserve interface primitives, datums, axes, center distances, and drivetrain relationships before surface fidelity.
+- Use interface signatures when layout needs standard component facts but full supplier geometry is unavailable.
+- Use specialist subagents for bounded CAD subtasks when the harness supports delegation.
 - Treat proceed approval as a lock on layout facts.
-- Keep harness-specific paths and commands in adapter/handoff layers, not in core specs.
 - Do not claim engineering certification from CAD geometry alone.
