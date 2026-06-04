@@ -17,6 +17,7 @@ SCHEMA_FILES = {
     "interface_signature.schema.json": "interface_signature",
     "inspection_report.schema.json": "inspection_report",
     "handoff_packet.schema.json": "handoff_packet",
+    "layout_proxy_scene.schema.json": "layout_proxy_scene",
 }
 
 COMMON_SCHEMA_REQUIRED = {"schema_version", "kind", "extensions"}
@@ -206,6 +207,8 @@ class ContractValidator:
             self.validate_inspection_document(path, document)
         for path, document in by_kind.get("interface_signature", []):
             self.validate_interface_signature(path, document)
+        for path, document in by_kind.get("layout_proxy_scene", []):
+            self.validate_layout_proxy_scene_document(path, document)
 
         return self.issues
 
@@ -284,6 +287,23 @@ class ContractValidator:
         for skipped in document.get("skipped_checks", []):
             if not isinstance(skipped, dict) or not str(skipped.get("reason", "")).strip():
                 self.error(path, "skipped checks must include a reason")
+
+    def validate_layout_proxy_scene_document(self, path: Path, document: dict[str, Any]) -> None:
+        primitives = document.get("primitives", [])
+        if not isinstance(primitives, list) or not primitives:
+            self.error(path, "layout_proxy_scene primitives must be a non-empty list")
+        for primitive in primitives if isinstance(primitives, list) else []:
+            if not isinstance(primitive, dict):
+                self.error(path, "layout_proxy_scene primitive entries must be objects")
+                continue
+            for field in ["id", "part_id", "type", "frame", "dimensions", "derived_from", "fidelity"]:
+                if field not in primitive:
+                    self.error(path, f"layout_proxy_scene primitive missing {field}")
+            if primitive.get("fidelity") != "layout_only":
+                self.error(path, "layout_proxy_scene primitives must use layout_only fidelity")
+        for skipped in document.get("skipped_checks", []):
+            if not isinstance(skipped, dict) or not str(skipped.get("reason", "")).strip():
+                self.error(path, "layout_proxy_scene skipped checks must include a reason")
 
 
 def walk_keys(value: Any) -> set[str]:

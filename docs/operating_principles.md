@@ -11,5 +11,6 @@
 - Do not validate CAD by git diff, file size, screenshot, or viewer link alone.
 - Use built-in interface registry facts for layout when available; record misses and use documented envelopes instead of broad catalog crawling.
 - Validate machine-readable contract packages before treating them as generator-ready.
+- Generate kernel-neutral layout proxy scenes before adding CAD-kernel-specific exporters.
 - Treat proceed approval as a lock on layout facts.
 - Do not claim engineering certification from CAD geometry alone.

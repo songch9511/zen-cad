@@ -11,6 +11,7 @@ Core Zen CAD specs stay kernel-neutral. Tool-specific commands belong in adapter
 An adapter prompt should map Zen CAD concepts to the active harness:
 
 - CAD source generation;
+- optional kernel-neutral layout proxy scene generation;
 - explicit primary artifact path;
 - generated files as derived artifacts;
 - source/spec as the source of truth;

@@ -24,3 +24,5 @@ Use `skills/cad-handoff/SKILL.md` when the active generator needs a concise task
 Use `schemas/` when a harness needs machine-readable contracts, and use `registry/interfaces/` when a layout proxy needs known component interface facts without catalog crawling.
 
 Run `python3 tools/validate_contract.py` to verify the built-in schema and registry surface. Pass `--package <path>` to also check a generated contract package before CAD generation or review handoff.
+
+Run `python3 tools/generate_layout_proxy.py --package <path> --out <dir>` after validation to produce a kernel-neutral `layout_proxy.scene.json` plus an inspection report skeleton. This is a layout contract artifact for downstream CAD generation, not a STEP export.

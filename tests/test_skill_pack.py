@@ -117,6 +117,7 @@ class SkillPackTest(unittest.TestCase):
             "interface_signature.schema.json",
             "inspection_report.schema.json",
             "handoff_packet.schema.json",
+            "layout_proxy_scene.schema.json",
         ]
         for name in expected:
             path = ROOT / "schemas" / name
