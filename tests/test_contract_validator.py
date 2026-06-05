@@ -67,6 +67,7 @@ class ContractValidatorTest(unittest.TestCase):
                         "required_checks": ["check_shaft_axis"],
                         "stop_conditions": ["Stop if locked layout facts must change."],
                     },
+                    "extensions": {},
                 },
             )
 
@@ -91,6 +92,7 @@ class ContractValidatorTest(unittest.TestCase):
                         }
                     ],
                     "skipped_checks": [],
+                    "extensions": {},
                 },
             )
 
@@ -109,6 +111,7 @@ class ContractValidatorTest(unittest.TestCase):
                     "id": "bad_handoff",
                     "required_checks": ["check_axis"],
                     "stop_conditions": ["Stop if locked facts must change."],
+                    "extensions": {},
                 },
             )
 

@@ -15,7 +15,8 @@ An adapter prompt should map Zen CAD concepts to the active harness:
 - optional locked-facts inspection of a layout proxy scene;
 - optional CAD source export and source-level inspection;
 - proceed-gate package generation;
-- detail-upgrade handoff generation;
+- proceed approval recording;
+- detail-upgrade handoff generation from a matching approval artifact;
 - explicit primary artifact path;
 - generated files as derived artifacts;
 - source/spec as the source of truth;

@@ -10,10 +10,13 @@
 - Repair generated CAD by changing the smallest responsible source-level cause, then rerun the failed checks.
 - Do not validate CAD by git diff, file size, screenshot, or viewer link alone.
 - Use built-in interface registry facts for layout when available; record misses and use documented envelopes instead of broad catalog crawling.
+- Keep contract documents on `schema_version: 0.8.0` until the compatibility contract changes.
 - Validate machine-readable contract packages before treating them as generator-ready.
+- Prefer the one-command kernel-neutral contract pipeline runner for standard package processing.
 - Generate kernel-neutral layout proxy scenes before adding CAD-kernel-specific exporters.
 - Inspect layout proxy scenes against locked facts before treating them as ready for CAD export.
 - Export CAD source through an adapter, then inspect source-level carry-through before user proceed review.
-- Package proceed gates before generating detail-upgrade handoffs.
+- Package proceed gates before asking for approval.
+- Generate detail-upgrade handoffs only from an explicit proceed approval artifact.
 - Treat proceed approval as a lock on layout facts.
 - Do not claim engineering certification from CAD geometry alone.

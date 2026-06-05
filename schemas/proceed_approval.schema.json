@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/proceed_approval.schema.json",
+  "title": "Zen CAD Proceed Approval",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "spec_id",
+    "proceed_gate_id",
+    "decision",
+    "approved_next_maturity",
+    "approver",
+    "approved_at",
+    "locked_layout_facts",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "proceed_approval" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "spec_id": { "type": "string" },
+    "proceed_gate_id": { "type": "string" },
+    "decision": {
+      "type": "string",
+      "enum": ["proceed", "detail_upgrade"]
+    },
+    "approved_next_maturity": {
+      "type": "string",
+      "enum": ["detail_cad"]
+    },
+    "approver": { "type": "string" },
+    "approved_at": { "type": "string" },
+    "locked_layout_facts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "notes": { "type": "string" },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

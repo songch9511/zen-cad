@@ -13,7 +13,7 @@ Generate a low-detail layout proxy from this spec. Preserve all locked interface
 Use named parameters for critical dimensions and return checks that prove the locked facts survived generation.
 ```
 
-For detail:
+For detail after explicit proceed approval:
 
 ```text
 Upgrade visual and manufacturing-relevant detail while preserving the approved locked layout facts. If any locked fact must change, stop and return to layout review.

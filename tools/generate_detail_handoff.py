@@ -20,10 +20,11 @@ class DetailHandoffResult:
 
 
 class DetailHandoffGenerator:
-    def __init__(self, repo_root: Path, package: Path, proceed_gate: Path, out: Path, target_harness: str) -> None:
+    def __init__(self, repo_root: Path, package: Path, proceed_gate: Path, approval: Path, out: Path, target_harness: str) -> None:
         self.repo_root = repo_root
         self.package = package
         self.proceed_gate = proceed_gate
+        self.approval = approval
         self.out = out
         self.target_harness = target_harness
         self.issues: list[Issue] = []
@@ -45,18 +46,22 @@ class DetailHandoffGenerator:
         validator.validate_repo()
         validator.validate_package(self.package)
         validator.validate_package(self.proceed_gate)
+        validator.validate_package(self.approval)
         if validator.issues:
             self.issues.extend(validator.issues)
             return None
         gate = self.load_json(self.proceed_gate)
+        approval = self.load_json(self.approval)
         spec = self.load_spec()
-        if not isinstance(gate, dict) or spec is None:
+        if not isinstance(gate, dict) or not isinstance(approval, dict) or spec is None:
             return None
         if gate.get("status") != "ready_for_user_review":
             self.error(self.proceed_gate, "detail handoff requires proceed gate status ready_for_user_review")
             return None
+        if not self.approval_matches_gate(spec, gate, approval):
+            return None
 
-        handoff = self.build_handoff(spec, gate)
+        handoff = self.build_handoff(spec, gate, approval)
         self.out.parent.mkdir(parents=True, exist_ok=True)
         write_json(self.out, handoff)
 
@@ -66,6 +71,33 @@ class DetailHandoffGenerator:
             self.issues.extend(output_validator.issues)
             return None
         return DetailHandoffResult(handoff_path=self.out)
+
+    def approval_matches_gate(self, spec: dict[str, Any], gate: dict[str, Any], approval: dict[str, Any]) -> bool:
+        ok = True
+        if approval.get("kind") != "proceed_approval":
+            self.error(self.approval, "detail handoff requires a proceed_approval document")
+            ok = False
+        if approval.get("spec_id") != spec.get("id"):
+            self.error(self.approval, "approval spec_id must match cad_spec id")
+            ok = False
+        if approval.get("proceed_gate_id") != gate.get("id"):
+            self.error(self.approval, "approval proceed_gate_id must match proceed gate id")
+            ok = False
+        if approval.get("decision") not in {"proceed", "detail_upgrade"}:
+            self.error(self.approval, "approval decision must be proceed or detail_upgrade")
+            ok = False
+        if approval.get("decision") not in gate.get("decision_options", []):
+            self.error(self.approval, "approval decision must be available in proceed gate options")
+            ok = False
+        if approval.get("approved_next_maturity") != "detail_cad":
+            self.error(self.approval, "approval must target detail_cad")
+            ok = False
+        gate_facts = {str(item) for item in gate.get("locked_layout_facts", [])}
+        approval_facts = {str(item) for item in approval.get("locked_layout_facts", [])}
+        if not gate_facts or approval_facts != gate_facts:
+            self.error(self.approval, "approval locked_layout_facts must exactly match proceed gate locked facts")
+            ok = False
+        return ok
 
     def load_spec(self) -> dict[str, Any] | None:
         paths = [self.package] if self.package.is_file() else sorted(self.package.rglob("*.json"))
@@ -79,7 +111,7 @@ class DetailHandoffGenerator:
             return None
         return specs[0]
 
-    def build_handoff(self, spec: dict[str, Any], gate: dict[str, Any]) -> dict[str, Any]:
+    def build_handoff(self, spec: dict[str, Any], gate: dict[str, Any], approval: dict[str, Any]) -> dict[str, Any]:
         locked = [
             str(fact.get("fact_id", fact))
             for fact in spec.get("locked_layout_facts", [])
@@ -121,6 +153,9 @@ class DetailHandoffGenerator:
                 "generator": "tools/generate_detail_handoff.py",
                 "proceed_gate": str(self.proceed_gate),
                 "proceed_gate_status": gate.get("status"),
+                "proceed_approval": str(self.approval),
+                "proceed_decision": approval.get("decision"),
+                "approver": approval.get("approver"),
             },
         }
 
@@ -130,10 +165,11 @@ def write_json(path: Path, data: object) -> None:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate a detail-upgrade handoff packet from a ready proceed gate package.")
+    parser = argparse.ArgumentParser(description="Generate a detail-upgrade handoff packet from a proceed gate package and approval artifact.")
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1], help="Zen CAD repository root.")
     parser.add_argument("--package", type=Path, required=True, help="Contract package JSON file or directory.")
     parser.add_argument("--proceed-gate", type=Path, required=True, help="Proceed gate package JSON.")
+    parser.add_argument("--approval", type=Path, required=True, help="Proceed approval JSON.")
     parser.add_argument("--out", type=Path, required=True, help="Output detail handoff JSON path.")
     parser.add_argument("--target-harness", choices=["codex", "text-to-cad", "build123d", "cadquery", "freecad", "unknown"], default="unknown")
     return parser.parse_args(argv)
@@ -141,7 +177,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
-    generator = DetailHandoffGenerator(args.repo_root, args.package, args.proceed_gate, args.out, args.target_harness)
+    generator = DetailHandoffGenerator(args.repo_root, args.package, args.proceed_gate, args.approval, args.out, args.target_harness)
     result = generator.generate()
     if generator.issues:
         for issue in generator.issues:

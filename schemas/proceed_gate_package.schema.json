@@ -41,11 +41,13 @@
     "recommended_next_step": { "type": "string" },
     "artifacts": {
       "type": "array",
-      "items": { "$ref": "#/$defs/artifact" }
+      "items": { "$ref": "#/$defs/artifact" },
+      "minItems": 1
     },
     "reports": {
       "type": "array",
-      "items": { "$ref": "#/$defs/report_ref" }
+      "items": { "$ref": "#/$defs/report_ref" },
+      "minItems": 1
     },
     "locked_layout_facts": {
       "type": "array",

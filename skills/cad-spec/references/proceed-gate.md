@@ -30,7 +30,7 @@ Do not ask the user to approve surface quality during layout unless surface qual
 
 ## Approval Record
 
-If the harness has a project file, write the approved locked facts there. If no project file exists, include them in the conversation handoff. The important part is that detail generation receives the locked facts explicitly.
+If the harness has a project file, write the approved locked facts there. If no project file exists, include them in the conversation handoff. When using the repo runtime, record the decision as a `proceed_approval` artifact before generating a detail handoff. The important part is that detail generation receives the locked facts explicitly and can prove they match the reviewed proceed package.
 
 ## Return To Layout
 

@@ -20,6 +20,8 @@ SCHEMA_FILES = {
     "layout_proxy_scene.schema.json": "layout_proxy_scene",
     "cad_source_manifest.schema.json": "cad_source_manifest",
     "proceed_gate_package.schema.json": "proceed_gate_package",
+    "proceed_approval.schema.json": "proceed_approval",
+    "pipeline_run.schema.json": "pipeline_run",
 }
 
 COMMON_SCHEMA_REQUIRED = {"schema_version", "kind", "extensions"}
@@ -196,6 +198,9 @@ class ContractValidator:
                 continue
             if document.get("schema_version") != SCHEMA_VERSION:
                 self.error(path, f"schema_version must be {SCHEMA_VERSION}")
+            extensions = document.get("extensions")
+            if not isinstance(extensions, dict):
+                self.error(path, "document must include object extensions")
             if doc_id in ids:
                 self.error(path, f"duplicate document id: {doc_id}")
             ids.add(doc_id)
@@ -215,6 +220,10 @@ class ContractValidator:
             self.validate_cad_source_manifest_document(path, document)
         for path, document in by_kind.get("proceed_gate_package", []):
             self.validate_proceed_gate_package_document(path, document)
+        for path, document in by_kind.get("proceed_approval", []):
+            self.validate_proceed_approval_document(path, document)
+        for path, document in by_kind.get("pipeline_run", []):
+            self.validate_pipeline_run_document(path, document)
 
         return self.issues
 
@@ -336,6 +345,10 @@ class ContractValidator:
     def validate_proceed_gate_package_document(self, path: Path, document: dict[str, Any]) -> None:
         if not document.get("decision_options"):
             self.error(path, "proceed_gate_package decision_options must be non-empty")
+        if not document.get("artifacts"):
+            self.error(path, "proceed_gate_package artifacts must be non-empty")
+        if not document.get("reports"):
+            self.error(path, "proceed_gate_package reports must be non-empty")
         if not document.get("locked_layout_facts"):
             self.error(path, "proceed_gate_package locked_layout_facts must be non-empty")
         summary = document.get("check_summary", {})
@@ -344,6 +357,39 @@ class ContractValidator:
             return
         if document.get("status") == "ready_for_user_review" and int(summary.get("failed", 0)) > 0:
             self.error(path, "ready_for_user_review cannot have failed checks")
+
+    def validate_proceed_approval_document(self, path: Path, document: dict[str, Any]) -> None:
+        if document.get("decision") not in {"proceed", "detail_upgrade"}:
+            self.error(path, "proceed_approval decision must be proceed or detail_upgrade")
+        if document.get("approved_next_maturity") != "detail_cad":
+            self.error(path, "proceed_approval approved_next_maturity must be detail_cad")
+        if not document.get("proceed_gate_id"):
+            self.error(path, "proceed_approval must reference proceed_gate_id")
+        if not document.get("approver"):
+            self.error(path, "proceed_approval approver must be non-empty")
+        if not document.get("approved_at"):
+            self.error(path, "proceed_approval approved_at must be non-empty")
+        if not document.get("locked_layout_facts"):
+            self.error(path, "proceed_approval locked_layout_facts must be non-empty")
+
+    def validate_pipeline_run_document(self, path: Path, document: dict[str, Any]) -> None:
+        steps = document.get("steps", [])
+        if not isinstance(steps, list) or not steps:
+            self.error(path, "pipeline_run steps must be a non-empty list")
+            return
+        for step in steps:
+            if not isinstance(step, dict):
+                self.error(path, "pipeline_run step entries must be objects")
+                continue
+            if step.get("status") not in {"passed", "failed", "skipped"}:
+                self.error(path, f"pipeline_run step {step.get('step_id', '<unknown>')} has invalid status")
+            if "outputs" not in step or "issues" not in step or "note" not in step:
+                self.error(path, f"pipeline_run step {step.get('step_id', '<unknown>')} missing outputs, issues, or note")
+        status = document.get("status")
+        if status == "completed" and not document.get("artifacts", {}).get("detail_handoff"):
+            self.error(path, "completed pipeline_run must include detail_handoff artifact")
+        if status == "ready_for_user_review" and not document.get("artifacts", {}).get("proceed_gate"):
+            self.error(path, "ready_for_user_review pipeline_run must include proceed_gate artifact")
 
 
 def walk_keys(value: Any) -> set[str]:

@@ -1,7 +1,7 @@
 ---
 name: cad-spec
 description: Write CAD-native mechanical specs from natural-language design requests and orchestrate CAD work through specialist subagents when available. Use for assembly-first layout specs, parameter contracts, artifact targets, inspection plans, interface definitions, coordinate frames, datums, motion/drivetrain relationships, proxy fidelity boundaries, repair loops, proceed gates, subagent delegation, and downstream CAD handoffs.
-version: 0.8.9
+version: 0.9.0
 ---
 
 # CAD Spec
@@ -75,6 +75,8 @@ Do not ask users to write JSON or YAML. When a harness needs machine-readable ar
 - `schemas/layout_proxy_scene.schema.json`
 - `schemas/cad_source_manifest.schema.json`
 - `schemas/proceed_gate_package.schema.json`
+- `schemas/proceed_approval.schema.json`
+- `schemas/pipeline_run.schema.json`
 
 Use `registry/interfaces/index.json` for built-in layout-ready interface signatures before attempting external catalog research.
 

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/pipeline_run.schema.json",
+  "title": "Zen CAD Pipeline Run",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "contract_package",
+    "target_harness",
+    "status",
+    "steps",
+    "artifacts",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "pipeline_run" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "contract_package": { "type": "string" },
+    "target_harness": {
+      "type": "string",
+      "enum": ["codex", "text-to-cad", "build123d", "cadquery", "freecad", "unknown"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ready_for_user_review", "ready_for_detail_handoff", "completed", "needs_repair", "failed"]
+    },
+    "steps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/step" },
+      "minItems": 1
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["step_id", "status", "outputs", "issues", "note"],
+      "properties": {
+        "step_id": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["passed", "failed", "skipped"]
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "issues": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/issue" }
+        },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "issue": {
+      "type": "object",
+      "required": ["path", "message"],
+      "properties": {
+        "path": { "type": "string" },
+        "message": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

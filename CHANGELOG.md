@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0
+
+- Bump the product and core skill versions to 0.9.0.
+- Add the 0.9.0 one-command kernel-neutral contract pipeline runner for validation, layout proxy generation, scene inspection, CAD source export, source inspection, and proceed packaging.
+- Add explicit proceed approval artifacts before detail handoff generation.
+- Document runner-first usage across README and generic usage docs while keeping the phase tools available for focused diagnosis.
+- Keep contract documents on `schema_version: 0.8.0` for contract compatibility.
+
 ## 0.8.9
 
 - Reset Zen CAD to a focused CAD-native skill pack.

@@ -49,6 +49,10 @@ class ProceedGatePackager:
         for artifact in self.artifacts:
             if not artifact.exists():
                 self.error(artifact, "artifact does not exist")
+        if not self.artifacts:
+            self.error("<args>", "proceed gate packaging requires at least one artifact")
+        if not self.reports:
+            self.error("<args>", "proceed gate packaging requires at least one inspection report")
         if validator.issues:
             self.issues.extend(validator.issues)
             return None

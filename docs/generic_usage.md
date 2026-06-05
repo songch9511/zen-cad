@@ -1,6 +1,6 @@
 # Generic Usage
 
-Zen CAD 0.8 can be used in any agentic environment that can read Markdown and hand work to a CAD-generation toolchain.
+Zen CAD 0.9 can be used in any agentic environment that can read Markdown and hand work to a CAD-generation toolchain. The product version is 0.9.0, while contract documents continue to use `schema_version: 0.8.0` for compatibility.
 
 Start with:
 
@@ -23,19 +23,30 @@ Use `skills/cad-handoff/SKILL.md` when the active generator needs a concise task
 
 Use `schemas/` when a harness needs machine-readable contracts, and use `registry/interfaces/` when a layout proxy needs known component interface facts without catalog crawling.
 
-Run `python3 tools/validate_contract.py` to verify the built-in schema and registry surface. Pass `--package <path>` to also check a generated contract package before CAD generation or review handoff.
-
-Run `python3 tools/generate_layout_proxy.py --package <path> --out <dir>` after validation to produce a kernel-neutral `layout_proxy.scene.json` plus an inspection report skeleton. This is a layout contract artifact for downstream CAD generation, not a STEP export.
-
-Run `python3 tools/inspect_layout_proxy.py --package <path> --scene <scene.json> --out <report.json>` to check whether a layout proxy scene carries the expected locked facts, part primitives, relationships, and interface datums before handing it to a CAD exporter.
-
-After scene inspection, use the remaining adapters in order:
+Run the 0.9.0 contract pipeline runner after a contract package exists:
 
 ```bash
-python3 tools/export_cad_source.py --package <path> --scene <scene.json> --out <source-dir>
-python3 tools/inspect_cad_source.py --scene <scene.json> --manifest <source-dir>/cad_source_manifest.json --source <source-dir>/layout_proxy_build123d.py --out <source-report.json>
-python3 tools/package_proceed_gate.py --package <path> --artifact <scene.json> --artifact <source-dir>/layout_proxy_build123d.py --report <scene-report.json> --report <source-report.json> --out <proceed-gate.json>
-python3 tools/generate_detail_handoff.py --package <path> --proceed-gate <proceed-gate.json> --out <detail-handoff.json>
+python3 tools/run_contract_pipeline.py --package <path> --out <dir>
 ```
 
-These adapters keep Zen CAD kernel-neutral. They do not replace downstream CAD generation, STEP export, or geometry measurement.
+The runner verifies the built-in schema and registry surface, validates the package, creates a kernel-neutral `layout_proxy.scene.json`, inspects scene carry-through, exports CAD source intent, inspects source carry-through, and packages proceed review.
+
+After the user approves the layout, record the decision and run the detail handoff stage:
+
+```bash
+python3 tools/approve_proceed_gate.py --proceed-gate <dir>/proceed_gate.json --out <approval.json>
+python3 tools/run_contract_pipeline.py --package <path> --out <detail-dir> --approval <approval.json>
+```
+
+The phase tools remain available for focused diagnosis:
+
+- `tools/validate_contract.py`;
+- `tools/generate_layout_proxy.py`;
+- `tools/inspect_layout_proxy.py`;
+- `tools/export_cad_source.py`;
+- `tools/inspect_cad_source.py`;
+- `tools/package_proceed_gate.py`;
+- `tools/approve_proceed_gate.py`;
+- `tools/generate_detail_handoff.py`.
+
+These tools keep Zen CAD kernel-neutral. They do not replace downstream CAD generation, STEP export, or geometry measurement.

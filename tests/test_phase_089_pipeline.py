@@ -7,6 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 from test_layout_proxy_generator import write_contract_package
 
 
@@ -16,6 +18,7 @@ SCENE_INSPECTOR = ROOT / "tools" / "inspect_layout_proxy.py"
 SOURCE_EXPORTER = ROOT / "tools" / "export_cad_source.py"
 SOURCE_INSPECTOR = ROOT / "tools" / "inspect_cad_source.py"
 PROCEED_PACKAGER = ROOT / "tools" / "package_proceed_gate.py"
+PROCEED_APPROVER = ROOT / "tools" / "approve_proceed_gate.py"
 DETAIL_HANDOFF = ROOT / "tools" / "generate_detail_handoff.py"
 VALIDATOR = ROOT / "tools" / "validate_contract.py"
 
@@ -38,7 +41,7 @@ def write_json(path: Path, data: object) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def run_pipeline(root: Path) -> tuple[Path, Path, Path, Path, Path, Path]:
+def run_pipeline(root: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path]:
     package = root / "package"
     scene_out = root / "scene"
     source_out = root / "source"
@@ -90,6 +93,18 @@ def run_pipeline(root: Path) -> tuple[Path, Path, Path, Path, Path, Path]:
     )
     assert packaged.returncode == 0, packaged.stderr
 
+    approval = root / "proceed_approval.json"
+    approved = run_tool(
+        PROCEED_APPROVER,
+        "--proceed-gate",
+        str(proceed),
+        "--out",
+        str(approval),
+        "--approver",
+        "test_user",
+    )
+    assert approved.returncode == 0, approved.stderr
+
     handoff = root / "detail_handoff.json"
     detail = run_tool(
         DETAIL_HANDOFF,
@@ -97,19 +112,21 @@ def run_pipeline(root: Path) -> tuple[Path, Path, Path, Path, Path, Path]:
         str(package),
         "--proceed-gate",
         str(proceed),
+        "--approval",
+        str(approval),
         "--out",
         str(handoff),
         "--target-harness",
         "build123d",
     )
     assert detail.returncode == 0, detail.stderr
-    return package, scene, source, source_report, proceed, handoff
+    return package, scene, source, source_report, proceed, approval, handoff
 
 
 class Phase089PipelineTest(unittest.TestCase):
     def test_contract_to_detail_handoff_pipeline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            package, scene, source, source_report, proceed, handoff = run_pipeline(Path(tmp))
+            package, scene, source, source_report, proceed, approval, handoff = run_pipeline(Path(tmp))
 
             scene_data = load_json(scene)
             self.assertEqual("layout_proxy_scene", scene_data["kind"])
@@ -129,20 +146,25 @@ class Phase089PipelineTest(unittest.TestCase):
             self.assertEqual("ready_for_user_review", proceed_data["status"])
             self.assertIn("detail_upgrade", proceed_data["decision_options"])
 
+            approval_data = load_json(approval)
+            self.assertEqual("proceed_approval", approval_data["kind"])
+            self.assertEqual("proceed", approval_data["decision"])
+
             handoff_data = load_json(handoff)
             self.assertEqual("handoff_packet", handoff_data["kind"])
             self.assertEqual("detail_cad", handoff_data["target_maturity"])
             self.assertIn("motor_axis_locked", handoff_data["locked_facts"])
+            self.assertEqual(str(approval), handoff_data["extensions"]["proceed_approval"])
             self.assertTrue(any("locked layout facts" in item for item in handoff_data["stop_conditions"]))
 
-            for path in [package, scene, source_report, proceed, handoff]:
+            for path in [package, scene, source_report, proceed, approval, handoff]:
                 validation = run_tool(VALIDATOR, "--package-only", "--package", str(path))
                 self.assertEqual(0, validation.returncode, validation.stderr)
 
     def test_source_inspector_detects_scene_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _, scene, source, _, _, _ = run_pipeline(root)
+            _, scene, source, _, _, _, _ = run_pipeline(root)
             manifest = root / "source" / "cad_source_manifest.json"
             manifest_data = load_json(manifest)
             manifest_data["source_scene_id"] = "wrong_scene"
@@ -170,7 +192,7 @@ class Phase089PipelineTest(unittest.TestCase):
     def test_detail_handoff_rejects_repair_gate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            package, _, _, _, proceed, _ = run_pipeline(root)
+            package, _, _, _, proceed, approval, _ = run_pipeline(root)
             proceed_data = load_json(proceed)
             proceed_data["status"] = "needs_repair"
             broken_proceed = root / "needs_repair_proceed_gate.json"
@@ -183,11 +205,31 @@ class Phase089PipelineTest(unittest.TestCase):
                 str(package),
                 "--proceed-gate",
                 str(broken_proceed),
+                "--approval",
+                str(approval),
                 "--out",
                 str(handoff),
             )
             self.assertNotEqual(0, result.returncode)
             self.assertIn("ready_for_user_review", result.stderr)
+
+    def test_detail_handoff_requires_approval(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package, _, _, _, proceed, _, _ = run_pipeline(root)
+            handoff = root / "missing_approval_handoff.json"
+
+            result = run_tool(
+                DETAIL_HANDOFF,
+                "--package",
+                str(package),
+                "--proceed-gate",
+                str(proceed),
+                "--out",
+                str(handoff),
+            )
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("--approval", result.stderr)
 
 
 if __name__ == "__main__":

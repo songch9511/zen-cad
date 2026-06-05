@@ -82,6 +82,7 @@ def write_contract_package(package: Path, interface_ref: str = "motor.nema_17.la
                 "required_checks": ["check_motor_axis"],
                 "stop_conditions": ["Stop if locked layout facts must change."],
             },
+            "extensions": {},
         },
     )
     write_json(
