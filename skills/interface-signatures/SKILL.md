@@ -1,7 +1,7 @@
 ---
 name: interface-signatures
 description: Define standard mechanical interface signatures for layout CAD without requiring full supplier geometry. Use for motors, belts, pulleys, bearings, rails, screws, shafts, bolt patterns, envelopes, and reusable mating facts that drive low-detail assembly proxies.
-version: 0.8.0
+version: 0.8.9
 ---
 
 # Interface Signatures

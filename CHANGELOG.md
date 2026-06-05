@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.8.0
+## 0.8.9
 
 - Reset Zen CAD to a focused CAD-native skill pack.
 - Keep only the spec-first skills: `/cad-spec`, `/assembly-layout`, `/interface-signatures`, and `/cad-handoff`.

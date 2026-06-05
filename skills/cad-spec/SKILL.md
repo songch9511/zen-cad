@@ -1,7 +1,7 @@
 ---
 name: cad-spec
 description: Write CAD-native mechanical specs from natural-language design requests and orchestrate CAD work through specialist subagents when available. Use for assembly-first layout specs, parameter contracts, artifact targets, inspection plans, interface definitions, coordinate frames, datums, motion/drivetrain relationships, proxy fidelity boundaries, repair loops, proceed gates, subagent delegation, and downstream CAD handoffs.
-version: 0.8.0
+version: 0.8.9
 ---
 
 # CAD Spec

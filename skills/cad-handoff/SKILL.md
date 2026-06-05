@@ -1,7 +1,7 @@
 ---
 name: cad-handoff
 description: Convert a CAD-native spec into a concise downstream brief for a CAD-generation harness. Use for Codex, text-to-cad/$cad, build123d, CadQuery, FreeCAD, or other generators, especially when preserving layout locked facts, parameter contracts, inspection plans, and repair loops through CAD generation and detail modeling.
-version: 0.8.0
+version: 0.8.9
 ---
 
 # CAD Handoff

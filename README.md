@@ -2,7 +2,7 @@
 
 Agentic mechanical design을 위한 assembly-first CAD contract runtime.
 
-[![Version](https://img.shields.io/badge/version-0.8.0-4A5568?style=for-the-badge)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.8.9-4A5568?style=for-the-badge)](VERSION)
 [![0.8 Line](https://img.shields.io/badge/0.8--line-handoff--pipeline-00A676?style=for-the-badge)](CHANGELOG.md)
 [![Assembly First](https://img.shields.io/badge/assembly--first-layout-2F80ED?style=for-the-badge)](skills/assembly-layout/SKILL.md)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
@@ -15,7 +15,7 @@ Zen CAD는 Codex, Claude Code 같은 범용 에이전트와 CAD 생성 harness�
 
 ## 현재 범위
 
-Zen CAD 0.8.0은 Markdown skills와 machine-readable contracts를 함께 제공합니다. 0.8 라인의 현재 구현은 contract validation부터 layout proxy, source adapter, proceed package, detail handoff까지 이어지는 kernel-neutral handoff pipeline을 포함합니다.
+Zen CAD 0.8.9는 Markdown skills와 machine-readable contracts를 함께 제공합니다. 현재 구현은 contract validation부터 layout proxy, source adapter, proceed package, detail handoff까지 이어지는 kernel-neutral handoff pipeline을 포함합니다. Contract schema는 0.8 호환 포맷으로 유지됩니다.
 
 Zen CAD가 하는 일:
 
