@@ -58,10 +58,11 @@ Zen CAD 0.8.0은 Markdown spec을 기본 사용자 경험으로 유지하지만,
 - [`registry/interfaces/`](registry/interfaces): first-pass layout proxy에 필요한 built-in interface signatures.
 - [`tools/validate_contract.py`](tools/validate_contract.py): schema surface, interface registry, optional contract package를 검사하는 dependency-free validator.
 - [`tools/generate_layout_proxy.py`](tools/generate_layout_proxy.py): validated contract package에서 kernel-neutral layout proxy scene과 inspection report skeleton을 생성하는 dependency-free generator.
+- [`tools/inspect_layout_proxy.py`](tools/inspect_layout_proxy.py): layout proxy scene이 spec/layout contract의 locked facts, parts, relationships, interface datums를 보존하는지 검사하는 dependency-free inspector.
 
 이 registry는 부품 카탈로그가 아닙니다. supplier identity, SKU, 가격, 재고, rating, certification, 최종 STEP geometry를 보장하지 않습니다. 목적은 웹서치 없이도 layout 단계에서 축, datum, bore, shaft, pitch reference, clearance, envelope를 빠르게 잡는 것입니다.
 
-`generate_layout_proxy.py`의 출력은 STEP이나 최종 CAD가 아닙니다. 다음 CAD harness/exporter가 사용할 수 있는 scene contract이며, downstream CAD generation과 geometry inspection은 여전히 필요합니다.
+`generate_layout_proxy.py`와 `inspect_layout_proxy.py`의 출력은 STEP이나 최종 CAD certification이 아닙니다. 다음 CAD harness/exporter가 사용할 수 있는 scene contract와 contract-level inspection이며, downstream CAD generation과 geometry inspection은 여전히 필요합니다.
 
 ## Recommended Prompt
 
@@ -79,6 +80,7 @@ motion/drivetrain, CAD generation, inspection, review specialist subagents를 �
 python3 -m unittest discover -s tests
 python3 tools/validate_contract.py
 python3 tools/generate_layout_proxy.py --package <contract-package> --out <out-dir>
+python3 tools/inspect_layout_proxy.py --package <contract-package> --scene <out-dir>/layout_proxy.scene.json --out <report.json>
 ```
 
 예시 CAD spec은 메인에 커밋하지 않습니다. 예시는 테스트용 임시 fixture나 별도 curated artifact로 관리합니다.

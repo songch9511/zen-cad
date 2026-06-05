@@ -26,3 +26,5 @@ Use `schemas/` when a harness needs machine-readable contracts, and use `registr
 Run `python3 tools/validate_contract.py` to verify the built-in schema and registry surface. Pass `--package <path>` to also check a generated contract package before CAD generation or review handoff.
 
 Run `python3 tools/generate_layout_proxy.py --package <path> --out <dir>` after validation to produce a kernel-neutral `layout_proxy.scene.json` plus an inspection report skeleton. This is a layout contract artifact for downstream CAD generation, not a STEP export.
+
+Run `python3 tools/inspect_layout_proxy.py --package <path> --scene <scene.json> --out <report.json>` to check whether a layout proxy scene carries the expected locked facts, part primitives, relationships, and interface datums before handing it to a CAD exporter.

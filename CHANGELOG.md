@@ -10,4 +10,5 @@
 - Add a small layout-ready interface registry for common motors, belts, bearings, fasteners, shaft/bores, and rails.
 - Add `tools/validate_contract.py` for dependency-free schema, registry, and contract-package validation.
 - Add `tools/generate_layout_proxy.py` for dependency-free kernel-neutral layout proxy scene generation.
+- Add `tools/inspect_layout_proxy.py` for dependency-free locked-facts inspection of layout proxy scenes.
 - Remove old workflow skills, workspace-specific CLI helpers, templates, checklists, prompts, plugins, fixtures, and release-package machinery from the main surface.
