@@ -28,3 +28,14 @@ Run `python3 tools/validate_contract.py` to verify the built-in schema and regis
 Run `python3 tools/generate_layout_proxy.py --package <path> --out <dir>` after validation to produce a kernel-neutral `layout_proxy.scene.json` plus an inspection report skeleton. This is a layout contract artifact for downstream CAD generation, not a STEP export.
 
 Run `python3 tools/inspect_layout_proxy.py --package <path> --scene <scene.json> --out <report.json>` to check whether a layout proxy scene carries the expected locked facts, part primitives, relationships, and interface datums before handing it to a CAD exporter.
+
+After scene inspection, use the remaining adapters in order:
+
+```bash
+python3 tools/export_cad_source.py --package <path> --scene <scene.json> --out <source-dir>
+python3 tools/inspect_cad_source.py --scene <scene.json> --manifest <source-dir>/cad_source_manifest.json --source <source-dir>/layout_proxy_build123d.py --out <source-report.json>
+python3 tools/package_proceed_gate.py --package <path> --artifact <scene.json> --artifact <source-dir>/layout_proxy_build123d.py --report <scene-report.json> --report <source-report.json> --out <proceed-gate.json>
+python3 tools/generate_detail_handoff.py --package <path> --proceed-gate <proceed-gate.json> --out <detail-handoff.json>
+```
+
+These adapters keep Zen CAD kernel-neutral. They do not replace downstream CAD generation, STEP export, or geometry measurement.

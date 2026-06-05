@@ -18,6 +18,8 @@ SCHEMA_FILES = {
     "inspection_report.schema.json": "inspection_report",
     "handoff_packet.schema.json": "handoff_packet",
     "layout_proxy_scene.schema.json": "layout_proxy_scene",
+    "cad_source_manifest.schema.json": "cad_source_manifest",
+    "proceed_gate_package.schema.json": "proceed_gate_package",
 }
 
 COMMON_SCHEMA_REQUIRED = {"schema_version", "kind", "extensions"}
@@ -209,6 +211,10 @@ class ContractValidator:
             self.validate_interface_signature(path, document)
         for path, document in by_kind.get("layout_proxy_scene", []):
             self.validate_layout_proxy_scene_document(path, document)
+        for path, document in by_kind.get("cad_source_manifest", []):
+            self.validate_cad_source_manifest_document(path, document)
+        for path, document in by_kind.get("proceed_gate_package", []):
+            self.validate_proceed_gate_package_document(path, document)
 
         return self.issues
 
@@ -304,6 +310,40 @@ class ContractValidator:
         for skipped in document.get("skipped_checks", []):
             if not isinstance(skipped, dict) or not str(skipped.get("reason", "")).strip():
                 self.error(path, "layout_proxy_scene skipped checks must include a reason")
+
+    def validate_cad_source_manifest_document(self, path: Path, document: dict[str, Any]) -> None:
+        required = {
+            "source_scene_id",
+            "target_harness",
+            "source_path",
+            "expected_primary_artifact",
+            "generated_files",
+            "primitives",
+            "locked_layout_facts",
+            "inspection_targets",
+            "source_of_truth",
+        }
+        missing = sorted(required - set(document))
+        if missing:
+            self.error(path, f"cad_source_manifest missing required fields: {', '.join(missing)}")
+        if not document.get("generated_files"):
+            self.error(path, "cad_source_manifest generated_files must be non-empty")
+        if not document.get("primitives"):
+            self.error(path, "cad_source_manifest primitives must be non-empty")
+        if document.get("target_harness") not in {"build123d", "cadquery", "freecad", "unknown"}:
+            self.error(path, "cad_source_manifest target_harness is not supported")
+
+    def validate_proceed_gate_package_document(self, path: Path, document: dict[str, Any]) -> None:
+        if not document.get("decision_options"):
+            self.error(path, "proceed_gate_package decision_options must be non-empty")
+        if not document.get("locked_layout_facts"):
+            self.error(path, "proceed_gate_package locked_layout_facts must be non-empty")
+        summary = document.get("check_summary", {})
+        if not isinstance(summary, dict):
+            self.error(path, "proceed_gate_package check_summary must be an object")
+            return
+        if document.get("status") == "ready_for_user_review" and int(summary.get("failed", 0)) > 0:
+            self.error(path, "ready_for_user_review cannot have failed checks")
 
 
 def walk_keys(value: Any) -> set[str]:

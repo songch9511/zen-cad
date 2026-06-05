@@ -73,6 +73,8 @@ Do not ask users to write JSON or YAML. When a harness needs machine-readable ar
 - `schemas/inspection_report.schema.json`
 - `schemas/handoff_packet.schema.json`
 - `schemas/layout_proxy_scene.schema.json`
+- `schemas/cad_source_manifest.schema.json`
+- `schemas/proceed_gate_package.schema.json`
 
 Use `registry/interfaces/index.json` for built-in layout-ready interface signatures before attempting external catalog research.
 

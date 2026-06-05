@@ -59,10 +59,14 @@ Zen CAD 0.8.0은 Markdown spec을 기본 사용자 경험으로 유지하지만,
 - [`tools/validate_contract.py`](tools/validate_contract.py): schema surface, interface registry, optional contract package를 검사하는 dependency-free validator.
 - [`tools/generate_layout_proxy.py`](tools/generate_layout_proxy.py): validated contract package에서 kernel-neutral layout proxy scene과 inspection report skeleton을 생성하는 dependency-free generator.
 - [`tools/inspect_layout_proxy.py`](tools/inspect_layout_proxy.py): layout proxy scene이 spec/layout contract의 locked facts, parts, relationships, interface datums를 보존하는지 검사하는 dependency-free inspector.
+- [`tools/export_cad_source.py`](tools/export_cad_source.py): layout proxy scene을 build123d-style CAD source와 source manifest로 변환하는 adapter.
+- [`tools/inspect_cad_source.py`](tools/inspect_cad_source.py): exported CAD source가 scene/manifest의 primitives, locked facts, inspection targets를 보존하는지 검사하는 source-level adapter.
+- [`tools/package_proceed_gate.py`](tools/package_proceed_gate.py): artifacts와 inspection reports를 사용자 proceed review용 package로 묶습니다.
+- [`tools/generate_detail_handoff.py`](tools/generate_detail_handoff.py): ready proceed gate에서 locked facts를 보존하는 detail CAD handoff packet을 생성합니다.
 
 이 registry는 부품 카탈로그가 아닙니다. supplier identity, SKU, 가격, 재고, rating, certification, 최종 STEP geometry를 보장하지 않습니다. 목적은 웹서치 없이도 layout 단계에서 축, datum, bore, shaft, pitch reference, clearance, envelope를 빠르게 잡는 것입니다.
 
-`generate_layout_proxy.py`와 `inspect_layout_proxy.py`의 출력은 STEP이나 최종 CAD certification이 아닙니다. 다음 CAD harness/exporter가 사용할 수 있는 scene contract와 contract-level inspection이며, downstream CAD generation과 geometry inspection은 여전히 필요합니다.
+이 도구들의 출력은 STEP이나 최종 CAD certification이 아닙니다. Zen CAD는 spec, scene, source, report, proceed gate, handoff를 연결해 downstream CAD harness가 덜 임의적으로 동작하게 만드는 runtime입니다. 실제 CAD generation과 geometry inspection은 여전히 downstream harness에서 수행해야 합니다.
 
 ## Recommended Prompt
 
@@ -81,6 +85,10 @@ python3 -m unittest discover -s tests
 python3 tools/validate_contract.py
 python3 tools/generate_layout_proxy.py --package <contract-package> --out <out-dir>
 python3 tools/inspect_layout_proxy.py --package <contract-package> --scene <out-dir>/layout_proxy.scene.json --out <report.json>
+python3 tools/export_cad_source.py --package <contract-package> --scene <out-dir>/layout_proxy.scene.json --out <source-dir>
+python3 tools/inspect_cad_source.py --scene <out-dir>/layout_proxy.scene.json --manifest <source-dir>/cad_source_manifest.json --source <source-dir>/layout_proxy_build123d.py --out <source-report.json>
+python3 tools/package_proceed_gate.py --package <contract-package> --artifact <out-dir>/layout_proxy.scene.json --artifact <source-dir>/layout_proxy_build123d.py --report <report.json> --report <source-report.json> --out <proceed-gate.json>
+python3 tools/generate_detail_handoff.py --package <contract-package> --proceed-gate <proceed-gate.json> --out <detail-handoff.json>
 ```
 
 예시 CAD spec은 메인에 커밋하지 않습니다. 예시는 테스트용 임시 fixture나 별도 curated artifact로 관리합니다.

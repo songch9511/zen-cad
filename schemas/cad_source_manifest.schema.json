@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/cad_source_manifest.schema.json",
+  "title": "Zen CAD Source Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "source_scene_id",
+    "target_harness",
+    "source_path",
+    "expected_primary_artifact",
+    "generated_files",
+    "primitives",
+    "locked_layout_facts",
+    "inspection_targets",
+    "source_of_truth",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "cad_source_manifest" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "source_scene_id": { "type": "string" },
+    "target_harness": {
+      "type": "string",
+      "enum": ["build123d", "cadquery", "freecad", "unknown"]
+    },
+    "source_path": { "type": "string" },
+    "expected_primary_artifact": { "type": "string" },
+    "generated_files": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "primitives": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "locked_layout_facts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "inspection_targets": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "source_of_truth": {
+      "type": "object",
+      "required": ["scene", "package"],
+      "properties": {
+        "scene": { "type": "string" },
+        "package": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

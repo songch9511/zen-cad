@@ -13,5 +13,7 @@
 - Validate machine-readable contract packages before treating them as generator-ready.
 - Generate kernel-neutral layout proxy scenes before adding CAD-kernel-specific exporters.
 - Inspect layout proxy scenes against locked facts before treating them as ready for CAD export.
+- Export CAD source through an adapter, then inspect source-level carry-through before user proceed review.
+- Package proceed gates before generating detail-upgrade handoffs.
 - Treat proceed approval as a lock on layout facts.
 - Do not claim engineering certification from CAD geometry alone.

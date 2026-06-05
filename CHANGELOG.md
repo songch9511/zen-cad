@@ -11,4 +11,5 @@
 - Add `tools/validate_contract.py` for dependency-free schema, registry, and contract-package validation.
 - Add `tools/generate_layout_proxy.py` for dependency-free kernel-neutral layout proxy scene generation.
 - Add `tools/inspect_layout_proxy.py` for dependency-free locked-facts inspection of layout proxy scenes.
+- Add `tools/export_cad_source.py`, `tools/inspect_cad_source.py`, `tools/package_proceed_gate.py`, and `tools/generate_detail_handoff.py` to complete the 0.8.9 kernel-neutral handoff pipeline.
 - Remove old workflow skills, workspace-specific CLI helpers, templates, checklists, prompts, plugins, fixtures, and release-package machinery from the main surface.

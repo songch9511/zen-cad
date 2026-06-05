@@ -52,7 +52,7 @@
     },
     "proceed_recommendation": {
       "type": "string",
-      "enum": ["ready_for_proceed_review", "ready_for_layout_generation", "needs_repair", "needs_layout_reapproval", "blocked"]
+      "enum": ["ready_for_proceed_review", "ready_for_layout_generation", "ready_for_cad_export", "needs_repair", "needs_layout_reapproval", "blocked"]
     },
     "limitations": {
       "type": "array",
