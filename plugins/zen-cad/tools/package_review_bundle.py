@@ -73,7 +73,7 @@ class ReviewBundlePackager:
                 "evidence_role": "review_only",
             }
             for artifact in artifacts
-            if artifact.get("kind") in {"layout_proxy_scene", "source", "json"}
+            if artifact.get("kind") in {"layout_proxy_scene", "source", "json", "step", "stp", "viewer", "snapshot"}
         ]
         status = "ready_for_viewer_review" if gate.get("status") == "ready_for_user_review" else str(gate.get("status", "blocked"))
         if status not in {"ready_for_viewer_review", "needs_repair", "blocked"}:
@@ -114,6 +114,12 @@ def viewer_hint(kind: str) -> str:
         return "Open as layout context if the active viewer supports Zen CAD scene JSON."
     if kind == "source":
         return "Use as source-of-truth context for downstream CAD generation, not as visual evidence."
+    if kind in {"step", "stp"}:
+        return "Open as the generated CAD model; visual review does not replace geometry checks."
+    if kind == "viewer":
+        return "Open this local CAD Viewer link when the viewer server is running."
+    if kind == "snapshot":
+        return "Use this saved viewer snapshot for visual review only; geometry checks remain authoritative."
     return "Review metadata before proceeding."
 
 

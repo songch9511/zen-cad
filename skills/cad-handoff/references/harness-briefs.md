@@ -31,13 +31,23 @@ Hand supported artifacts to $cad-viewer when available.
 Stop instead of changing locked layout facts.
 ```
 
-When a Zen CAD `handoff_packet` already exists from an approved proceed gate, package the downstream prompt bundle instead of asking Zen CAD to generate CAD:
+When a Zen CAD `handoff_packet` already exists from an approved proceed gate and the target is CAD Skills/text-to-cad, package the downstream prompt bundle instead of running the build123d generator:
 
 ```bash
 python3 tools/package_text_to_cad_bundle.py --handoff <detail_handoff.json> --out <text-to-cad-bundle-dir>
 ```
 
-Send `text_to_cad_prompt.md` and `handoff_packet.json` to CAD Skills/text-to-cad. The bundle manifest records that Zen CAD did not create CAD source, STEP/STP geometry, snapshots, or viewer links in this adapter step.
+Send `text_to_cad_prompt.md` and `handoff_packet.json` to CAD Skills/text-to-cad. The bundle manifest records that the text-to-cad adapter step did not create CAD source, STEP/STP geometry, snapshots, or viewer links.
+
+## build123d
+
+Use this when Zen CAD should generate a first-pass STEP artifact locally:
+
+```bash
+python3 tools/run_contract_pipeline.py --package <contract-package> --out <run-dir> --target-harness build123d
+```
+
+The runner exports `source/layout_proxy_build123d.py`, carries any native `cad_feature_plan` into the source, executes `gen_step()`, writes `source/layout_proxy_build123d.step`, re-imports the STEP, records export/import/bbox/volume and feature-plan checks in `source/cad_generation.inspection_report.json`, and writes `viewer_link.html` for local review.
 
 ## Generic CAD Generator
 

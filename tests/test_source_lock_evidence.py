@@ -191,7 +191,58 @@ class SourceLockEvidenceTest(unittest.TestCase):
                 str(out),
             )
             self.assertNotEqual(0, result.returncode)
-            self.assertIn("step.parts domain", result.stderr)
+            self.assertIn("step_parts evidence locator", result.stderr)
+
+    def test_checksum_recorded_step_requires_sha256(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "missing_checksum.source_lock.json"
+            evidence = valid_source_lock()
+            evidence["evidence_sources"] = [
+                {
+                    "source_type": "step_parts",
+                    "locator": "https://media.githubusercontent.com/media/earthtojake/step.parts/main/cad/parts/bearing_608zz.step",
+                    "artifact_kind": "step",
+                    "trusted_for": ["geometry_reference"],
+                    "retrieval_status": "checksum_recorded",
+                    "observed_at": "2026-06-10",
+                    "notes": "Checksum status without a checksum is invalid.",
+                }
+            ]
+            write_json(path, evidence)
+
+            result = run_tool(VALIDATOR, "--package-only", "--package", str(path))
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("checksum_recorded STEP/STP evidence must include sha256", result.stderr)
+
+    def test_step_parts_api_and_media_asset_origins_are_allowed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "step_parts_media.source_lock.json"
+            evidence = valid_source_lock()
+            evidence["evidence_sources"] = [
+                {
+                    "source_type": "step_parts",
+                    "locator": "https://api.step.parts/v1/parts/bearing_608zz",
+                    "artifact_kind": "metadata",
+                    "trusted_for": ["source_identity", "review_only"],
+                    "retrieval_status": "inspected_elsewhere",
+                    "observed_at": "2026-06-10",
+                    "notes": "API metadata.",
+                },
+                {
+                    "source_type": "step_parts",
+                    "locator": "https://media.githubusercontent.com/media/earthtojake/step.parts/main/cad/parts/bearing_608zz.step",
+                    "artifact_kind": "step",
+                    "trusted_for": ["geometry_reference"],
+                    "retrieval_status": "checksum_recorded",
+                    "sha256": "a" * 64,
+                    "observed_at": "2026-06-10",
+                    "notes": "step.parts media asset.",
+                },
+            ]
+            write_json(path, evidence)
+
+            result = run_tool(VALIDATOR, "--package-only", "--package", str(path))
+            self.assertEqual(0, result.returncode, result.stderr)
 
 
 if __name__ == "__main__":

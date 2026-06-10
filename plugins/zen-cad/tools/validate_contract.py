@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -375,6 +376,8 @@ class ContractValidator:
                 self.error(path, "cad_source_manifest sourced part artifact_kind must be step or stp")
             if item.get("import_strategy") != "build123d.import_step":
                 self.error(path, "cad_source_manifest sourced part import_strategy must be build123d.import_step")
+            if item.get("sha256") and not re.fullmatch(r"[a-fA-F0-9]{64}", str(item.get("sha256"))):
+                self.error(path, "cad_source_manifest sourced part sha256 must be 64 hex characters")
 
     def validate_proceed_gate_package_document(self, path: Path, document: dict[str, Any]) -> None:
         if not document.get("decision_options"):
@@ -508,6 +511,11 @@ class ContractValidator:
             self.error(path, "source_lock_evidence evidence artifact_kind is invalid")
         if source.get("retrieval_status") not in {"provided_url_not_fetched", "provided_file_not_inspected", "checksum_recorded", "inspected_elsewhere"}:
             self.error(path, "source_lock_evidence evidence retrieval_status is invalid")
+        sha256 = str(source.get("sha256", "")).strip()
+        if sha256 and not re.fullmatch(r"[a-fA-F0-9]{64}", sha256):
+            self.error(path, "source_lock_evidence evidence sha256 must be 64 hex characters")
+        if source.get("retrieval_status") == "checksum_recorded" and artifact_kind in {"step", "stp"} and not sha256:
+            self.error(path, "checksum_recorded STEP/STP evidence must include sha256")
         if not locator:
             self.error(path, "source_lock_evidence evidence source locator must be non-empty")
             return
@@ -526,8 +534,8 @@ class ContractValidator:
                 self.error(path, f"{source_type} evidence locator must be an http(s) URL")
                 return
             host = parsed.netloc.lower()
-            if source_type == "step_parts" and host not in {"step.parts", "www.step.parts"}:
-                self.error(path, "step_parts evidence locator must use the step.parts domain")
+            if source_type == "step_parts" and not is_step_parts_host_or_asset(host, parsed.path):
+                self.error(path, "step_parts evidence locator must use step.parts API/site or the step.parts media asset origin")
             if source_type == "manufacturer" and host in {"step.parts", "www.step.parts"}:
                 self.error(path, "manufacturer evidence locator must not use the step.parts domain")
 
@@ -561,6 +569,14 @@ def walk_keys(value: Any) -> set[str]:
             keys.update(walk_keys(child))
         return keys
     return set()
+
+
+def is_step_parts_host_or_asset(host: str, path: str) -> bool:
+    if host in {"step.parts", "www.step.parts", "api.step.parts"}:
+        return True
+    if host == "media.githubusercontent.com" and "/earthtojake/step.parts/" in path:
+        return True
+    return False
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:

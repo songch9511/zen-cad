@@ -68,6 +68,11 @@
           },
           "label": { "type": "string" },
           "source_type": { "type": "string" },
+          "retrieval_status": { "type": "string" },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{64}$"
+          },
           "placement_policy": { "type": "string" }
         },
         "additionalProperties": false

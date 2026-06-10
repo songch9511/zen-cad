@@ -1,0 +1,508 @@
+{
+  "artifact_targets": {
+    "primary_artifact": "layout_proxy_build123d.step",
+    "review_artifacts": [
+      "cad_generation.inspection_report.json",
+      "viewer_link.html"
+    ],
+    "secondary_artifacts": [],
+    "source_intent": "build123d"
+  },
+  "coordinate_system": {
+    "base_plane": "XY",
+    "notes": "Origin at sun gear axis; +Z through gear thickness.",
+    "root_frame": "sun_axis",
+    "up_axis": "+Z"
+  },
+  "downstream_handoff": {
+    "locked_facts": [
+      "separate_bodies_locked",
+      "planet_radius_locked",
+      "gear_axes_parallel_locked",
+      "simplified_teeth_locked"
+    ],
+    "required_checks": [
+      "check_separate_bodies",
+      "check_planet_radius",
+      "check_ring_sun_coaxial",
+      "check_simplified_teeth",
+      "check_viewer_link"
+    ],
+    "stop_conditions": [
+      "Stop if the three planet axes move off the 42 mm radius circle or the separate body structure collapses into a single logical part."
+    ]
+  },
+  "extensions": {
+    "cad_feature_plan": {
+      "generator": "zen_cad_feature_plan_v1",
+      "parts": [
+        {
+          "base": "gear",
+          "dimensions": {
+            "outer_diameter": 30,
+            "root_diameter": 23,
+            "thickness": 6,
+            "tooth_count": 18,
+            "tooth_width": 2.5
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 8,
+              "type": "central_bore"
+            }
+          ],
+          "part_id": "sun_gear"
+        },
+        {
+          "base": "gear",
+          "dimensions": {
+            "outer_diameter": 24,
+            "root_diameter": 18,
+            "thickness": 6,
+            "tooth_count": 14,
+            "tooth_width": 2.2
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 5,
+              "type": "central_bore"
+            }
+          ],
+          "part_id": "planet_gear_1",
+          "placement": {
+            "position": [
+              42,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "base": "gear",
+          "dimensions": {
+            "outer_diameter": 24,
+            "root_diameter": 18,
+            "thickness": 6,
+            "tooth_count": 14,
+            "tooth_width": 2.2
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 5,
+              "type": "central_bore"
+            }
+          ],
+          "part_id": "planet_gear_2",
+          "placement": {
+            "position": [
+              -21,
+              36.373,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              120
+            ]
+          }
+        },
+        {
+          "base": "gear",
+          "dimensions": {
+            "outer_diameter": 24,
+            "root_diameter": 18,
+            "thickness": 6,
+            "tooth_count": 14,
+            "tooth_width": 2.2
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 5,
+              "type": "central_bore"
+            }
+          ],
+          "part_id": "planet_gear_3",
+          "placement": {
+            "position": [
+              -21,
+              -36.373,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              240
+            ]
+          }
+        },
+        {
+          "base": "internal_ring_gear",
+          "dimensions": {
+            "inner_diameter": 72,
+            "outer_diameter": 112,
+            "thickness": 6,
+            "tooth_count": 48,
+            "tooth_depth": 3.5,
+            "tooth_width": 2.2
+          },
+          "features": [],
+          "part_id": "ring_gear"
+        },
+        {
+          "base": "cylinder",
+          "dimensions": {
+            "diameter": 92,
+            "height": 2
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 12,
+              "type": "central_bore"
+            },
+            {
+              "axis": "z",
+              "count": 3,
+              "diameter": 5,
+              "radius": 42,
+              "type": "bolt_circle_pattern"
+            }
+          ],
+          "part_id": "carrier",
+          "placement": {
+            "position": [
+              0,
+              0,
+              -5
+            ]
+          }
+        },
+        {
+          "base": "cylinder",
+          "dimensions": {
+            "diameter": 5,
+            "height": 10
+          },
+          "features": [],
+          "part_id": "pin_1",
+          "placement": {
+            "position": [
+              42,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "base": "cylinder",
+          "dimensions": {
+            "diameter": 5,
+            "height": 10
+          },
+          "features": [],
+          "part_id": "pin_2",
+          "placement": {
+            "position": [
+              -21,
+              36.373,
+              0
+            ]
+          }
+        },
+        {
+          "base": "cylinder",
+          "dimensions": {
+            "diameter": 5,
+            "height": 10
+          },
+          "features": [],
+          "part_id": "pin_3",
+          "placement": {
+            "position": [
+              -21,
+              -36.373,
+              0
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "id": "bench_planetary_gear",
+  "inspection_plan": [
+    {
+      "check_id": "check_separate_bodies",
+      "check_type": "label",
+      "expected": "Generated STEP contains separate sun, planet, ring, carrier, and pin bodies.",
+      "locked_fact_refs": [
+        "separate_bodies_locked"
+      ],
+      "target": "planetary_stage"
+    },
+    {
+      "check_id": "check_planet_radius",
+      "check_type": "distance",
+      "expected": "Three planet axes are placed on a 42 mm radius circle around the sun.",
+      "locked_fact_refs": [
+        "planet_radius_locked"
+      ],
+      "target": "planet_gear_axes"
+    },
+    {
+      "check_id": "check_ring_sun_coaxial",
+      "check_type": "axis",
+      "expected": "Ring gear and sun gear axes are coaxial.",
+      "locked_fact_refs": [
+        "gear_axes_parallel_locked"
+      ],
+      "target": "ring_gear.axis"
+    },
+    {
+      "check_id": "check_simplified_teeth",
+      "check_type": "label",
+      "expected": "Sun, planet, and ring bodies include simplified tooth patterns.",
+      "locked_fact_refs": [
+        "simplified_teeth_locked"
+      ],
+      "target": "gear_tooth_patterns"
+    },
+    {
+      "check_id": "check_viewer_link",
+      "check_type": "viewer",
+      "expected": "Proceed gate includes a local CAD Viewer link artifact.",
+      "locked_fact_refs": [
+        "separate_bodies_locked"
+      ],
+      "target": "viewer_link.html"
+    }
+  ],
+  "interface_signatures": [],
+  "kind": "cad_spec",
+  "layout_contract": {
+    "extensions": {},
+    "id": "bench_planetary_gear_layout",
+    "inspection_targets": [
+      {
+        "check_type": "distance",
+        "expected": "Planet gear axes lie on a 42 mm radius circle.",
+        "target": "planet_gear_axes",
+        "target_id": "check_planet_radius"
+      }
+    ],
+    "kind": "layout_contract",
+    "locked_facts": [
+      "separate_bodies_locked",
+      "planet_radius_locked",
+      "gear_axes_parallel_locked",
+      "simplified_teeth_locked"
+    ],
+    "parts": [
+      {
+        "local_frame": "origin at sun gear axis; +Z through gear thickness",
+        "part_id": "sun_gear",
+        "proxy_policy": "feature-plan driven spur gear with simplified radial teeth",
+        "role": "driver"
+      },
+      {
+        "local_frame": "axis at 42 mm radius, 0 degrees",
+        "part_id": "planet_gear_1",
+        "proxy_policy": "feature-plan driven planet gear",
+        "role": "driven"
+      },
+      {
+        "local_frame": "axis at 42 mm radius, 120 degrees",
+        "part_id": "planet_gear_2",
+        "proxy_policy": "feature-plan driven planet gear",
+        "role": "driven"
+      },
+      {
+        "local_frame": "axis at 42 mm radius, 240 degrees",
+        "part_id": "planet_gear_3",
+        "proxy_policy": "feature-plan driven planet gear",
+        "role": "driven"
+      },
+      {
+        "local_frame": "ring gear axis coaxial with sun axis",
+        "part_id": "ring_gear",
+        "proxy_policy": "feature-plan driven ring gear with internal tooth slots",
+        "role": "structure"
+      },
+      {
+        "local_frame": "carrier disk below gear plane",
+        "part_id": "carrier",
+        "proxy_policy": "feature-plan driven carrier disk with pin holes",
+        "role": "locator"
+      },
+      {
+        "local_frame": "pin axis at planet_gear_1 center",
+        "part_id": "pin_1",
+        "proxy_policy": "feature-plan driven pin cylinder",
+        "role": "fastener"
+      },
+      {
+        "local_frame": "pin axis at planet_gear_2 center",
+        "part_id": "pin_2",
+        "proxy_policy": "feature-plan driven pin cylinder",
+        "role": "fastener"
+      },
+      {
+        "local_frame": "pin axis at planet_gear_3 center",
+        "part_id": "pin_3",
+        "proxy_policy": "feature-plan driven pin cylinder",
+        "role": "fastener"
+      }
+    ],
+    "relationships": {
+      "connections": [
+        {
+          "locked": true,
+          "parts": [
+            "sun_gear",
+            "ring_gear"
+          ],
+          "relationship_id": "sun_ring_coaxial",
+          "statement": "Sun and ring axes share the root Z axis.",
+          "type": "coaxial"
+        },
+        {
+          "locked": true,
+          "parts": [
+            "carrier",
+            "pin_1",
+            "pin_2",
+            "pin_3"
+          ],
+          "relationship_id": "carrier_pin_pattern",
+          "statement": "Carrier locates three pins on the same 42 mm radius circle as the planets.",
+          "type": "centered_on"
+        }
+      ],
+      "contacts": [],
+      "motion": [
+        {
+          "locked": true,
+          "parts": [
+            "sun_gear",
+            "planet_gear_1",
+            "planet_gear_2",
+            "planet_gear_3",
+            "ring_gear"
+          ],
+          "relationship_id": "gear_mesh_layout",
+          "statement": "Gears are represented as flat simplified mesh layout bodies, not true involute geometry.",
+          "type": "rotates_about"
+        }
+      ]
+    },
+    "root_component": "sun_gear",
+    "root_frame": {
+      "axes": "XY gear plane, +Z through thickness",
+      "origin": "sun gear axis"
+    },
+    "schema_version": "0.8.0"
+  },
+  "locked_layout_facts": [
+    {
+      "fact_id": "separate_bodies_locked",
+      "must_preserve": true,
+      "statement": "Sun, planet, ring, carrier, and pin bodies remain separate logical CAD bodies.",
+      "type": "interface"
+    },
+    {
+      "fact_id": "planet_radius_locked",
+      "must_preserve": true,
+      "statement": "The three planet gear axes are on a 42 mm radius circle around the sun axis.",
+      "type": "center_distance"
+    },
+    {
+      "fact_id": "gear_axes_parallel_locked",
+      "must_preserve": true,
+      "statement": "Sun, planet, ring, carrier, and pin axes are parallel to +Z.",
+      "type": "axis"
+    },
+    {
+      "fact_id": "simplified_teeth_locked",
+      "must_preserve": true,
+      "statement": "Gears use simplified repeated tooth geometry rather than smooth cylinders.",
+      "type": "interface"
+    }
+  ],
+  "maturity_target": "detail_cad",
+  "parameter_contract": [
+    {
+      "drives": [
+        "planet_gear_1.position",
+        "planet_gear_2.position",
+        "planet_gear_3.position",
+        "pin_1.position",
+        "pin_2.position",
+        "pin_3.position"
+      ],
+      "name": "planet_radius",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_planet_radius"
+      ],
+      "value": 42
+    },
+    {
+      "drives": [
+        "ring_gear.internal_teeth"
+      ],
+      "name": "ring_tooth_count",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "count",
+      "validation": [
+        "check_simplified_teeth"
+      ],
+      "value": 48
+    },
+    {
+      "drives": [
+        "sun_gear.teeth"
+      ],
+      "name": "sun_tooth_count",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "count",
+      "validation": [
+        "check_simplified_teeth"
+      ],
+      "value": 18
+    },
+    {
+      "drives": [
+        "planet_gear_1.teeth",
+        "planet_gear_2.teeth",
+        "planet_gear_3.teeth"
+      ],
+      "name": "planet_tooth_count",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "count",
+      "validation": [
+        "check_simplified_teeth"
+      ],
+      "value": 14
+    }
+  ],
+  "proceed_gate": {
+    "approved_next_maturity": "detail_cad",
+    "required_user_decision": "Approve generated STEP and viewer evidence before detail refinement."
+  },
+  "repair_loop": {
+    "locked_fact_change_policy": "Return to the benchmark contract before changing locked axes, body structure, or planet radius.",
+    "rerun_failed_checks": true,
+    "smallest_source_change": true
+  },
+  "schema_version": "0.8.0",
+  "title": "Simplified planetary gear stage",
+  "units": "mm"
+}

@@ -16,6 +16,9 @@
 - Generate kernel-neutral layout proxy scenes before adding CAD-kernel-specific exporters.
 - Inspect layout proxy scenes against locked facts before treating them as ready for CAD export.
 - Export CAD source through an adapter, then inspect source-level carry-through before user proceed review.
+- When the target is build123d and dependencies are available, execute generated source into a STEP artifact and record export/import/bbox/volume checks before proceed review.
+- Use `cad_feature_plan` for native holes, bores, repeated patterns, rectangular top chamfers, simplified gears, and supported cylinder edge-round approximations when prose alone is too ambiguous.
+- Package local viewer links for generated STEP artifacts when a viewer is available, but keep them below geometry checks in evidentiary strength.
 - Package proceed gates before asking for approval.
 - Generate detail-upgrade handoffs only from an explicit proceed approval artifact.
 - Treat proceed approval as a lock on layout facts.

@@ -111,7 +111,8 @@
           "enum": ["step", "stp", "datasheet", "catalog_page", "project_file", "metadata", "unknown"]
         },
         "sha256": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
         },
         "trusted_for": {
           "type": "array",

@@ -1,0 +1,263 @@
+{
+  "artifact_targets": {
+    "primary_artifact": "layout_proxy_build123d.step",
+    "review_artifacts": [
+      "cad_generation.inspection_report.json",
+      "viewer_link.html"
+    ],
+    "secondary_artifacts": [],
+    "source_intent": "build123d"
+  },
+  "coordinate_system": {
+    "base_plane": "XY",
+    "notes": "Origin at flange center; +Z through thickness.",
+    "root_frame": "flange_center",
+    "up_axis": "+Z"
+  },
+  "downstream_handoff": {
+    "locked_facts": [
+      "flange_envelope_locked",
+      "central_bore_locked",
+      "bolt_circle_locked",
+      "outer_edge_round_locked"
+    ],
+    "required_checks": [
+      "check_flange_bbox",
+      "check_central_bore",
+      "check_bolt_circle",
+      "check_outer_edge_round",
+      "check_viewer_link"
+    ],
+    "stop_conditions": [
+      "Stop if flange diameter, thickness, bore, bolt circle, or hole count drift."
+    ]
+  },
+  "extensions": {
+    "cad_feature_plan": {
+      "generator": "zen_cad_feature_plan_v1",
+      "parts": [
+        {
+          "base": "cylinder",
+          "dimensions": {
+            "diameter": 80,
+            "height": 10
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 30,
+              "type": "central_bore"
+            },
+            {
+              "axis": "z",
+              "bolt_circle_diameter": 60,
+              "count": 6,
+              "diameter": 6,
+              "type": "bolt_circle_pattern"
+            },
+            {
+              "edges": "outside_circular_edges",
+              "radius": 1,
+              "type": "edge_fillet"
+            }
+          ],
+          "part_id": "flange"
+        }
+      ]
+    }
+  },
+  "id": "bench_circular_flange",
+  "inspection_plan": [
+    {
+      "check_id": "check_flange_bbox",
+      "check_type": "bbox",
+      "expected": "Generated STEP bounding box is 80 x 80 x 10 mm within tolerance.",
+      "locked_fact_refs": [
+        "flange_envelope_locked"
+      ],
+      "target": "flange"
+    },
+    {
+      "check_id": "check_central_bore",
+      "check_type": "axis",
+      "expected": "30 mm through-bore is coaxial with flange center axis.",
+      "locked_fact_refs": [
+        "central_bore_locked"
+      ],
+      "target": "flange.central_bore"
+    },
+    {
+      "check_id": "check_bolt_circle",
+      "check_type": "axis",
+      "expected": "Six 6 mm through-holes lie on a 60 mm bolt circle.",
+      "locked_fact_refs": [
+        "bolt_circle_locked"
+      ],
+      "target": "flange.bolt_circle_pattern"
+    },
+    {
+      "check_id": "check_outer_edge_round",
+      "check_type": "bbox",
+      "expected": "Outside circular edges are rounded without changing the 80 mm maximum diameter.",
+      "locked_fact_refs": [
+        "outer_edge_round_locked"
+      ],
+      "target": "flange.outside_circular_edges"
+    },
+    {
+      "check_id": "check_viewer_link",
+      "check_type": "viewer",
+      "expected": "Proceed gate includes a local CAD Viewer link artifact.",
+      "locked_fact_refs": [
+        "flange_envelope_locked"
+      ],
+      "target": "viewer_link.html"
+    }
+  ],
+  "interface_signatures": [],
+  "kind": "cad_spec",
+  "layout_contract": {
+    "extensions": {},
+    "id": "bench_circular_flange_layout",
+    "inspection_targets": [
+      {
+        "check_type": "bbox",
+        "expected": "80 mm diameter, 10 mm thick circular flange envelope.",
+        "target": "flange",
+        "target_id": "check_flange_bbox"
+      }
+    ],
+    "kind": "layout_contract",
+    "locked_facts": [
+      "flange_envelope_locked",
+      "central_bore_locked",
+      "bolt_circle_locked",
+      "outer_edge_round_locked"
+    ],
+    "parts": [
+      {
+        "local_frame": "origin at flange center; +Z through thickness",
+        "part_id": "flange",
+        "proxy_policy": "feature-plan driven cylinder with bore, bolt circle, and rounded outer edges",
+        "role": "structure"
+      }
+    ],
+    "relationships": {
+      "connections": [],
+      "contacts": [],
+      "motion": []
+    },
+    "root_component": "flange",
+    "root_frame": {
+      "axes": "XY flange plane, +Z through thickness",
+      "origin": "flange center"
+    },
+    "schema_version": "0.8.0"
+  },
+  "locked_layout_facts": [
+    {
+      "fact_id": "flange_envelope_locked",
+      "must_preserve": true,
+      "statement": "Flange envelope is 80 mm diameter and 10 mm thick.",
+      "type": "datum"
+    },
+    {
+      "fact_id": "central_bore_locked",
+      "must_preserve": true,
+      "statement": "Central through-bore is 30 mm diameter and coaxial with the flange.",
+      "type": "axis"
+    },
+    {
+      "fact_id": "bolt_circle_locked",
+      "must_preserve": true,
+      "statement": "Six 6 mm through-holes lie on a 60 mm bolt circle.",
+      "type": "mounting_pattern"
+    },
+    {
+      "fact_id": "outer_edge_round_locked",
+      "must_preserve": true,
+      "statement": "Outside circular edges are rounded while preserving maximum outer diameter.",
+      "type": "interface"
+    }
+  ],
+  "maturity_target": "detail_cad",
+  "parameter_contract": [
+    {
+      "drives": [
+        "flange.outer_diameter"
+      ],
+      "name": "flange_diameter",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_flange_bbox"
+      ],
+      "value": 80
+    },
+    {
+      "drives": [
+        "flange.height"
+      ],
+      "name": "flange_thickness",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_flange_bbox"
+      ],
+      "value": 10
+    },
+    {
+      "drives": [
+        "flange.central_bore"
+      ],
+      "name": "central_bore_diameter",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_central_bore"
+      ],
+      "value": 30
+    },
+    {
+      "drives": [
+        "flange.bolt_circle_pattern"
+      ],
+      "name": "bolt_circle_diameter",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_bolt_circle"
+      ],
+      "value": 60
+    },
+    {
+      "drives": [
+        "flange.bolt_circle_pattern"
+      ],
+      "name": "bolt_hole_diameter",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_bolt_circle"
+      ],
+      "value": 6
+    }
+  ],
+  "proceed_gate": {
+    "approved_next_maturity": "detail_cad",
+    "required_user_decision": "Approve generated STEP and viewer evidence before detail refinement."
+  },
+  "repair_loop": {
+    "locked_fact_change_policy": "Return to the benchmark contract before changing locked dimensions or feature counts.",
+    "rerun_failed_checks": true,
+    "smallest_source_change": true
+  },
+  "schema_version": "0.8.0",
+  "title": "Circular flange",
+  "units": "mm"
+}

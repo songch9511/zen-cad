@@ -173,6 +173,10 @@ def summarize_source_locks(source_locks: list[dict[str, Any]]) -> dict[str, Any]
 
 def artifact_kind(path: Path) -> str:
     name = path.name
+    if name == "viewer_link.html":
+        return "viewer"
+    if name.endswith(".png") or name.endswith(".jpg") or name.endswith(".jpeg") or name.endswith(".webp"):
+        return "snapshot"
     if name.endswith(".scene.json"):
         return "layout_proxy_scene"
     if name.endswith(".inspection_report.json") or name.endswith(".report.json"):

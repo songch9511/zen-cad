@@ -1,14 +1,14 @@
 ---
 name: cad-handoff
-description: Convert a CAD-native spec into a concise downstream brief for a CAD-generation harness. Use for Codex, text-to-cad/$cad, build123d, CadQuery, FreeCAD, or other generators, especially when preserving layout locked facts, parameter contracts, inspection plans, and repair loops through CAD generation and detail modeling.
-version: 1.0.0
+description: Convert a CAD-native spec into a concise downstream brief for a CAD-generation harness. Use for Codex, text-to-cad/$cad, build123d, CadQuery, FreeCAD, or other generators, especially when preserving layout locked facts, parameter contracts, feature plans, inspection plans, and repair loops through CAD generation and detail modeling.
+version: 1.0.1
 ---
 
 # CAD Handoff
 
 ## Purpose
 
-Use this skill after `cad-spec` has produced a CAD-native spec and the next step is to ask a CAD-generation harness to create, inspect, repair, or update geometry. For approved detail handoffs targeted at CAD Skills/text-to-cad, this skill can also package a downstream prompt bundle without generating CAD itself.
+Use this skill after `cad-spec` has produced a CAD-native spec and the next step is to create, inspect, repair, or update geometry. For `build123d` targets, Zen CAD can execute generated source into a first-pass STEP artifact. For approved detail handoffs targeted at CAD Skills/text-to-cad, this skill can also package a downstream prompt bundle.
 
 This skill is adapter-specific. Keep harness names, `$cad`, file paths, tool launchers, and environment details here instead of in the core `cad-spec` skill.
 
@@ -18,10 +18,12 @@ Use it when:
 
 - the user wants to proceed from spec to CAD;
 - a layout proxy should be generated from locked facts;
+- a generated build123d source file should be executed into a primary STEP artifact;
 - a detail model should preserve an approved layout;
 - downstream generation needs explicit source, STEP/STP, snapshot, viewer, or secondary export targets;
 - inspection or repair expectations must be carried into the generator prompt;
-- the target harness is Codex, text-to-cad, build123d, CadQuery, FreeCAD, or unknown.
+- the target harness is Codex, text-to-cad, build123d, CadQuery, FreeCAD, or unknown;
+- generated STEP artifacts should be paired with local viewer links for proceed review.
 
 ## Workflow
 
@@ -34,7 +36,9 @@ Use it when:
 7. State deterministic checks, snapshot/viewer expectations, and skipped-check reporting.
 8. State source-of-truth, generated files, repair attempts, and claims that must not be made.
 9. State the repair loop and when the generator must stop and return to layout review.
-10. For an approved `text-to-cad` handoff packet, package the prompt bundle with `tools/package_text_to_cad_bundle.py`.
+10. For `build123d` targets, run `tools/generate_cad_artifact.py` or the runner's build123d generation step before proceed review.
+11. For generated STEP artifacts, include `tools/package_viewer_link.py` output or the runner's `viewer_link.html` in proceed review when a local viewer is available.
+12. For an approved `text-to-cad` handoff packet, package the prompt bundle with `tools/package_text_to_cad_bundle.py`.
 
 ## Handoff Skeleton
 
@@ -46,6 +50,7 @@ Generated files:
 Locked facts:
 Parameter contract:
 Artifact targets:
+Feature plan:
 Allowed simplifications:
 Required outputs:
 Required checks:
@@ -68,6 +73,7 @@ Claims not made:
 - Do not validate generated CAD by git diff, file size, or generated-file churn.
 - Do not let the downstream generator change approved layout facts during detail.
 - Do not claim final readiness unless the downstream tool actually produced the required outputs.
+- Do not treat Zen CAD's first-pass STEP export as supplier-verified or manufacturing-ready geometry.
 - Do not generate CAD, STEP/STP, snapshots, or viewer links while packaging a text-to-cad prompt bundle.
 
 ## References

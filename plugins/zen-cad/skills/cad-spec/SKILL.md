@@ -1,7 +1,7 @@
 ---
 name: cad-spec
 description: Write CAD-native mechanical specs from natural-language design requests and orchestrate CAD work through specialist subagents when available. Use for assembly-first layout specs, parameter contracts, artifact targets, inspection plans, interface definitions, coordinate frames, datums, motion/drivetrain relationships, proxy fidelity boundaries, repair loops, proceed gates, subagent delegation, and downstream CAD handoffs.
-version: 1.0.0
+version: 1.0.1
 ---
 
 # CAD Spec
@@ -25,7 +25,8 @@ Use `cad-spec` when the user asks for:
 - a parameterized CAD brief with named dimensions, derived relationships, and validation targets;
 - artifact targets for source, STEP/STP, snapshots, viewer links, or secondary exports;
 - specialist subagents for layout, interfaces, motion, CAD generation, or review;
-- a downstream handoff to the active CAD harness, `$cad`, text-to-cad, build123d, CadQuery, FreeCAD, or another CAD generator.
+- local build123d STEP generation or a downstream handoff to `$cad`, text-to-cad, CadQuery, FreeCAD, or another CAD generator.
+- native feature-aware generation for holes, bores, bolt-circle patterns, repeated hole patterns, rectangular top chamfers, simplified gear teeth, or supported cylinder edge-round approximations.
 
 Do not use this skill for CAM, G-code, visual concept art, FEA, procurement-ready sourcing, or manufacturing certification unless the user first needs a CAD-native spec for those downstream tasks.
 
@@ -61,7 +62,9 @@ Ask one focused question only when missing information makes the layout impossib
 11. Define locked layout facts and a proceed gate so the user can approve positioning before detail modeling.
 12. Define an inspection plan and repair loop for generated CAD.
 13. If CAD generation or review is requested, spawn specialist subagents where the harness supports delegation.
-14. Write a downstream CAD handoff targeted to the active harness.
+14. If the active target is build123d and generation is requested, run the build123d source/export/inspection path before proceed review.
+15. If native build123d generation needs detail features, encode them in `cad_spec.extensions.cad_feature_plan` instead of burying them in prose.
+16. Write a downstream CAD handoff targeted to the active harness when external generation or detail upgrade is needed.
 
 ## Machine-Readable Contracts
 
@@ -135,6 +138,7 @@ Omit a section only when it is truly out of scope, and say why.
 - Do not treat screenshots or viewer links as substitutes for geometry facts, measurements, frames, or mate checks.
 - Do not allow detail modeling to change locked layout facts without returning to the proceed gate.
 - Do not present CAD validation, viewer screenshots, or generated geometry as engineering certification.
+- Do not claim selector-based topology fillets/chamfers unless the active build123d/OCP runtime actually ran those operations; use the inspection report limitations when approximations are used.
 - Do not embed repository paths or harness workspace paths in the core spec unless the downstream handoff specifically requires them.
 
 ## Progressive References

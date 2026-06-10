@@ -1,7 +1,7 @@
 ---
 name: assembly-layout
 description: Define and review low-detail mechanical assembly layouts before detail CAD. Use for assembly graphs, root frames, contact/connection concepts, locked interface facts, positioning review, drivetrain layout review, and proceed-gate readiness.
-version: 1.0.0
+version: 1.0.1
 ---
 
 # Assembly Layout

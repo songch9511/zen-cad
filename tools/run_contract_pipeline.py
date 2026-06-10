@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from export_cad_source import CadSourceExporter
+from capture_viewer_snapshot import ViewerSnapshotCapturer
+from generate_cad_artifact import CadArtifactGenerator
 from generate_detail_handoff import DetailHandoffGenerator
 from generate_layout_proxy import LayoutProxyGenerator
 from inspect_cad_source import CadSourceInspector
@@ -16,6 +18,7 @@ from inspect_layout_proxy import LayoutProxyInspector
 from package_proceed_gate import ProceedGatePackager
 from package_review_bundle import ReviewBundlePackager
 from package_text_to_cad_bundle import TextToCadBundlePackager
+from package_viewer_link import ViewerLinkPackager
 from validate_contract import ContractValidator, Issue
 
 
@@ -32,12 +35,28 @@ class PipelineStep:
 
 
 class ContractPipelineRunner:
-    def __init__(self, repo_root: Path, package: Path, out: Path, target_harness: str, approval: Path | None) -> None:
+    def __init__(
+        self,
+        repo_root: Path,
+        package: Path,
+        out: Path,
+        target_harness: str,
+        approval: Path | None,
+        viewer_base_url: str,
+        viewer_public_dir: Path | None,
+        capture_viewer_snapshot: bool,
+        viewer_root: Path | None,
+    ) -> None:
         self.repo_root = repo_root
         self.package = package
         self.out = out
         self.target_harness = target_harness
         self.approval = approval
+        self.viewer_base_url = viewer_base_url
+        self.viewer_public_dir = viewer_public_dir
+        self.capture_viewer_snapshot_enabled = capture_viewer_snapshot
+        self.viewer_root = viewer_root
+        self.viewer_url = ""
         self.steps: list[PipelineStep] = []
         self.artifacts: dict[str, Path] = {}
 
@@ -57,6 +76,15 @@ class ContractPipelineRunner:
             self.write_summary("failed")
             return 1
         if not self.inspect_cad_source():
+            self.write_summary("failed")
+            return 1
+        if self.target_harness == "build123d" and not self.generate_cad_artifact():
+            self.write_summary("failed")
+            return 1
+        if "generated_step" in self.artifacts and not self.package_viewer_link():
+            self.write_summary("failed")
+            return 1
+        if self.capture_viewer_snapshot_enabled and "viewer_link" in self.artifacts and not self.capture_viewer_snapshot():
             self.write_summary("failed")
             return 1
         if not self.package_proceed_gate():
@@ -145,13 +173,75 @@ class ContractPipelineRunner:
             self.artifacts["source_report"] = result.report_path
         return self.record_step("inspect_cad_source", inspector.issues, outputs)
 
+    def generate_cad_artifact(self) -> bool:
+        step_path = self.out / "source" / "layout_proxy_build123d.step"
+        report = self.out / "source" / "cad_generation.inspection_report.json"
+        generator = CadArtifactGenerator(self.repo_root, self.artifacts["source"], self.artifacts["source_manifest"], step_path, report)
+        result = generator.generate()
+        outputs = []
+        if result is not None:
+            outputs = [result.step_path, result.report_path]
+            self.artifacts["generated_step"] = result.step_path
+            self.artifacts["cad_generation_report"] = result.report_path
+        return self.record_step("generate_cad_artifact", generator.issues, outputs)
+
+    def package_viewer_link(self) -> bool:
+        viewer_link = self.out / "viewer_link.html"
+        packager = ViewerLinkPackager(
+            self.artifacts["generated_step"],
+            viewer_link,
+            self.viewer_base_url,
+            self.viewer_public_dir,
+        )
+        result = packager.package()
+        issues = [Issue(str(viewer_link), issue) for issue in packager.issues]
+        outputs = []
+        if result is not None:
+            outputs = [result.html_path]
+            self.artifacts["viewer_link"] = result.html_path
+            self.viewer_url = result.viewer_url
+        return self.record_step("package_viewer_link", issues, outputs)
+
+    def capture_viewer_snapshot(self) -> bool:
+        if self.viewer_root is None:
+            self.steps.append(
+                PipelineStep(
+                    step_id="capture_viewer_snapshot",
+                    status="failed",
+                    issues=[Issue("<args>", "--capture-viewer-snapshot requires --viewer-root")],
+                )
+            )
+            return False
+        snapshot = self.out / "viewer_snapshot.png"
+        report = self.out / "viewer_snapshot.inspection_report.json"
+        capturer = ViewerSnapshotCapturer(self.repo_root, self.viewer_url, snapshot, report, self.viewer_root, timeout_ms=45000)
+        result = capturer.capture()
+        outputs = []
+        if result is not None:
+            outputs = [result.snapshot_path, result.report_path]
+            self.artifacts["viewer_snapshot"] = result.snapshot_path
+            self.artifacts["viewer_snapshot_report"] = result.report_path
+        return self.record_step("capture_viewer_snapshot", capturer.issues, outputs)
+
     def package_proceed_gate(self) -> bool:
         proceed_gate = self.out / "proceed_gate.json"
+        artifacts = [self.artifacts["scene"], self.artifacts["source"]]
+        reports = [self.artifacts["layout_report"], self.artifacts["source_report"]]
+        if "generated_step" in self.artifacts:
+            artifacts.append(self.artifacts["generated_step"])
+        if "viewer_link" in self.artifacts:
+            artifacts.append(self.artifacts["viewer_link"])
+        if "viewer_snapshot" in self.artifacts:
+            artifacts.append(self.artifacts["viewer_snapshot"])
+        if "cad_generation_report" in self.artifacts:
+            reports.append(self.artifacts["cad_generation_report"])
+        if "viewer_snapshot_report" in self.artifacts:
+            reports.append(self.artifacts["viewer_snapshot_report"])
         packager = ProceedGatePackager(
             self.repo_root,
             self.package,
-            [self.artifacts["scene"], self.artifacts["source"]],
-            [self.artifacts["layout_report"], self.artifacts["source_report"]],
+            artifacts,
+            reports,
             proceed_gate,
         )
         result = packager.package_gate()
@@ -262,6 +352,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Target harness for the generated detail handoff.",
     )
     parser.add_argument("--approval", type=Path, help="Proceed approval JSON. Required to continue into detail handoff.")
+    parser.add_argument("--viewer-base-url", default="http://localhost:5173", help="Local CAD Viewer base URL used in viewer_link.html.")
+    parser.add_argument("--viewer-public-dir", type=Path, help="Optional CAD-Visualizer public directory for auto-load viewer links.")
+    parser.add_argument("--capture-viewer-snapshot", action="store_true", help="Capture a PNG snapshot from the local CAD Viewer after STEP generation.")
+    parser.add_argument("--viewer-root", type=Path, help="CAD-Visualizer project root with Playwright installed. Required with --capture-viewer-snapshot.")
     return parser.parse_args(argv)
 
 
@@ -273,6 +367,10 @@ def main(argv: list[str] | None = None) -> int:
         args.out,
         args.target_harness,
         approval=args.approval,
+        viewer_base_url=args.viewer_base_url,
+        viewer_public_dir=args.viewer_public_dir,
+        capture_viewer_snapshot=args.capture_viewer_snapshot,
+        viewer_root=args.viewer_root,
     )
     code = runner.run()
     print(f"Pipeline run: {args.out / 'pipeline_run.json'}")

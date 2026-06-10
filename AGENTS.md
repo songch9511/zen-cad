@@ -12,4 +12,6 @@ Use the narrower skills only when the task is scoped to that layer:
 
 Do not skip straight to freeform CAD generation for assembly prompts. Produce
 the CAD-native contract first, then continue through layout proxy, source-lock
-evidence, proceed gate, and downstream handoff when requested.
+evidence, feature-aware build123d STEP artifacts when requested/available,
+local viewer-link packaging, proceed gate, and downstream handoff when
+requested.

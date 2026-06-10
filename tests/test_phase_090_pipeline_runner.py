@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "tools" / "run_contract_pipeline.py"
 APPROVER = ROOT / "tools" / "approve_proceed_gate.py"
 VALIDATOR = ROOT / "tools" / "validate_contract.py"
+BUILD123D_AVAILABLE = importlib.util.find_spec("build123d") is not None
 
 
 def run_tool(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -33,6 +35,7 @@ def load_json(path: Path) -> dict:
 
 
 class Phase090PipelineRunnerTest(unittest.TestCase):
+    @unittest.skipUnless(BUILD123D_AVAILABLE, "build123d is required for in-repo CAD generation")
     def test_runner_executes_review_pipeline_without_detail_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -48,8 +51,11 @@ class Phase090PipelineRunnerTest(unittest.TestCase):
                 out / "layout" / "layout_proxy.scene.json",
                 out / "layout" / "locked_facts.inspection_report.json",
                 out / "source" / "layout_proxy_build123d.py",
+                out / "source" / "layout_proxy_build123d.step",
                 out / "source" / "cad_source_manifest.json",
                 out / "source" / "source.inspection_report.json",
+                out / "source" / "cad_generation.inspection_report.json",
+                out / "viewer_link.html",
                 out / "proceed_gate.json",
                 out / "pipeline_run.json",
             ]
@@ -68,18 +74,23 @@ class Phase090PipelineRunnerTest(unittest.TestCase):
                     "inspect_layout_proxy",
                     "export_cad_source",
                     "inspect_cad_source",
+                    "generate_cad_artifact",
+                    "package_viewer_link",
                     "package_proceed_gate",
                     "package_review_bundle",
                     "detail_handoff",
                 ],
                 [step["step_id"] for step in summary["steps"]],
             )
+            self.assertEqual(str(out / "source" / "layout_proxy_build123d.step"), summary["artifacts"]["generated_step"])
+            self.assertEqual(str(out / "viewer_link.html"), summary["artifacts"]["viewer_link"])
             self.assertEqual("skipped", summary["steps"][-1]["status"])
             self.assertTrue((out / "review_bundle.json").exists())
 
             validation = run_tool(VALIDATOR, "--package-only", "--package", str(out))
             self.assertEqual(0, validation.returncode, validation.stderr)
 
+    @unittest.skipUnless(BUILD123D_AVAILABLE, "build123d is required for in-repo CAD generation")
     def test_runner_executes_detail_handoff_with_approval(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

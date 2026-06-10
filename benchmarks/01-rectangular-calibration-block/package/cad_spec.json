@@ -1,0 +1,272 @@
+{
+  "artifact_targets": {
+    "primary_artifact": "layout_proxy_build123d.step",
+    "review_artifacts": [
+      "cad_generation.inspection_report.json",
+      "viewer_link.html"
+    ],
+    "secondary_artifacts": [],
+    "source_intent": "build123d"
+  },
+  "coordinate_system": {
+    "base_plane": "XY",
+    "notes": "Origin at block center; +Z through thickness.",
+    "root_frame": "block_center",
+    "up_axis": "+Z"
+  },
+  "downstream_handoff": {
+    "locked_facts": [
+      "block_envelope_locked",
+      "hole_pattern_locked",
+      "top_chamfer_locked"
+    ],
+    "required_checks": [
+      "check_block_bbox",
+      "check_hole_pattern",
+      "check_top_chamfer",
+      "check_step_generation",
+      "check_viewer_link"
+    ],
+    "stop_conditions": [
+      "Stop if block dimensions, hole count, hole diameter, or chamfer location drift."
+    ]
+  },
+  "extensions": {
+    "cad_feature_plan": {
+      "generator": "zen_cad_feature_plan_v1",
+      "parts": [
+        {
+          "base": "box",
+          "dimensions": {
+            "depth": 60,
+            "height": 20,
+            "width": 100
+          },
+          "features": [
+            {
+              "axis": "z",
+              "depth": 24,
+              "diameter": 8,
+              "positions": [
+                [
+                  -35,
+                  -20,
+                  0
+                ],
+                [
+                  35,
+                  -20,
+                  0
+                ],
+                [
+                  -35,
+                  20,
+                  0
+                ],
+                [
+                  35,
+                  20,
+                  0
+                ]
+              ],
+              "type": "through_hole_pattern"
+            },
+            {
+              "edges": "top_outer_perimeter",
+              "size": 2,
+              "type": "edge_chamfer"
+            }
+          ],
+          "part_id": "calibration_block"
+        }
+      ]
+    }
+  },
+  "id": "bench_rectangular_block",
+  "inspection_plan": [
+    {
+      "check_id": "check_block_bbox",
+      "check_type": "bbox",
+      "expected": "Generated STEP bounding box is 100 x 60 x 20 mm within tolerance.",
+      "locked_fact_refs": [
+        "block_envelope_locked"
+      ],
+      "target": "calibration_block"
+    },
+    {
+      "check_id": "check_hole_pattern",
+      "check_type": "axis",
+      "expected": "Four 8 mm vertical through-hole axes are present at symmetric XY positions.",
+      "locked_fact_refs": [
+        "hole_pattern_locked"
+      ],
+      "target": "calibration_block.through_hole_pattern"
+    },
+    {
+      "check_id": "check_top_chamfer",
+      "check_type": "plane",
+      "expected": "Only the top outer perimeter receives a 2 mm chamfer.",
+      "locked_fact_refs": [
+        "top_chamfer_locked"
+      ],
+      "target": "calibration_block.top_outer_perimeter"
+    },
+    {
+      "check_id": "check_step_generation",
+      "check_type": "bbox",
+      "expected": "build123d source exports and re-imports a non-empty STEP artifact.",
+      "locked_fact_refs": [
+        "block_envelope_locked"
+      ],
+      "target": "layout_proxy_build123d.step"
+    },
+    {
+      "check_id": "check_viewer_link",
+      "check_type": "viewer",
+      "expected": "Proceed gate includes a local CAD Viewer link artifact.",
+      "locked_fact_refs": [
+        "block_envelope_locked"
+      ],
+      "target": "viewer_link.html"
+    }
+  ],
+  "interface_signatures": [],
+  "kind": "cad_spec",
+  "layout_contract": {
+    "extensions": {},
+    "id": "bench_rectangular_block_layout",
+    "inspection_targets": [
+      {
+        "check_type": "bbox",
+        "expected": "100 x 60 x 20 mm centered block envelope.",
+        "target": "calibration_block",
+        "target_id": "check_block_bbox"
+      }
+    ],
+    "kind": "layout_contract",
+    "locked_facts": [
+      "block_envelope_locked",
+      "hole_pattern_locked",
+      "top_chamfer_locked"
+    ],
+    "parts": [
+      {
+        "local_frame": "origin at block center; +Z through thickness",
+        "part_id": "calibration_block",
+        "proxy_policy": "feature-plan driven box with vertical through-hole pattern and top chamfer",
+        "role": "structure"
+      }
+    ],
+    "relationships": {
+      "connections": [],
+      "contacts": [],
+      "motion": []
+    },
+    "root_component": "calibration_block",
+    "root_frame": {
+      "axes": "X along 100 mm length, Y along 60 mm depth, +Z up",
+      "origin": "block center"
+    },
+    "schema_version": "0.8.0"
+  },
+  "locked_layout_facts": [
+    {
+      "fact_id": "block_envelope_locked",
+      "must_preserve": true,
+      "statement": "Block envelope is centered and measures 100 x 60 x 20 mm.",
+      "type": "datum"
+    },
+    {
+      "fact_id": "hole_pattern_locked",
+      "must_preserve": true,
+      "statement": "Four 8 mm vertical through-holes are symmetric about the block center.",
+      "type": "mounting_pattern"
+    },
+    {
+      "fact_id": "top_chamfer_locked",
+      "must_preserve": true,
+      "statement": "Only the top outer perimeter has a 2 mm chamfer.",
+      "type": "interface"
+    }
+  ],
+  "maturity_target": "detail_cad",
+  "parameter_contract": [
+    {
+      "drives": [
+        "calibration_block.width"
+      ],
+      "name": "block_width",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_block_bbox"
+      ],
+      "value": 100
+    },
+    {
+      "drives": [
+        "calibration_block.depth"
+      ],
+      "name": "block_depth",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_block_bbox"
+      ],
+      "value": 60
+    },
+    {
+      "drives": [
+        "calibration_block.height"
+      ],
+      "name": "block_height",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_block_bbox"
+      ],
+      "value": 20
+    },
+    {
+      "drives": [
+        "calibration_block.through_holes"
+      ],
+      "name": "hole_diameter",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_hole_pattern"
+      ],
+      "value": 8
+    },
+    {
+      "drives": [
+        "calibration_block.top_outer_perimeter"
+      ],
+      "name": "top_chamfer",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_top_chamfer"
+      ],
+      "value": 2
+    }
+  ],
+  "proceed_gate": {
+    "approved_next_maturity": "detail_cad",
+    "required_user_decision": "Approve generated STEP and viewer evidence before detail refinement."
+  },
+  "repair_loop": {
+    "locked_fact_change_policy": "Return to the benchmark contract before changing locked dimensions or feature counts.",
+    "rerun_failed_checks": true,
+    "smallest_source_change": true
+  },
+  "schema_version": "0.8.0",
+  "title": "Rectangular calibration block",
+  "units": "mm"
+}

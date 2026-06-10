@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+## 1.0.1 - 2026-06-10
+
+- Add `tools/generate_cad_artifact.py` to execute generated build123d source, export a primary STEP artifact, re-import it, and record export/import/bbox/volume checks.
+- Extend the contract pipeline so `--target-harness build123d` produces a generated STEP artifact and CAD generation inspection report before proceed review.
+- Update docs and skills so Zen CAD is no longer framed as contract-only when a local build123d generation path is available.
+- Add feature-plan carry-through for holes, bores, bolt-circle/repeated patterns, rectangular top chamfers, simplified gear teeth, and supported cylinder edge-round approximations.
+- Add native benchmark contract packages for a rectangular calibration block, circular flange, and simplified planetary gear stage.
+- Add `tools/package_viewer_link.py` and runner integration so generated STEP artifacts can enter proceed review with a local CAD Viewer link.
+- Add `tools/capture_viewer_snapshot.py` and runner `--capture-viewer-snapshot` support so proceed gates can include PNG viewer evidence.
+- Add `tools/download_step_part.py` for `api.step.parts` search/download, sha256 verification, and checksum-backed source-lock evidence.
+- Tighten source-lock validation so checksum-recorded STEP/STP evidence requires a 64-hex sha256, and prefer local verified STEP copies over remote STEP URLs during source export.
+
 ## 1.0.0
 
 - Add a dependency-free CAD Viewer review brief packager that turns proceed-gate and optional pipeline/viewer artifacts into a downstream review handoff.

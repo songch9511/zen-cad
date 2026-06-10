@@ -30,6 +30,7 @@ Include:
 - primary output artifact;
 - secondary outputs only when requested or supported;
 - parameter contract;
+- native feature plan when build123d should generate holes, bores, patterns, chamfers, fillets, or simplified gears;
 - validation/review expectations;
 - repair loop expectations;
 - locked facts;
@@ -59,3 +60,13 @@ When `$cad` from `earthtojake/text-to-cad` is available, hand it the spec and as
 - CAD Viewer handoff when available.
 
 Do not require `$cad` to perform sourcing, BOM, final engineering reports, or procurement evidence for layout work.
+
+## Zen CAD build123d Generation
+
+When build123d is the active target, use the repo runner instead of writing a one-off generator command:
+
+```bash
+python3 tools/run_contract_pipeline.py --package <contract-package> --out <run-dir> --target-harness build123d
+```
+
+This produces generated source, a primary STEP artifact, source inspection, CAD generation inspection, viewer link artifact, proceed gate, and review bundle. Treat the STEP as a layout/detail candidate that still needs any skipped topology, source-lock alignment, or manufacturing checks before final claims.

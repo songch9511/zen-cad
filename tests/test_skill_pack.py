@@ -279,7 +279,7 @@ class SkillPackTest(unittest.TestCase):
         plugin_root = ROOT / "plugins" / "zen-cad"
         plugin = json.loads((plugin_root / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
         self.assertEqual("zen-cad", plugin["name"])
-        self.assertEqual("1.0.0", plugin["version"])
+        self.assertEqual("1.0.1", plugin["version"])
         self.assertEqual("./skills/", plugin["skills"])
         self.assertEqual("Zen CAD", plugin["interface"]["displayName"])
 
@@ -288,7 +288,15 @@ class SkillPackTest(unittest.TestCase):
             for path in (plugin_root / "skills").glob("*/SKILL.md")
         }
         self.assertEqual(EXPECTED_SKILLS, bundled_skills)
-        for rel in ["tools/run_contract_pipeline.py", "schemas/cad_spec.schema.json", "registry/interfaces/index.json"]:
+        for rel in [
+            "tools/run_contract_pipeline.py",
+            "tools/generate_cad_artifact.py",
+            "tools/download_step_part.py",
+            "tools/package_viewer_link.py",
+            "tools/capture_viewer_snapshot.py",
+            "schemas/cad_spec.schema.json",
+            "registry/interfaces/index.json",
+        ]:
             self.assertTrue((plugin_root / rel).exists(), rel)
 
 

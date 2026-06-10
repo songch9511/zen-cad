@@ -125,17 +125,24 @@ class CadSourceInspector:
             for item in manifest.get("sourced_parts", [])
             if isinstance(item, dict) and item.get("part_id")
         ]
+        manifest_feature_plan = {}
+        if isinstance(manifest.get("extensions"), dict) and isinstance(manifest["extensions"].get("cad_feature_plan"), dict):
+            manifest_feature_plan = manifest["extensions"]["cad_feature_plan"]
+        manifest_feature_parts = feature_part_ids(manifest_feature_plan)
         source_sourced_parts = [
             str(item.get("part_id"))
             for item in source_constants.get("ZEN_CAD_SOURCED_PARTS", [])
             if isinstance(item, dict) and item.get("part_id")
         ]
+        source_feature_plan = source_constants.get("ZEN_CAD_FEATURE_PLAN", {})
+        source_feature_parts = feature_part_ids(source_feature_plan if isinstance(source_feature_plan, dict) else {})
         expected_source_primitive_ids = [
             str(primitive["id"])
             for primitive in scene.get("primitives", [])
             if isinstance(primitive, dict)
             and isinstance(primitive.get("id"), str)
             and str(primitive.get("part_id", "")) not in set(manifest_sourced_parts)
+            and str(primitive.get("part_id", "")) not in manifest_feature_parts
         ]
         source_primitive_ids = [
             str(primitive["id"])
@@ -208,6 +215,25 @@ class CadSourceInspector:
                     ),
                 ]
             )
+        if manifest_feature_parts or source_feature_parts:
+            checks.extend(
+                [
+                    check_result(
+                        "source_feature_plan_covers_manifest",
+                        "label",
+                        source_feature_parts == manifest_feature_parts,
+                        f"source feature parts={len(source_feature_parts)}; manifest feature parts={len(manifest_feature_parts)}",
+                    ),
+                    check_result(
+                        "source_feature_runtime_present",
+                        "label",
+                        "_make_feature_part" in source_text and "ZEN_CAD_FEATURE_PLAN" in source_text,
+                        "source contains feature-plan runtime"
+                        if "_make_feature_part" in source_text and "ZEN_CAD_FEATURE_PLAN" in source_text
+                        else "source missing feature-plan runtime",
+                    ),
+                ]
+            )
         return checks
 
 
@@ -230,6 +256,14 @@ def parse_source_constants(source_text: str) -> dict[str, Any]:
         except (ValueError, SyntaxError):
             continue
     return parsed
+
+
+def feature_part_ids(feature_plan: dict[str, Any]) -> set[str]:
+    return {
+        str(part.get("part_id"))
+        for part in feature_plan.get("parts", [])
+        if isinstance(part, dict) and part.get("part_id")
+    }
 
 
 def check_result(
