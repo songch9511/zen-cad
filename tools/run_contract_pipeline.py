@@ -14,6 +14,8 @@ from generate_layout_proxy import LayoutProxyGenerator
 from inspect_cad_source import CadSourceInspector
 from inspect_layout_proxy import LayoutProxyInspector
 from package_proceed_gate import ProceedGatePackager
+from package_review_bundle import ReviewBundlePackager
+from package_text_to_cad_bundle import TextToCadBundlePackager
 from validate_contract import ContractValidator, Issue
 
 
@@ -60,6 +62,9 @@ class ContractPipelineRunner:
         if not self.package_proceed_gate():
             self.write_summary("failed")
             return 1
+        if not self.package_review_bundle():
+            self.write_summary("failed")
+            return 1
 
         gate = self.load_json(self.artifacts["proceed_gate"])
         if isinstance(gate, dict) and gate.get("status") != "ready_for_user_review":
@@ -76,6 +81,9 @@ class ContractPipelineRunner:
         if self.approval is not None:
             self.artifacts["proceed_approval"] = self.approval
             if not self.generate_detail_handoff():
+                self.write_summary("failed")
+                return 1
+            if self.target_harness == "text-to-cad" and not self.package_text_to_cad_bundle():
                 self.write_summary("failed")
                 return 1
             self.write_summary("completed")
@@ -152,6 +160,15 @@ class ContractPipelineRunner:
             self.artifacts["proceed_gate"] = result.package_path
         return self.record_step("package_proceed_gate", packager.issues, outputs)
 
+    def package_review_bundle(self) -> bool:
+        review_bundle = self.out / "review_bundle.json"
+        packager = ReviewBundlePackager(self.repo_root, self.artifacts["proceed_gate"], review_bundle)
+        result = packager.package_bundle()
+        outputs = [result.bundle_path] if result is not None else []
+        if result is not None:
+            self.artifacts["review_bundle"] = result.bundle_path
+        return self.record_step("package_review_bundle", packager.issues, outputs)
+
     def generate_detail_handoff(self) -> bool:
         handoff = self.out / "detail_handoff.json"
         if self.approval is None:
@@ -169,6 +186,17 @@ class ContractPipelineRunner:
         if result is not None:
             self.artifacts["detail_handoff"] = result.handoff_path
         return self.record_step("generate_detail_handoff", generator.issues, outputs)
+
+    def package_text_to_cad_bundle(self) -> bool:
+        bundle_dir = self.out / "text_to_cad_bundle"
+        packager = TextToCadBundlePackager(self.repo_root, self.artifacts["detail_handoff"], bundle_dir)
+        result = packager.package()
+        outputs = []
+        if result is not None:
+            outputs = [result.bundle_dir, result.handoff_path, result.manifest_path, result.prompt_path]
+            self.artifacts["text_to_cad_bundle"] = result.bundle_dir
+            self.artifacts["text_to_cad_prompt"] = result.prompt_path
+        return self.record_step("package_text_to_cad_bundle", packager.issues, outputs)
 
     def record_step(self, step_id: str, issues: list[Issue], outputs: list[Path] | None = None) -> bool:
         status = "failed" if issues else "passed"

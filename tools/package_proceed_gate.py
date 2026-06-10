@@ -62,9 +62,10 @@ class ProceedGatePackager:
         spec = self.load_spec()
         if spec is None:
             return None
+        source_locks = self.load_source_locks()
         report_docs = [self.load_json(path) for path in self.reports]
         report_docs = [report for report in report_docs if isinstance(report, dict)]
-        gate = self.build_gate(spec, report_docs)
+        gate = self.build_gate(spec, report_docs, source_locks)
         self.out.parent.mkdir(parents=True, exist_ok=True)
         write_json(self.out, gate)
 
@@ -87,7 +88,16 @@ class ProceedGatePackager:
             return None
         return specs[0]
 
-    def build_gate(self, spec: dict[str, Any], reports: list[dict[str, Any]]) -> dict[str, Any]:
+    def load_source_locks(self) -> list[dict[str, Any]]:
+        paths = [self.package] if self.package.is_file() else sorted(self.package.rglob("*.json"))
+        locks: list[dict[str, Any]] = []
+        for path in paths:
+            loaded = self.load_json(path)
+            if isinstance(loaded, dict) and loaded.get("kind") == "source_lock_evidence":
+                locks.append(loaded)
+        return locks
+
+    def build_gate(self, spec: dict[str, Any], reports: list[dict[str, Any]], source_locks: list[dict[str, Any]]) -> dict[str, Any]:
         summary = summarize_reports(reports)
         status = "needs_repair" if summary["failed"] else "ready_for_user_review"
         decision_options = ["revise_layout"] if summary["failed"] else ["proceed", "revise_layout", "detail_upgrade"]
@@ -126,6 +136,7 @@ class ProceedGatePackager:
             "limitations": limitations,
             "extensions": {
                 "packager": "tools/package_proceed_gate.py",
+                "source_lock_summary": summarize_source_locks(source_locks),
             },
         }
 
@@ -140,6 +151,23 @@ def summarize_reports(reports: list[dict[str, Any]]) -> dict[str, int]:
             if isinstance(check, dict) and check.get("status") in {"passed", "partial", "failed"}:
                 summary[str(check["status"])] += 1
         summary["skipped"] += len(report.get("skipped_checks", []))
+    return summary
+
+
+def summarize_source_locks(source_locks: list[dict[str, Any]]) -> dict[str, Any]:
+    summary: dict[str, Any] = {
+        "total": len(source_locks),
+        "source_locked": 0,
+        "unresolved": 0,
+        "proxy_only": 0,
+        "final_blockers": [],
+    }
+    for lock in source_locks:
+        status = str(lock.get("lock_status", "unresolved"))
+        if status in {"source_locked", "unresolved", "proxy_only"}:
+            summary[status] += 1
+        if status != "source_locked":
+            summary["final_blockers"].append(str(lock.get("part_id", lock.get("id", "unknown_part"))))
     return summary
 
 

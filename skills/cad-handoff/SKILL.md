@@ -1,14 +1,14 @@
 ---
 name: cad-handoff
 description: Convert a CAD-native spec into a concise downstream brief for a CAD-generation harness. Use for Codex, text-to-cad/$cad, build123d, CadQuery, FreeCAD, or other generators, especially when preserving layout locked facts, parameter contracts, inspection plans, and repair loops through CAD generation and detail modeling.
-version: 0.9.0
+version: 1.0.0
 ---
 
 # CAD Handoff
 
 ## Purpose
 
-Use this skill after `cad-spec` has produced a CAD-native spec and the next step is to ask a CAD-generation harness to create, inspect, repair, or update geometry.
+Use this skill after `cad-spec` has produced a CAD-native spec and the next step is to ask a CAD-generation harness to create, inspect, repair, or update geometry. For approved detail handoffs targeted at CAD Skills/text-to-cad, this skill can also package a downstream prompt bundle without generating CAD itself.
 
 This skill is adapter-specific. Keep harness names, `$cad`, file paths, tool launchers, and environment details here instead of in the core `cad-spec` skill.
 
@@ -34,6 +34,7 @@ Use it when:
 7. State deterministic checks, snapshot/viewer expectations, and skipped-check reporting.
 8. State source-of-truth, generated files, repair attempts, and claims that must not be made.
 9. State the repair loop and when the generator must stop and return to layout review.
+10. For an approved `text-to-cad` handoff packet, package the prompt bundle with `tools/package_text_to_cad_bundle.py`.
 
 ## Handoff Skeleton
 
@@ -67,8 +68,10 @@ Claims not made:
 - Do not validate generated CAD by git diff, file size, or generated-file churn.
 - Do not let the downstream generator change approved layout facts during detail.
 - Do not claim final readiness unless the downstream tool actually produced the required outputs.
+- Do not generate CAD, STEP/STP, snapshots, or viewer links while packaging a text-to-cad prompt bundle.
 
 ## References
 
 - `references/harness-briefs.md` — Codex, `$cad`, and generic handoff templates.
 - `references/runtime-contract.md` — keeping core specs kernel-neutral while adapter prompts map to active runtime tools.
+- `references/text-to-cad-adapter-contract.md` — approved handoff to CAD Skills/text-to-cad prompt bundle contract.

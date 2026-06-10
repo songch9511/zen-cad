@@ -69,11 +69,13 @@ class Phase090PipelineRunnerTest(unittest.TestCase):
                     "export_cad_source",
                     "inspect_cad_source",
                     "package_proceed_gate",
+                    "package_review_bundle",
                     "detail_handoff",
                 ],
                 [step["step_id"] for step in summary["steps"]],
             )
             self.assertEqual("skipped", summary["steps"][-1]["status"])
+            self.assertTrue((out / "review_bundle.json").exists())
 
             validation = run_tool(VALIDATOR, "--package-only", "--package", str(out))
             self.assertEqual(0, validation.returncode, validation.stderr)

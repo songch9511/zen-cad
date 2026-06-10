@@ -9,8 +9,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GENERATOR = ROOT / "tools" / "generate_layout_proxy.py"
-VALIDATOR = ROOT / "tools" / "validate_contract.py"
+RUNNER = ROOT / "tools" / "run_contract_pipeline.py"
+VIEWER_PACKAGER = ROOT / "tools" / "package_viewer_review.py"
 
 
 def run_tool(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -27,13 +27,13 @@ def write_json(path: Path, data: object) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def write_contract_package(package: Path, interface_ref: str = "motor.nema_17.layout") -> None:
+def write_viewer_contract_package(package: Path) -> None:
     write_json(
         package / "cad_spec.json",
         {
             "schema_version": "0.8.0",
             "kind": "cad_spec",
-            "id": "belt_drive_layout",
+            "id": "viewer_drive_layout",
             "units": "mm",
             "parameter_contract": [
                 {
@@ -55,7 +55,7 @@ def write_contract_package(package: Path, interface_ref: str = "motor.nema_17.la
                 {
                     "fact_id": "motor_axis_locked",
                     "type": "axis",
-                    "statement": "Motor shaft axis is locked for layout.",
+                    "statement": "Motor shaft axis is locked for viewer review.",
                     "must_preserve": True,
                 }
             ],
@@ -90,7 +90,7 @@ def write_contract_package(package: Path, interface_ref: str = "motor.nema_17.la
         {
             "schema_version": "0.8.0",
             "kind": "layout_contract",
-            "id": "belt_drive_layout_contract",
+            "id": "viewer_drive_layout_contract",
             "root_component": "base_plate",
             "root_frame": {
                 "origin": "base footprint center",
@@ -102,7 +102,7 @@ def write_contract_package(package: Path, interface_ref: str = "motor.nema_17.la
                     "role": "driver",
                     "local_frame": "motor face center, shaft axis +X",
                     "proxy_policy": "box body plus shaft axis marker",
-                    "interface_signature_refs": [interface_ref],
+                    "interface_signature_refs": ["motor.nema_17.layout"],
                 },
                 {
                     "part_id": "bearing_proxy",
@@ -137,92 +137,79 @@ def write_contract_package(package: Path, interface_ref: str = "motor.nema_17.la
             "extensions": {},
         },
     )
-    write_json(
-        package / "motor_source_lock.json",
-        {
-            "schema_version": "0.8.0",
-            "kind": "source_lock_evidence",
-            "id": "belt_drive_layout.motor_proxy.source_lock",
-            "part_id": "motor_proxy",
-            "part_role": "standard_part",
-            "lock_status": "unresolved",
-            "source_identity": {
-                "display_name": "NEMA 17 motor final source candidate",
-                "manufacturer_name": "",
-                "model": "NEMA 17",
-                "product_url": "https://www.step.parts/parts/stepper_motor_nema17_l0040_single_shaft",
-                "identity_basis": "unresolved",
-            },
-            "evidence_sources": [
-                {
-                    "source_type": "step_parts",
-                    "locator": "https://www.step.parts/parts/stepper_motor_nema17_l0040_single_shaft",
-                    "artifact_kind": "catalog_page",
-                    "trusted_for": ["source_identity", "review_only"],
-                    "retrieval_status": "provided_url_not_fetched",
-                    "observed_at": "2026-06-10",
-                    "notes": "Layout uses interface signature first; final CAD must source-lock a concrete motor.",
-                }
-            ],
-            "interface_signature_refs": [interface_ref],
-            "interface_signature_role": "layout_reference_only",
-            "claims_made": ["review_reference", "source_identity"],
-            "required_before_final": [
-                "Replace proxy with step.parts, manufacturer, datasheet, or user-provided source before final."
-            ],
-            "claims_not_made": [
-                "No torque rating is claimed.",
-                "No safety certification is claimed.",
-            ],
-            "extensions": {},
-        },
-    )
 
 
-class LayoutProxyGeneratorTest(unittest.TestCase):
-    def test_generates_scene_and_inspection_report(self) -> None:
+class ViewerReviewPackagerTest(unittest.TestCase):
+    def test_generates_viewer_review_brief_from_runner_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             package = root / "package"
-            out = root / "out"
+            run_out = root / "run"
+            brief = root / "viewer_review.md"
+            snapshot = root / "viewer_snapshot.png"
             package.mkdir()
-            write_contract_package(package)
+            write_viewer_contract_package(package)
+            snapshot.write_text("placeholder viewer snapshot", encoding="utf-8")
 
-            result = run_tool(GENERATOR, "--package", str(package), "--out", str(out))
+            pipeline = run_tool(RUNNER, "--package", str(package), "--out", str(run_out), "--target-harness", "build123d")
+            self.assertEqual(0, pipeline.returncode, pipeline.stderr)
+
+            result = run_tool(
+                VIEWER_PACKAGER,
+                "--proceed-gate",
+                str(run_out / "proceed_gate.json"),
+                "--pipeline-run",
+                str(run_out / "pipeline_run.json"),
+                "--viewer-artifact",
+                str(snapshot),
+                "--out",
+                str(brief),
+            )
             self.assertEqual(0, result.returncode, result.stderr)
+            self.assertTrue(brief.exists())
 
-            scene_path = out / "layout_proxy.scene.json"
-            report_path = out / "layout_proxy.inspection_report.json"
-            self.assertTrue(scene_path.exists())
-            self.assertTrue(report_path.exists())
+            text = brief.read_text(encoding="utf-8")
+            self.assertIn("# Zen CAD Viewer Review Brief", text)
+            self.assertIn("Spec ID: `viewer_drive_layout`", text)
+            self.assertIn("Gate status: `ready_for_user_review`", text)
+            self.assertIn("Pipeline status: `ready_for_user_review`", text)
+            self.assertIn("`viewer_snapshot`", text)
+            self.assertIn("`motor_axis_locked`", text)
+            self.assertIn("Do not mark the package complete from screenshots alone", text)
+            self.assertIn("Detail CAD handoff still requires an explicit proceed approval artifact", text)
 
-            scene = json.loads(scene_path.read_text(encoding="utf-8"))
-            self.assertEqual("layout_proxy_scene", scene["kind"])
-            self.assertEqual("belt_drive_layout", scene["source_spec_id"])
-            primitive_ids = {primitive["id"] for primitive in scene["primitives"]}
-            self.assertIn("motor_proxy.motor_body", primitive_ids)
-            self.assertIn("bearing_proxy.bearing_envelope", primitive_ids)
-            self.assertIn("check_motor_axis", {item["check_id"] for item in scene["skipped_checks"]})
-
-            report = json.loads(report_path.read_text(encoding="utf-8"))
-            self.assertEqual("inspection_report", report["kind"])
-            self.assertEqual("layout_proxy_scene", report["artifact"]["kind"])
-            self.assertEqual("ready_for_layout_generation", report["proceed_recommendation"])
-
-            validation = run_tool(VALIDATOR, "--package-only", "--package", str(out))
-            self.assertEqual(0, validation.returncode, validation.stderr)
-
-    def test_unresolved_interface_signature_fails(self) -> None:
+    def test_rejects_non_proceed_gate_document(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            package = root / "package"
-            out = root / "out"
-            package.mkdir()
-            write_contract_package(package, interface_ref="missing.interface.layout")
+            not_gate = root / "pipeline_run.json"
+            brief = root / "viewer_review.md"
+            write_json(
+                not_gate,
+                {
+                    "schema_version": "0.8.0",
+                    "kind": "pipeline_run",
+                    "id": "not_a_gate",
+                    "contract_package": "package",
+                    "target_harness": "unknown",
+                    "status": "failed",
+                    "steps": [
+                        {
+                            "step_id": "validate_contract",
+                            "status": "failed",
+                            "outputs": [],
+                            "issues": [{"path": "package", "message": "fixture"}],
+                            "note": "",
+                        }
+                    ],
+                    "artifacts": {},
+                    "extensions": {},
+                },
+            )
 
-            result = run_tool(GENERATOR, "--package", str(package), "--out", str(out))
+            result = run_tool(VIEWER_PACKAGER, "--proceed-gate", str(not_gate), "--out", str(brief))
             self.assertNotEqual(0, result.returncode)
-            self.assertIn("unresolved interface signature", result.stderr)
+            self.assertIn("viewer review requires a proceed_gate_package document", result.stderr)
+            self.assertFalse(brief.exists())
 
 
 if __name__ == "__main__":

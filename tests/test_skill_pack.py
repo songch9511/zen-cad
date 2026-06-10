@@ -122,6 +122,8 @@ class SkillPackTest(unittest.TestCase):
             "proceed_gate_package.schema.json",
             "proceed_approval.schema.json",
             "pipeline_run.schema.json",
+            "source_lock_evidence.schema.json",
+            "review_bundle.schema.json",
         ]
         for name in expected:
             path = ROOT / "schemas" / name

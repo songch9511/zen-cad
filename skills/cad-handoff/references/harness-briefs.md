@@ -31,6 +31,14 @@ Hand supported artifacts to $cad-viewer when available.
 Stop instead of changing locked layout facts.
 ```
 
+When a Zen CAD `handoff_packet` already exists from an approved proceed gate, package the downstream prompt bundle instead of asking Zen CAD to generate CAD:
+
+```bash
+python3 tools/package_text_to_cad_bundle.py --handoff <detail_handoff.json> --out <text-to-cad-bundle-dir>
+```
+
+Send `text_to_cad_prompt.md` and `handoff_packet.json` to CAD Skills/text-to-cad. The bundle manifest records that Zen CAD did not create CAD source, STEP/STP geometry, snapshots, or viewer links in this adapter step.
+
 ## Generic CAD Generator
 
 Use when the toolchain is unknown:

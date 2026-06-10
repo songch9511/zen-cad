@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/review_bundle.schema.json",
+  "title": "Zen CAD Review Bundle",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "spec_id",
+    "status",
+    "artifacts",
+    "reports",
+    "locked_layout_facts",
+    "viewer_targets",
+    "evidence_policy",
+    "limitations",
+    "next_actions",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "review_bundle" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "spec_id": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["ready_for_viewer_review", "needs_repair", "blocked"]
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/path_ref" },
+      "minItems": 1
+    },
+    "reports": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/path_ref" },
+      "minItems": 1
+    },
+    "locked_layout_facts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "viewer_targets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/viewer_target" }
+    },
+    "evidence_policy": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "next_actions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "path_ref": {
+      "type": "object",
+      "required": ["path", "kind"],
+      "properties": {
+        "path": { "type": "string" },
+        "kind": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "viewer_target": {
+      "type": "object",
+      "required": ["path", "viewer_hint", "evidence_role"],
+      "properties": {
+        "path": { "type": "string" },
+        "viewer_hint": { "type": "string" },
+        "evidence_role": {
+          "type": "string",
+          "enum": ["review_only", "layout_context", "debug_context"]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

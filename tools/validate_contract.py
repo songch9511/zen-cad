@@ -7,6 +7,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 
 SCHEMA_VERSION = "0.8.0"
@@ -22,6 +23,8 @@ SCHEMA_FILES = {
     "proceed_gate_package.schema.json": "proceed_gate_package",
     "proceed_approval.schema.json": "proceed_approval",
     "pipeline_run.schema.json": "pipeline_run",
+    "source_lock_evidence.schema.json": "source_lock_evidence",
+    "review_bundle.schema.json": "review_bundle",
 }
 
 COMMON_SCHEMA_REQUIRED = {"schema_version", "kind", "extensions"}
@@ -55,6 +58,17 @@ FORBIDDEN_REGISTRY_KEYS = {
     "bom_quantity",
     "step_file",
     "cad_file",
+    "load_rating",
+    "torque_rating",
+    "material",
+    "certification",
+}
+
+FORBIDDEN_SOURCE_LOCK_KEYS = {
+    "sku",
+    "price",
+    "availability",
+    "bom_quantity",
     "load_rating",
     "torque_rating",
     "material",
@@ -183,7 +197,7 @@ class ContractValidator:
             return self.issues
 
         by_kind: dict[str, list[tuple[Path, dict[str, Any]]]] = {}
-        ids: set[str] = set()
+        seen_documents: dict[str, dict[str, Any]] = {}
         for path, document in documents:
             if not isinstance(document, dict):
                 self.error(path, "contract document must be a JSON object")
@@ -201,9 +215,11 @@ class ContractValidator:
             extensions = document.get("extensions")
             if not isinstance(extensions, dict):
                 self.error(path, "document must include object extensions")
-            if doc_id in ids:
-                self.error(path, f"duplicate document id: {doc_id}")
-            ids.add(doc_id)
+            if doc_id in seen_documents:
+                if document != seen_documents[doc_id]:
+                    self.error(path, f"duplicate document id with different content: {doc_id}")
+            else:
+                seen_documents[doc_id] = document
             by_kind.setdefault(kind, []).append((path, document))
 
         for path, document in by_kind.get("cad_spec", []):
@@ -224,6 +240,10 @@ class ContractValidator:
             self.validate_proceed_approval_document(path, document)
         for path, document in by_kind.get("pipeline_run", []):
             self.validate_pipeline_run_document(path, document)
+        for path, document in by_kind.get("source_lock_evidence", []):
+            self.validate_source_lock_evidence_document(path, document)
+        for path, document in by_kind.get("review_bundle", []):
+            self.validate_review_bundle_document(path, document)
 
         return self.issues
 
@@ -390,6 +410,129 @@ class ContractValidator:
             self.error(path, "completed pipeline_run must include detail_handoff artifact")
         if status == "ready_for_user_review" and not document.get("artifacts", {}).get("proceed_gate"):
             self.error(path, "ready_for_user_review pipeline_run must include proceed_gate artifact")
+
+    def validate_source_lock_evidence_document(self, path: Path, document: dict[str, Any]) -> None:
+        required = {
+            "part_id",
+            "part_role",
+            "lock_status",
+            "source_identity",
+            "evidence_sources",
+            "interface_signature_refs",
+            "interface_signature_role",
+            "claims_made",
+            "required_before_final",
+            "claims_not_made",
+        }
+        missing = sorted(required - set(document))
+        if missing:
+            self.error(path, f"source_lock_evidence missing required fields: {', '.join(missing)}")
+        status = document.get("lock_status")
+        sources = document.get("evidence_sources", [])
+        if document.get("part_role") not in {"standard_part", "catalog_part", "supplier_part", "generated_custom_part", "proxy"}:
+            self.error(path, "source_lock_evidence part_role is invalid")
+        if status not in {"source_locked", "unresolved", "proxy_only"}:
+            self.error(path, "source_lock_evidence lock_status is invalid")
+        if document.get("interface_signature_role") != "layout_reference_only":
+            self.error(path, "source_lock_evidence must mark interface signatures as layout_reference_only")
+        identity = document.get("source_identity")
+        if not isinstance(identity, dict):
+            self.error(path, "source_lock_evidence source_identity must be an object")
+        elif status == "source_locked" and identity.get("identity_basis") == "unresolved":
+            self.error(path, "source_locked evidence must use a resolved source_identity identity_basis")
+        if not isinstance(sources, list) or not sources:
+            self.error(path, "source_lock_evidence evidence_sources must be non-empty")
+            return
+        for source in sources:
+            self.validate_source_lock_evidence_source(path, source)
+        if status == "source_locked":
+            trusted = {
+                item
+                for source in sources
+                if isinstance(source, dict)
+                for item in source.get("trusted_for", [])
+            }
+            if "geometry_reference" not in trusted and "source_identity" not in trusted and "procurement_identity" not in trusted:
+                self.error(path, "source_locked evidence must be trusted for geometry_reference or source_identity")
+            if trusted <= {"layout", "review_only"}:
+                self.error(path, "source_locked evidence cannot rely only on layout or review evidence")
+        if document.get("part_role") in {"standard_part", "catalog_part", "supplier_part"} and status == "proxy_only":
+            required = "Replace proxy with step.parts, manufacturer, datasheet, or user-provided source before final."
+            if required not in document.get("required_before_final", []):
+                self.error(path, "proxy standard/catalog parts must state the final source-lock requirement")
+        forbidden = sorted(FORBIDDEN_SOURCE_LOCK_KEYS & walk_keys(document))
+        if forbidden:
+            self.error(path, f"source_lock_evidence contains final-claim keys: {', '.join(forbidden)}")
+        claims_made = document.get("claims_made", [])
+        allowed_claims = {"source_identity", "geometry_reference_url", "critical_dimensions_reference", "review_reference"}
+        if not isinstance(claims_made, list):
+            self.error(path, "source_lock_evidence claims_made must be a list")
+        else:
+            unsupported = sorted({str(item) for item in claims_made} - allowed_claims)
+            if unsupported:
+                self.error(path, f"source_lock_evidence claims_made contains unsupported claims: {', '.join(unsupported)}")
+        claims_text = " ".join(str(item).lower() for item in document.get("claims_not_made", []))
+        for required_phrase in ["rating", "certification"]:
+            if required_phrase not in claims_text:
+                self.error(path, f"source_lock_evidence claims_not_made must mention {required_phrase}")
+
+    def validate_source_lock_evidence_source(self, path: Path, source: Any) -> None:
+        if not isinstance(source, dict):
+            self.error(path, "source_lock_evidence evidence_sources entries must be objects")
+            return
+        required = {"source_type", "locator", "artifact_kind", "trusted_for", "retrieval_status"}
+        missing = sorted(required - set(source))
+        if missing:
+            self.error(path, f"source_lock_evidence evidence source missing required fields: {', '.join(missing)}")
+        source_type = source.get("source_type")
+        locator = str(source.get("locator", "")).strip()
+        artifact_kind = source.get("artifact_kind")
+        trusted_for = source.get("trusted_for", [])
+        if source_type not in {"step_parts", "manufacturer", "datasheet", "project_file", "user_provided", "other"}:
+            self.error(path, "source_lock_evidence evidence source_type is invalid")
+        if artifact_kind not in {"step", "stp", "datasheet", "catalog_page", "project_file", "metadata", "unknown"}:
+            self.error(path, "source_lock_evidence evidence artifact_kind is invalid")
+        if source.get("retrieval_status") not in {"provided_url_not_fetched", "provided_file_not_inspected", "checksum_recorded", "inspected_elsewhere"}:
+            self.error(path, "source_lock_evidence evidence retrieval_status is invalid")
+        if not locator:
+            self.error(path, "source_lock_evidence evidence source locator must be non-empty")
+            return
+        if not isinstance(trusted_for, list) or not trusted_for:
+            self.error(path, "source_lock_evidence evidence source trusted_for must be non-empty")
+        else:
+            allowed_trust = {"layout", "geometry_reference", "source_identity", "procurement_identity", "critical_dimensions", "review_only"}
+            unsupported = sorted({str(item) for item in trusted_for} - allowed_trust)
+            if unsupported:
+                self.error(path, f"source_lock_evidence evidence trusted_for contains unsupported values: {', '.join(unsupported)}")
+        if artifact_kind in {"step", "stp"} and "geometry_reference" not in trusted_for:
+            self.error(path, "STEP/STP evidence must be trusted for geometry_reference")
+        if source_type in {"step_parts", "manufacturer", "datasheet", "other"}:
+            parsed = urlparse(locator)
+            if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                self.error(path, f"{source_type} evidence locator must be an http(s) URL")
+                return
+            host = parsed.netloc.lower()
+            if source_type == "step_parts" and host not in {"step.parts", "www.step.parts"}:
+                self.error(path, "step_parts evidence locator must use the step.parts domain")
+            if source_type == "manufacturer" and host in {"step.parts", "www.step.parts"}:
+                self.error(path, "manufacturer evidence locator must not use the step.parts domain")
+
+    def validate_review_bundle_document(self, path: Path, document: dict[str, Any]) -> None:
+        if not document.get("artifacts"):
+            self.error(path, "review_bundle artifacts must be non-empty")
+        if not document.get("reports"):
+            self.error(path, "review_bundle reports must be non-empty")
+        if not document.get("locked_layout_facts"):
+            self.error(path, "review_bundle locked_layout_facts must be non-empty")
+        policy_text = " ".join(str(item).lower() for item in document.get("evidence_policy", []))
+        if "review" not in policy_text or "geometry" not in policy_text:
+            self.error(path, "review_bundle evidence_policy must distinguish review evidence from geometry checks")
+        for target in document.get("viewer_targets", []):
+            if not isinstance(target, dict):
+                self.error(path, "review_bundle viewer_targets entries must be objects")
+                continue
+            if target.get("evidence_role") != "review_only":
+                self.error(path, "review_bundle viewer_targets must use review_only evidence_role")
 
 
 def walk_keys(value: Any) -> set[str]:
