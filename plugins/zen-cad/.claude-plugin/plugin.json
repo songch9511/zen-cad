@@ -1,0 +1,21 @@
+{
+  "name": "zen-cad",
+  "version": "1.0.0",
+  "description": "Assembly-first CAD contract skills.",
+  "author": {
+    "name": "songch9511",
+    "url": "https://github.com/songch9511"
+  },
+  "homepage": "https://github.com/songch9511/zen-cad",
+  "repository": "https://github.com/songch9511/zen-cad",
+  "license": "MIT",
+  "keywords": [
+    "cad",
+    "assembly",
+    "contracts",
+    "step",
+    "source-lock",
+    "skills"
+  ],
+  "skills": "./skills/"
+}

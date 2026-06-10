@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/source_lock_evidence.schema.json",
+  "title": "Zen CAD Source Lock Evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "part_id",
+    "part_role",
+    "lock_status",
+    "source_identity",
+    "evidence_sources",
+    "interface_signature_refs",
+    "interface_signature_role",
+    "claims_made",
+    "required_before_final",
+    "claims_not_made",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "source_lock_evidence" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "part_id": { "type": "string", "minLength": 1 },
+    "part_role": {
+      "type": "string",
+      "enum": ["standard_part", "catalog_part", "supplier_part", "generated_custom_part", "proxy"]
+    },
+    "lock_status": {
+      "type": "string",
+      "enum": ["source_locked", "unresolved", "proxy_only"]
+    },
+    "source_identity": {
+      "type": "object",
+      "required": ["display_name", "identity_basis"],
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "manufacturer_name": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "product_url": {
+          "type": "string"
+        },
+        "identity_basis": {
+          "type": "string",
+          "enum": ["step_parts", "manufacturer_url", "datasheet", "project_file", "user_provided", "unresolved"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence_sources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidence_source" },
+      "minItems": 1
+    },
+    "interface_signature_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "interface_signature_role": {
+      "type": "string",
+      "const": "layout_reference_only"
+    },
+    "claims_made": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["source_identity", "geometry_reference_url", "critical_dimensions_reference", "review_reference"]
+      }
+    },
+    "required_before_final": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "claims_not_made": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "evidence_source": {
+      "type": "object",
+      "required": ["source_type", "locator", "artifact_kind", "trusted_for", "retrieval_status"],
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "enum": ["step_parts", "manufacturer", "datasheet", "project_file", "user_provided", "other"]
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact_kind": {
+          "type": "string",
+          "enum": ["step", "stp", "datasheet", "catalog_page", "project_file", "metadata", "unknown"]
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "trusted_for": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["layout", "geometry_reference", "source_identity", "procurement_identity", "critical_dimensions", "review_only"]
+          },
+          "minItems": 1
+        },
+        "retrieval_status": {
+          "type": "string",
+          "enum": ["provided_url_not_fetched", "provided_file_not_inspected", "checksum_recorded", "inspected_elsewhere"]
+        },
+        "observed_at": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

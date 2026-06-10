@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/interface_signature.schema.json",
+  "title": "Zen CAD Interface Signature",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "title",
+    "units",
+    "family",
+    "quality_label",
+    "trusted_for_layout",
+    "source",
+    "primary_axes",
+    "mounting_datums",
+    "critical_dimensions",
+    "envelope",
+    "validation_targets",
+    "proxy_may_simplify",
+    "must_confirm_before_final",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "interface_signature" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "units": {
+      "type": "string",
+      "const": "mm"
+    },
+    "family": {
+      "type": "string",
+      "enum": ["motor", "belt", "pulley", "bearing", "fastener", "shaft_bore", "linear_rail", "gear", "sensor", "connector", "custom"]
+    },
+    "quality_label": {
+      "type": "string",
+      "enum": ["standard", "user_provided", "project_registry", "assumed", "must_confirm"]
+    },
+    "trusted_for_layout": { "type": "boolean" },
+    "source": {
+      "type": "object",
+      "required": ["type", "note"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["common_standard", "layout_default", "user_provided", "project_registry"]
+        },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "primary_axes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/named_fact" }
+    },
+    "mounting_datums": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/named_fact" }
+    },
+    "critical_dimensions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dimension" }
+    },
+    "envelope": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dimension" }
+    },
+    "validation_targets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/validation_target" }
+    },
+    "proxy_may_simplify": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "must_confirm_before_final": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "named_fact": {
+      "type": "object",
+      "required": ["name", "statement"],
+      "properties": {
+        "name": { "type": "string" },
+        "statement": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "dimension": {
+      "type": "object",
+      "required": ["name", "value", "units", "status"],
+      "properties": {
+        "name": { "type": "string" },
+        "value": {},
+        "units": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["standard", "assumed", "user_provided", "must_confirm"]
+        },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "validation_target": {
+      "type": "object",
+      "required": ["check_type", "target", "expected"],
+      "properties": {
+        "check_type": {
+          "type": "string",
+          "enum": ["bbox", "distance", "axis", "frame", "mate", "plane", "count"]
+        },
+        "target": { "type": "string" },
+        "expected": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

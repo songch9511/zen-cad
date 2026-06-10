@@ -1,0 +1,79 @@
+{
+  "schema_version": "0.8.0",
+  "kind": "interface_signature",
+  "id": "bearing.608.layout",
+  "title": "Bearing 608 Layout",
+  "units": "mm",
+  "family": "bearing",
+  "quality_label": "standard",
+  "trusted_for_layout": true,
+  "source": {
+    "type": "common_standard",
+    "note": "608 bearing envelope and shaft/seat interfaces for layout positioning."
+  },
+  "primary_axes": [
+    {
+      "name": "bearing_axis",
+      "statement": "Inner bore, outer seat, and shaft are coaxial."
+    }
+  ],
+  "mounting_datums": [
+    {
+      "name": "outer_race_seat",
+      "statement": "Outer diameter defines the housing seat envelope."
+    }
+  ],
+  "critical_dimensions": [
+    {
+      "name": "bore_diameter",
+      "value": 8.0,
+      "units": "mm",
+      "status": "standard"
+    },
+    {
+      "name": "outer_diameter",
+      "value": 22.0,
+      "units": "mm",
+      "status": "standard"
+    },
+    {
+      "name": "width",
+      "value": 7.0,
+      "units": "mm",
+      "status": "standard"
+    }
+  ],
+  "envelope": [
+    {
+      "name": "bearing_cylinder",
+      "value": "22 mm OD x 7 mm width",
+      "units": "mm",
+      "status": "standard"
+    }
+  ],
+  "validation_targets": [
+    {
+      "check_type": "axis",
+      "target": "bearing_axis",
+      "expected": "Coaxial with shaft and seat."
+    },
+    {
+      "check_type": "distance",
+      "target": "bearing_width",
+      "expected": "Axial envelope preserves 7 mm bearing width."
+    }
+  ],
+  "proxy_may_simplify": [
+    "balls",
+    "cage",
+    "seal detail",
+    "edge chamfers"
+  ],
+  "must_confirm_before_final": [
+    "bearing suffix and seal/shield type",
+    "fit class",
+    "load rating",
+    "supplier geometry"
+  ],
+  "extensions": {}
+}

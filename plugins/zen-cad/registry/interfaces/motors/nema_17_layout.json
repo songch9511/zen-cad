@@ -1,0 +1,91 @@
+{
+  "schema_version": "0.8.0",
+  "kind": "interface_signature",
+  "id": "motor.nema_17.layout",
+  "title": "Motor Nema 17 Layout",
+  "units": "mm",
+  "family": "motor",
+  "quality_label": "standard",
+  "trusted_for_layout": true,
+  "source": {
+    "type": "common_standard",
+    "note": "Common NEMA 17 layout interface facts. Individual motor length, shaft length, connector position, and ratings vary by part."
+  },
+  "primary_axes": [
+    {
+      "name": "shaft_axis",
+      "statement": "Shaft axis is normal to the mounting face and centered on the face."
+    }
+  ],
+  "mounting_datums": [
+    {
+      "name": "front_mounting_face",
+      "statement": "Front square mounting face defines the motor placement datum."
+    }
+  ],
+  "critical_dimensions": [
+    {
+      "name": "face_size",
+      "value": 42.3,
+      "units": "mm",
+      "status": "standard",
+      "note": "Nominal square face size."
+    },
+    {
+      "name": "mounting_hole_spacing",
+      "value": 31.0,
+      "units": "mm",
+      "status": "standard",
+      "note": "Center-to-center square bolt pattern."
+    },
+    {
+      "name": "typical_shaft_diameter",
+      "value": 5.0,
+      "units": "mm",
+      "status": "must_confirm",
+      "note": "Common but not guaranteed across all NEMA 17 motors."
+    }
+  ],
+  "envelope": [
+    {
+      "name": "body_width",
+      "value": 42.3,
+      "units": "mm",
+      "status": "standard"
+    },
+    {
+      "name": "body_length",
+      "value": 40.0,
+      "units": "mm",
+      "status": "assumed",
+      "note": "Layout placeholder only."
+    }
+  ],
+  "validation_targets": [
+    {
+      "check_type": "axis",
+      "target": "shaft_axis",
+      "expected": "Coaxial with driven pulley, coupler, gear, or shaft."
+    },
+    {
+      "check_type": "distance",
+      "target": "mounting_hole_spacing",
+      "expected": "Four mounting axes form a 31 mm square pattern."
+    }
+  ],
+  "proxy_may_simplify": [
+    "body contour",
+    "rear cap",
+    "wire exit",
+    "connector geometry"
+  ],
+  "must_confirm_before_final": [
+    "exact motor part number",
+    "shaft diameter and length",
+    "body length",
+    "pilot boss geometry",
+    "connector and cable keep-out",
+    "torque, current, and thermal ratings"
+  ],
+  "extensions": {}
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.8.0",
+  "kind": "interface_signature",
+  "id": "shaft_bore.8mm.layout",
+  "title": "Shaft Bore 8Mm Layout",
+  "units": "mm",
+  "family": "shaft_bore",
+  "quality_label": "assumed",
+  "trusted_for_layout": true,
+  "source": {
+    "type": "layout_default",
+    "note": "Generic 8 mm shaft/bore interface for layout proxies when the user has not provided a part-specific fit."
+  },
+  "primary_axes": [
+    {
+      "name": "shaft_axis",
+      "statement": "Shaft and bore share a common rotational axis."
+    }
+  ],
+  "mounting_datums": [
+    {
+      "name": "bore_centerline",
+      "statement": "Bore centerline locates the mating rotating part."
+    }
+  ],
+  "critical_dimensions": [
+    {
+      "name": "nominal_diameter",
+      "value": 8.0,
+      "units": "mm",
+      "status": "assumed"
+    }
+  ],
+  "envelope": [
+    {
+      "name": "shaft_cylinder",
+      "value": 8.0,
+      "units": "mm",
+      "status": "assumed"
+    }
+  ],
+  "validation_targets": [
+    {
+      "check_type": "axis",
+      "target": "shaft_axis",
+      "expected": "Shaft, bore, bearing, pulley, or coupler axes remain coaxial."
+    }
+  ],
+  "proxy_may_simplify": [
+    "keyway",
+    "set screw flat",
+    "surface finish",
+    "fit tolerance"
+  ],
+  "must_confirm_before_final": [
+    "exact shaft diameter",
+    "fit class",
+    "retention method",
+    "keyway or flat geometry"
+  ],
+  "extensions": {}
+}

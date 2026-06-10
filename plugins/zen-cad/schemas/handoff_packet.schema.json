@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/handoff_packet.schema.json",
+  "title": "Zen CAD Handoff Packet",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "spec_id",
+    "target_harness",
+    "target_maturity",
+    "locked_facts",
+    "parameter_contract",
+    "artifact_targets",
+    "required_checks",
+    "repair_loop",
+    "stop_conditions",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "handoff_packet" },
+    "id": { "type": "string" },
+    "spec_id": { "type": "string" },
+    "target_harness": {
+      "type": "string",
+      "enum": ["codex", "text-to-cad", "build123d", "cadquery", "freecad", "unknown"]
+    },
+    "target_maturity": {
+      "type": "string",
+      "enum": ["layout_proxy", "detail_cad", "final_package"]
+    },
+    "locked_facts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "parameter_contract": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "artifact_targets": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_checks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "repair_loop": {
+      "type": "string"
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

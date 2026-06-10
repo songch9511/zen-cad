@@ -263,6 +263,34 @@ class SkillPackTest(unittest.TestCase):
             self.assertNotIn("/examples/", f"/{lowered}")
             self.assertNotIn("example_spec", lowered)
 
+    def test_codex_plugin_bundle_is_installable(self) -> None:
+        marketplace_path = ROOT / ".codex-plugin" / "marketplace.json"
+        marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
+        self.assertEqual("zen-cad", marketplace["name"])
+        self.assertEqual("Zen CAD", marketplace["interface"]["displayName"])
+        self.assertEqual(1, len(marketplace["plugins"]))
+
+        entry = marketplace["plugins"][0]
+        self.assertEqual("zen-cad", entry["name"])
+        self.assertEqual({"source": "local", "path": "./plugins/zen-cad"}, entry["source"])
+        self.assertEqual("AVAILABLE", entry["policy"]["installation"])
+        self.assertEqual("ON_INSTALL", entry["policy"]["authentication"])
+
+        plugin_root = ROOT / "plugins" / "zen-cad"
+        plugin = json.loads((plugin_root / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
+        self.assertEqual("zen-cad", plugin["name"])
+        self.assertEqual("1.0.0", plugin["version"])
+        self.assertEqual("./skills/", plugin["skills"])
+        self.assertEqual("Zen CAD", plugin["interface"]["displayName"])
+
+        bundled_skills = {
+            path.parent.name
+            for path in (plugin_root / "skills").glob("*/SKILL.md")
+        }
+        self.assertEqual(EXPECTED_SKILLS, bundled_skills)
+        for rel in ["tools/run_contract_pipeline.py", "schemas/cad_spec.schema.json", "registry/interfaces/index.json"]:
+            self.assertTrue((plugin_root / rel).exists(), rel)
+
 
 if __name__ == "__main__":
     unittest.main()

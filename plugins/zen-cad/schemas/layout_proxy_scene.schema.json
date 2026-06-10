@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/layout_proxy_scene.schema.json",
+  "title": "Zen CAD Layout Proxy Scene",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "source_spec_id",
+    "units",
+    "maturity_target",
+    "source_of_truth",
+    "root_frame",
+    "primitives",
+    "datums",
+    "relationships",
+    "locked_layout_facts",
+    "inspection_targets",
+    "skipped_checks",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "layout_proxy_scene" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "source_spec_id": { "type": "string" },
+    "units": { "type": "string" },
+    "maturity_target": { "const": "layout_proxy" },
+    "source_of_truth": {
+      "type": "object",
+      "required": ["spec", "package"],
+      "properties": {
+        "spec": { "type": "string" },
+        "package": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "root_frame": {
+      "type": "object"
+    },
+    "primitives": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/primitive" },
+      "minItems": 1
+    },
+    "datums": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/datum" }
+    },
+    "relationships": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/relationship" }
+    },
+    "locked_layout_facts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "inspection_targets": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "skipped_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check_id", "reason"],
+        "properties": {
+          "check_id": { "type": "string" },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "primitive": {
+      "type": "object",
+      "required": ["id", "part_id", "type", "frame", "dimensions", "derived_from", "fidelity"],
+      "properties": {
+        "id": { "type": "string" },
+        "part_id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["box", "cylinder", "axis", "plane", "pattern", "envelope"]
+        },
+        "frame": { "type": "string" },
+        "dimensions": { "type": "object" },
+        "derived_from": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fidelity": { "const": "layout_only" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "datum": {
+      "type": "object",
+      "required": ["id", "part_id", "kind", "statement", "derived_from"],
+      "properties": {
+        "id": { "type": "string" },
+        "part_id": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["axis", "plane", "frame", "point", "pattern"]
+        },
+        "statement": { "type": "string" },
+        "derived_from": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "relationship": {
+      "type": "object",
+      "required": ["id", "type", "parts", "statement", "locked"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "parts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "statement": { "type": "string" },
+        "locked": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

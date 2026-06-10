@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/proceed_gate_package.schema.json",
+  "title": "Zen CAD Proceed Gate Package",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "spec_id",
+    "status",
+    "decision_options",
+    "recommended_next_step",
+    "artifacts",
+    "reports",
+    "locked_layout_facts",
+    "check_summary",
+    "limitations",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "proceed_gate_package" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "spec_id": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["ready_for_user_review", "needs_repair", "blocked"]
+    },
+    "decision_options": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["proceed", "revise_layout", "detail_upgrade"]
+      },
+      "minItems": 1
+    },
+    "recommended_next_step": { "type": "string" },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact" },
+      "minItems": 1
+    },
+    "reports": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/report_ref" },
+      "minItems": 1
+    },
+    "locked_layout_facts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "check_summary": {
+      "type": "object",
+      "required": ["passed", "partial", "failed", "skipped"],
+      "properties": {
+        "passed": { "type": "integer" },
+        "partial": { "type": "integer" },
+        "failed": { "type": "integer" },
+        "skipped": { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "required": ["path", "kind"],
+      "properties": {
+        "path": { "type": "string" },
+        "kind": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "report_ref": {
+      "type": "object",
+      "required": ["path", "status", "proceed_recommendation"],
+      "properties": {
+        "path": { "type": "string" },
+        "status": { "type": "string" },
+        "proceed_recommendation": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/layout_contract.schema.json",
+  "title": "Zen CAD Layout Contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "root_component",
+    "root_frame",
+    "parts",
+    "relationships",
+    "locked_facts",
+    "inspection_targets",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "layout_contract" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "root_component": { "type": "string" },
+    "root_frame": {
+      "type": "object",
+      "required": ["origin", "axes"],
+      "properties": {
+        "origin": { "type": "string" },
+        "axes": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "parts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/part" },
+      "minItems": 1
+    },
+    "relationships": {
+      "type": "object",
+      "required": ["contacts", "connections", "motion"],
+      "properties": {
+        "contacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/relationship" }
+        },
+        "connections": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/relationship" }
+        },
+        "motion": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/relationship" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "locked_facts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "inspection_targets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/inspection_target" }
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "part": {
+      "type": "object",
+      "required": ["part_id", "role", "local_frame", "proxy_policy"],
+      "properties": {
+        "part_id": { "type": "string" },
+        "role": {
+          "type": "string",
+          "enum": ["structure", "locator", "driver", "driven", "guide", "fastener", "cover", "sensor", "proxy"]
+        },
+        "local_frame": { "type": "string" },
+        "proxy_policy": { "type": "string" },
+        "interface_signature_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "relationship": {
+      "type": "object",
+      "required": ["relationship_id", "type", "parts", "statement", "locked"],
+      "properties": {
+        "relationship_id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["flush_plane", "coaxial", "parallel_axes", "centered_on", "pitch_contact", "sliding_on", "rotates_about", "fastened_by", "clearance", "keep_out"]
+        },
+        "parts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "statement": { "type": "string" },
+        "locked": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "inspection_target": {
+      "type": "object",
+      "required": ["target_id", "check_type", "target", "expected"],
+      "properties": {
+        "target_id": { "type": "string" },
+        "check_type": {
+          "type": "string",
+          "enum": ["bbox", "distance", "axis", "frame", "mate", "plane", "snapshot", "viewer"]
+        },
+        "target": { "type": "string" },
+        "expected": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

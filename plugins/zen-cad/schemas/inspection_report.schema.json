@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/inspection_report.schema.json",
+  "title": "Zen CAD Inspection Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "spec_id",
+    "artifact",
+    "status",
+    "checks",
+    "skipped_checks",
+    "repair_attempts",
+    "proceed_recommendation",
+    "limitations",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "inspection_report" },
+    "id": { "type": "string" },
+    "spec_id": { "type": "string" },
+    "artifact": {
+      "type": "object",
+      "required": ["path", "kind"],
+      "properties": {
+        "path": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["source", "step", "stp", "stl", "dxf", "3mf", "glb", "viewer", "snapshot", "layout_proxy_scene", "unknown"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "string",
+      "enum": ["passed", "partial", "failed"]
+    },
+    "checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/check_result" }
+    },
+    "skipped_checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/skipped_check" }
+    },
+    "repair_attempts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/repair_attempt" }
+    },
+    "proceed_recommendation": {
+      "type": "string",
+      "enum": ["ready_for_proceed_review", "ready_for_layout_generation", "ready_for_cad_export", "needs_repair", "needs_layout_reapproval", "blocked"]
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "check_result": {
+      "type": "object",
+      "required": ["check_id", "check_type", "status", "evidence"],
+      "properties": {
+        "check_id": { "type": "string" },
+        "check_type": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["passed", "partial", "failed"]
+        },
+        "evidence": { "type": "string" },
+        "locked_fact_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "skipped_check": {
+      "type": "object",
+      "required": ["check_id", "reason"],
+      "properties": {
+        "check_id": { "type": "string" },
+        "reason": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "repair_attempt": {
+      "type": "object",
+      "required": ["attempt_id", "changed_source", "rerun_checks", "result"],
+      "properties": {
+        "attempt_id": { "type": "string" },
+        "changed_source": { "type": "string" },
+        "rerun_checks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "result": {
+          "type": "string",
+          "enum": ["passed", "partial", "failed", "not_run"]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

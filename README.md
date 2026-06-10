@@ -103,6 +103,23 @@ Visual evidence는 리뷰에 유용하지만 충분하지 않습니다. geometry
 
 이 registry는 부품 카탈로그가 아닙니다. 목적은 웹서치 없이도 layout 단계에서 축, datum, bore, shaft, pitch reference, clearance, envelope를 빠르게 잡는 것입니다.
 
+## Codex Plugin Install
+
+Zen CAD ships a Codex plugin bundle under [`plugins/zen-cad`](plugins/zen-cad). The root
+[`.codex-plugin/marketplace.json`](.codex-plugin/marketplace.json) points Codex at that bundle.
+
+Connecting this repository as a project is not enough to register slash skills. Install the
+`zen-cad` plugin from the local marketplace, then start a new Codex chat. After installation,
+the slash skills are available as:
+
+- `/cad-spec`
+- `/assembly-layout`
+- `/interface-signatures`
+- `/cad-handoff`
+
+For plain prompts, [`AGENTS.md`](AGENTS.md) tells project agents to route mechanical CAD and
+assembly requests through `skills/cad-spec/SKILL.md` first.
+
 ## Command Flow
 
 ```bash

@@ -1,0 +1,78 @@
+{
+  "schema_version": "0.8.0",
+  "kind": "interface_signature",
+  "id": "linear_rail.mgn12.layout",
+  "title": "Linear Rail Mgn12 Layout",
+  "units": "mm",
+  "family": "linear_rail",
+  "quality_label": "must_confirm",
+  "trusted_for_layout": true,
+  "source": {
+    "type": "layout_default",
+    "note": "Generic MGN12-class rail/carriage layout placeholder. Use only for first-pass rail axis and envelope planning."
+  },
+  "primary_axes": [
+    {
+      "name": "travel_axis",
+      "statement": "Carriage translates along the rail length axis."
+    }
+  ],
+  "mounting_datums": [
+    {
+      "name": "rail_mounting_face",
+      "statement": "Rail base face defines mounting plane and rail straightness datum."
+    },
+    {
+      "name": "carriage_top_face",
+      "statement": "Carriage top face defines payload mounting datum."
+    }
+  ],
+  "critical_dimensions": [
+    {
+      "name": "rail_width",
+      "value": 12.0,
+      "units": "mm",
+      "status": "must_confirm"
+    },
+    {
+      "name": "travel_axis_offset",
+      "value": "derived from rail and carriage selection",
+      "units": "mm",
+      "status": "must_confirm"
+    }
+  ],
+  "envelope": [
+    {
+      "name": "rail_width_envelope",
+      "value": 12.0,
+      "units": "mm",
+      "status": "must_confirm"
+    }
+  ],
+  "validation_targets": [
+    {
+      "check_type": "axis",
+      "target": "travel_axis",
+      "expected": "Carriage motion and payload offset remain parallel to the rail axis."
+    },
+    {
+      "check_type": "plane",
+      "target": "rail_mounting_face",
+      "expected": "Rail mounting face sits on the intended support datum."
+    }
+  ],
+  "proxy_may_simplify": [
+    "recirculating balls",
+    "end caps",
+    "hole countersinks",
+    "manufacturer-specific carriage contour"
+  ],
+  "must_confirm_before_final": [
+    "exact rail and carriage part number",
+    "mounting hole pitch",
+    "carriage dimensions",
+    "load rating",
+    "preload and accuracy class"
+  ],
+  "extensions": {}
+}

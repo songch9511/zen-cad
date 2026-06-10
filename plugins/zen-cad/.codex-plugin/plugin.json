@@ -1,0 +1,38 @@
+{
+  "name": "zen-cad",
+  "version": "1.0.0",
+  "description": "Assembly-first CAD contract skills packaged for Codex installs.",
+  "author": {
+    "name": "songch9511",
+    "url": "https://github.com/songch9511"
+  },
+  "homepage": "https://github.com/songch9511/zen-cad",
+  "repository": "https://github.com/songch9511/zen-cad",
+  "license": "MIT",
+  "keywords": [
+    "cad",
+    "assembly",
+    "contracts",
+    "step",
+    "source-lock",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Zen CAD",
+    "shortDescription": "Assembly-first CAD contracts, source-lock evidence, and handoffs.",
+    "longDescription": "Zen CAD packages CAD-native assembly contract workflows for mechanical design agents. It produces layout contracts, source-lock evidence for standard parts, proceed gates, review bundles, and downstream CAD handoffs without pretending to replace CAD kernels or engineering certification.",
+    "developerName": "songch9511",
+    "category": "Productivity",
+    "capabilities": [
+      "Write"
+    ],
+    "websiteURL": "https://github.com/songch9511/zen-cad",
+    "defaultPrompt": [
+      "Create a CAD-native assembly contract for a compact belt-drive module.",
+      "Create source-lock evidence for a sourced STEP part.",
+      "Package an approved handoff for CAD Skills/text-to-cad."
+    ],
+    "brandColor": "#2F80ED"
+  }
+}

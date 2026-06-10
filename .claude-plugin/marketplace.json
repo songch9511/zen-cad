@@ -1,0 +1,34 @@
+{
+  "name": "zen-cad",
+  "owner": {
+    "name": "songch9511"
+  },
+  "metadata": {
+    "description": "Assembly-first CAD contract runtime for mechanical design agents."
+  },
+  "description": "Assembly-first CAD contract runtime for mechanical design agents.",
+  "version": "1.0.0",
+  "plugins": [
+    {
+      "name": "zen-cad",
+      "source": "./plugins/zen-cad",
+      "description": "CAD-native assembly contracts, source-lock evidence, proceed gates, and downstream CAD handoffs.",
+      "version": "1.0.0",
+      "author": {
+        "name": "songch9511"
+      },
+      "homepage": "https://github.com/songch9511/zen-cad",
+      "repository": "https://github.com/songch9511/zen-cad",
+      "license": "MIT",
+      "category": "productivity",
+      "tags": [
+        "cad",
+        "assembly",
+        "contracts",
+        "step",
+        "source-lock",
+        "skills"
+      ]
+    }
+  ]
+}
