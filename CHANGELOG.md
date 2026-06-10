@@ -9,6 +9,7 @@
 - Add machine-readable `source_lock_evidence` for final-stage standard/catalog part source evidence while keeping layout interface signatures layout-only.
 - Add a dependency-free `tools/generate_source_lock_evidence.py` generator for explicit step.parts, manufacturer, datasheet, project-file, and user-provided source locators without catalog crawling.
 - Add source-lock validation rules that prevent layout-only evidence from becoming a source lock and keep rating/certification claims out of the artifact.
+- Import source-locked STEP/STP geometry into generated build123d source and replace matching layout proxy primitives when geometry references are present.
 - Document the source-lock boundary in the interface signature references.
 - Keep contract documents on `schema_version: 0.8.0` for contract compatibility.
 

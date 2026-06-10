@@ -361,6 +361,20 @@ class ContractValidator:
             self.error(path, "cad_source_manifest primitives must be non-empty")
         if document.get("target_harness") not in {"build123d", "cadquery", "freecad", "unknown"}:
             self.error(path, "cad_source_manifest target_harness is not supported")
+        sourced_parts = document.get("sourced_parts", [])
+        if sourced_parts is not None and not isinstance(sourced_parts, list):
+            self.error(path, "cad_source_manifest sourced_parts must be a list")
+        for item in sourced_parts if isinstance(sourced_parts, list) else []:
+            if not isinstance(item, dict):
+                self.error(path, "cad_source_manifest sourced_parts entries must be objects")
+                continue
+            missing = sorted({"part_id", "source_lock_id", "locator", "artifact_kind", "import_strategy"} - set(item))
+            if missing:
+                self.error(path, f"cad_source_manifest sourced part missing fields: {', '.join(missing)}")
+            if item.get("artifact_kind") not in {"step", "stp"}:
+                self.error(path, "cad_source_manifest sourced part artifact_kind must be step or stp")
+            if item.get("import_strategy") != "build123d.import_step":
+                self.error(path, "cad_source_manifest sourced part import_strategy must be build123d.import_step")
 
     def validate_proceed_gate_package_document(self, path: Path, document: dict[str, Any]) -> None:
         if not document.get("decision_options"):

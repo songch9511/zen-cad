@@ -49,6 +49,30 @@
       "type": "array",
       "items": { "type": "string" }
     },
+    "sourced_parts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["part_id", "source_lock_id", "locator", "artifact_kind", "import_strategy"],
+        "properties": {
+          "part_id": { "type": "string" },
+          "source_lock_id": { "type": "string" },
+          "locator": { "type": "string" },
+          "artifact_kind": {
+            "type": "string",
+            "enum": ["step", "stp"]
+          },
+          "import_strategy": {
+            "type": "string",
+            "enum": ["build123d.import_step"]
+          },
+          "label": { "type": "string" },
+          "source_type": { "type": "string" },
+          "placement_policy": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
     "source_of_truth": {
       "type": "object",
       "required": ["scene", "package"],

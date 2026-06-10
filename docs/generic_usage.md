@@ -21,7 +21,7 @@ If the user asks to continue into CAD generation, keep `cad-spec` as the lead wo
 
 Use `skills/cad-handoff/SKILL.md` when the active generator needs a concise task brief.
 
-Use `schemas/` when a harness needs machine-readable contracts, and use `registry/interfaces/` when a layout proxy needs known component interface facts without catalog crawling. For final-stage standard/catalog part sourcing, use `schemas/source_lock_evidence.schema.json` and `tools/generate_source_lock_evidence.py` to record explicit step.parts, manufacturer, datasheet, project-file, or user-provided evidence separately from layout interface signatures.
+Use `schemas/` when a harness needs machine-readable contracts, and use `registry/interfaces/` when a layout proxy needs known component interface facts without catalog crawling. For final-stage standard/catalog part sourcing, use `schemas/source_lock_evidence.schema.json` and `tools/generate_source_lock_evidence.py` to record explicit step.parts, manufacturer, datasheet, project-file, or user-provided evidence separately from layout interface signatures. When that evidence includes a STEP/STP geometry reference, `tools/export_cad_source.py` imports the sourced part into generated build123d source and removes the matching proxy primitives.
 
 Run the contract pipeline runner after a contract package exists:
 
@@ -29,7 +29,7 @@ Run the contract pipeline runner after a contract package exists:
 python3 tools/run_contract_pipeline.py --package <path> --out <dir>
 ```
 
-The runner verifies the built-in schema and registry surface, validates the package, creates a kernel-neutral `layout_proxy.scene.json`, inspects scene carry-through, exports CAD source intent, inspects source carry-through, packages proceed review, and writes a machine-readable `review_bundle.json`.
+The runner verifies the built-in schema and registry surface, validates the package, creates a kernel-neutral `layout_proxy.scene.json`, inspects scene carry-through, exports CAD source intent, imports source-locked STEP/STP parts when geometry references exist, inspects source carry-through, packages proceed review, and writes a machine-readable `review_bundle.json`.
 
 For a viewer-oriented downstream review, package the proceed gate into a Markdown brief:
 

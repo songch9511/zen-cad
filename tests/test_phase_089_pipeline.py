@@ -161,6 +161,97 @@ class Phase089PipelineTest(unittest.TestCase):
                 validation = run_tool(VALIDATOR, "--package-only", "--package", str(path))
                 self.assertEqual(0, validation.returncode, validation.stderr)
 
+    def test_source_locked_step_replaces_matching_proxy_primitives(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = root / "package"
+            scene_out = root / "scene"
+            source_out = root / "source"
+            package.mkdir()
+            write_contract_package(package)
+            sourced_dir = package / "sourced"
+            sourced_dir.mkdir()
+            bearing_step = sourced_dir / "bearing_608.step"
+            bearing_step.write_text("ISO-10303-21; END-ISO-10303-21;", encoding="utf-8")
+            write_json(
+                package / "bearing_source_lock.json",
+                {
+                    "schema_version": "0.8.0",
+                    "kind": "source_lock_evidence",
+                    "id": "belt_drive_layout.bearing_proxy.source_lock",
+                    "part_id": "bearing_proxy",
+                    "part_role": "catalog_part",
+                    "lock_status": "source_locked",
+                    "source_identity": {
+                        "display_name": "608 bearing sourced STEP",
+                        "manufacturer_name": "",
+                        "model": "608",
+                        "product_url": "",
+                        "identity_basis": "user_provided",
+                    },
+                    "evidence_sources": [
+                        {
+                            "source_type": "user_provided",
+                            "locator": "sourced/bearing_608.step",
+                            "artifact_kind": "step",
+                            "trusted_for": ["geometry_reference"],
+                            "retrieval_status": "provided_file_not_inspected",
+                            "observed_at": "2026-06-10",
+                            "notes": "Fixture STEP path for source import.",
+                        }
+                    ],
+                    "interface_signature_refs": ["bearing.608.layout"],
+                    "interface_signature_role": "layout_reference_only",
+                    "claims_made": ["geometry_reference_url"],
+                    "required_before_final": [
+                        "Import the locked source geometry in the downstream CAD harness.",
+                        "Run geometry checks for required datums, axes, interfaces, and clearances.",
+                    ],
+                    "claims_not_made": [
+                        "No rating, load capacity, torque capacity, or safety factor is claimed.",
+                        "No certification, compliance, price, inventory, or availability is claimed.",
+                    ],
+                    "extensions": {},
+                },
+            )
+
+            generated = run_tool(GENERATOR, "--package", str(package), "--out", str(scene_out))
+            self.assertEqual(0, generated.returncode, generated.stderr)
+            scene = scene_out / "layout_proxy.scene.json"
+
+            exported = run_tool(SOURCE_EXPORTER, "--package", str(package), "--scene", str(scene), "--out", str(source_out))
+            self.assertEqual(0, exported.returncode, exported.stderr)
+
+            source = source_out / "layout_proxy_build123d.py"
+            manifest = source_out / "cad_source_manifest.json"
+            source_text = source.read_text(encoding="utf-8")
+            manifest_data = load_json(manifest)
+
+            self.assertIn("ZEN_CAD_SOURCED_PARTS", source_text)
+            self.assertIn("import_step", source_text)
+            self.assertIn(str(bearing_step.resolve()), source_text)
+            self.assertNotIn("bearing_proxy.bearing_envelope", source_text)
+            self.assertEqual("bearing_proxy", manifest_data["sourced_parts"][0]["part_id"])
+            self.assertEqual(str(bearing_step.resolve()), manifest_data["sourced_parts"][0]["locator"])
+
+            source_report = source_out / "source.inspection_report.json"
+            source_inspected = run_tool(
+                SOURCE_INSPECTOR,
+                "--scene",
+                str(scene),
+                "--manifest",
+                str(manifest),
+                "--source",
+                str(source),
+                "--out",
+                str(source_report),
+            )
+            self.assertEqual(0, source_inspected.returncode, source_inspected.stderr)
+            report_data = load_json(source_report)
+            statuses = {check["check_id"]: check["status"] for check in report_data["checks"]}
+            self.assertEqual("passed", statuses["source_sourced_parts_cover_manifest"])
+            self.assertEqual("passed", statuses["source_imports_sourced_steps"])
+
     def test_source_inspector_detects_scene_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

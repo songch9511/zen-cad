@@ -120,6 +120,23 @@ class CadSourceInspector:
         ]
         manifest_primitives = [str(item) for item in manifest.get("primitives", [])]
         source_constants = parse_source_constants(source_text)
+        manifest_sourced_parts = [
+            str(item.get("part_id"))
+            for item in manifest.get("sourced_parts", [])
+            if isinstance(item, dict) and item.get("part_id")
+        ]
+        source_sourced_parts = [
+            str(item.get("part_id"))
+            for item in source_constants.get("ZEN_CAD_SOURCED_PARTS", [])
+            if isinstance(item, dict) and item.get("part_id")
+        ]
+        expected_source_primitive_ids = [
+            str(primitive["id"])
+            for primitive in scene.get("primitives", [])
+            if isinstance(primitive, dict)
+            and isinstance(primitive.get("id"), str)
+            and str(primitive.get("part_id", "")) not in set(manifest_sourced_parts)
+        ]
         source_primitive_ids = [
             str(primitive["id"])
             for primitive in source_constants.get("ZEN_CAD_PRIMITIVES", [])
@@ -149,8 +166,8 @@ class CadSourceInspector:
             check_result(
                 "source_primitives_cover_scene",
                 "label",
-                set(source_primitive_ids) == set(primitive_ids),
-                f"source primitives={len(source_primitive_ids)}; scene primitives={len(primitive_ids)}",
+                set(source_primitive_ids) == set(expected_source_primitive_ids),
+                f"source proxy primitives={len(source_primitive_ids)}; expected proxy primitives after sourced STEP replacement={len(expected_source_primitive_ids)}",
             ),
             check_result(
                 "cad_source_layout_facts_carried",
@@ -172,6 +189,25 @@ class CadSourceInspector:
                 "source contains gen_step function" if "def gen_step" in source_text else "source missing gen_step function",
             ),
         ]
+        if manifest_sourced_parts or source_sourced_parts:
+            checks.extend(
+                [
+                    check_result(
+                        "source_sourced_parts_cover_manifest",
+                        "label",
+                        set(source_sourced_parts) == set(manifest_sourced_parts),
+                        f"source sourced parts={len(source_sourced_parts)}; manifest sourced parts={len(manifest_sourced_parts)}",
+                    ),
+                    check_result(
+                        "source_imports_sourced_steps",
+                        "label",
+                        "import_step" in source_text,
+                        "source imports STEP/STP geometry with build123d.import_step"
+                        if "import_step" in source_text
+                        else "source missing import_step for sourced parts",
+                    ),
+                ]
+            )
         return checks
 
 

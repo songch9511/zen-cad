@@ -7,6 +7,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from validate_contract import ContractValidator, Issue
 
@@ -57,12 +58,13 @@ class CadSourceExporter:
         scene = self.load_json(self.scene_path)
         if not isinstance(scene, dict):
             return None
+        sourced_parts = self.load_sourced_parts()
 
         self.out.mkdir(parents=True, exist_ok=True)
         source_path = self.out / "layout_proxy_build123d.py"
         manifest_path = self.out / "cad_source_manifest.json"
-        source_path.write_text(render_build123d_source(scene), encoding="utf-8")
-        manifest = self.build_manifest(scene, source_path, manifest_path)
+        source_path.write_text(render_build123d_source(scene, sourced_parts), encoding="utf-8")
+        manifest = self.build_manifest(scene, source_path, manifest_path, sourced_parts)
         write_json(manifest_path, manifest)
 
         output_validator = ContractValidator(self.repo_root)
@@ -73,7 +75,43 @@ class CadSourceExporter:
 
         return ExportResult(source_path=source_path, manifest_path=manifest_path)
 
-    def build_manifest(self, scene: dict[str, Any], source_path: Path, manifest_path: Path) -> dict[str, Any]:
+    def load_sourced_parts(self) -> list[dict[str, str]]:
+        paths = [self.package] if self.package.is_file() else sorted(self.package.rglob("*.json"))
+        sourced_parts: list[dict[str, str]] = []
+        for path in paths:
+            document = self.load_json(path)
+            if not isinstance(document, dict) or document.get("kind") != "source_lock_evidence":
+                continue
+            if document.get("lock_status") != "source_locked":
+                continue
+            geometry_sources = [
+                source
+                for source in document.get("evidence_sources", [])
+                if isinstance(source, dict)
+                and source.get("artifact_kind") in {"step", "stp"}
+                and "geometry_reference" in source.get("trusted_for", [])
+            ]
+            if not geometry_sources:
+                continue
+            source = geometry_sources[0]
+            locator = str(source.get("locator", ""))
+            resolved_locator = resolve_import_locator(locator, self.package)
+            part_id = str(document.get("part_id", "sourced_part"))
+            sourced_parts.append(
+                {
+                    "part_id": part_id,
+                    "source_lock_id": str(document.get("id", "")),
+                    "locator": resolved_locator,
+                    "artifact_kind": str(source.get("artifact_kind")),
+                    "import_strategy": "build123d.import_step",
+                    "label": str(document.get("source_identity", {}).get("display_name") or part_id),
+                    "source_type": str(source.get("source_type", "")),
+                    "placement_policy": "replace matching layout proxy primitives; imported at source STEP origin until downstream alignment applies locked facts",
+                }
+            )
+        return sourced_parts
+
+    def build_manifest(self, scene: dict[str, Any], source_path: Path, manifest_path: Path, sourced_parts: list[dict[str, str]]) -> dict[str, Any]:
         primitive_ids = [
             str(primitive["id"])
             for primitive in scene.get("primitives", [])
@@ -91,24 +129,30 @@ class CadSourceExporter:
             "primitives": primitive_ids,
             "locked_layout_facts": [str(item) for item in scene.get("locked_layout_facts", [])],
             "inspection_targets": [str(item) for item in scene.get("inspection_targets", [])],
+            "sourced_parts": sourced_parts,
             "source_of_truth": {
                 "scene": str(self.scene_path),
                 "package": str(self.package),
             },
             "extensions": {
                 "exporter": "tools/export_cad_source.py",
-                "note": "Source-level export only; STEP generation requires a downstream build123d runtime.",
+                "note": "Source-level export imports source-locked STEP/STP parts when geometry references are present; final STEP generation still requires a downstream build123d runtime.",
             },
         }
 
 
-def render_build123d_source(scene: dict[str, Any]) -> str:
+def render_build123d_source(scene: dict[str, Any], sourced_parts: list[dict[str, str]] | None = None) -> str:
+    sourced_parts = sourced_parts or []
+    sourced_part_ids = {str(part.get("part_id")) for part in sourced_parts}
     primitives = [
         primitive
         for primitive in scene.get("primitives", [])
-        if isinstance(primitive, dict) and isinstance(primitive.get("id"), str)
+        if isinstance(primitive, dict)
+        and isinstance(primitive.get("id"), str)
+        and str(primitive.get("part_id", "")) not in sourced_part_ids
     ]
     primitive_literal = json.dumps(primitives, indent=2, sort_keys=True)
+    sourced_literal = json.dumps(sourced_parts, indent=2, sort_keys=True)
     locked_literal = json.dumps(scene.get("locked_layout_facts", []), indent=2, sort_keys=True)
     inspection_literal = json.dumps(scene.get("inspection_targets", []), indent=2, sort_keys=True)
     scene_id = scene.get("id", "unknown_scene")
@@ -123,6 +167,7 @@ from __future__ import annotations
 ZEN_CAD_SCENE_ID = {scene_id!r}
 ZEN_CAD_SOURCE_SPEC_ID = {spec_id!r}
 ZEN_CAD_PRIMITIVES = {primitive_literal}
+ZEN_CAD_SOURCED_PARTS = {sourced_literal}
 ZEN_CAD_LOCKED_LAYOUT_FACTS = {locked_literal}
 ZEN_CAD_INSPECTION_TARGETS = {inspection_literal}
 
@@ -166,13 +211,56 @@ def _make_primitive(primitive):
     return shape
 
 
+def _resolve_step_locator(entry):
+    from pathlib import Path
+    from urllib.parse import urlparse
+    from urllib.request import urlretrieve
+
+    locator = str(entry.get("locator", ""))
+    parsed = urlparse(locator)
+    if parsed.scheme in {{"http", "https"}}:
+        suffix = ".stp" if entry.get("artifact_kind") == "stp" else ".step"
+        cache_dir = Path(__file__).resolve().parent / "sourced_parts_cache"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        safe_name = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in str(entry.get("part_id", "part")))
+        target = cache_dir / f"{{safe_name}}{{suffix}}"
+        if not target.exists():
+            urlretrieve(locator, target)
+        return target
+    return Path(locator).expanduser()
+
+
+def _import_sourced_part(entry):
+    from build123d import import_step
+
+    shape = import_step(str(_resolve_step_locator(entry)))
+    try:
+        shape.label = str(entry.get("label") or entry.get("part_id") or "sourced_step")
+    except Exception:
+        pass
+    return shape
+
+
 def gen_step():
     from build123d import Compound
 
-    children = [_make_primitive(primitive) for primitive in ZEN_CAD_PRIMITIVES]
+    sourced_children = [_import_sourced_part(entry) for entry in ZEN_CAD_SOURCED_PARTS]
+    proxy_children = [_make_primitive(primitive) for primitive in ZEN_CAD_PRIMITIVES]
+    children = sourced_children + proxy_children
     assembly = Compound(label=ZEN_CAD_SCENE_ID, children=children)
     return assembly
 '''
+
+
+def resolve_import_locator(locator: str, package: Path) -> str:
+    parsed = urlparse(locator)
+    if parsed.scheme in {"http", "https"}:
+        return locator
+    path = Path(locator).expanduser()
+    if path.is_absolute():
+        return str(path)
+    base = package.parent if package.is_file() else package
+    return str((base / path).resolve())
 
 
 def write_json(path: Path, data: object) -> None:

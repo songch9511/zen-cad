@@ -15,7 +15,7 @@ Zen CAD는 Codex, Claude Code 같은 범용 에이전트와 CAD 생성 harness�
 
 ## 현재 범위
 
-Zen CAD 1.0.0은 Markdown skills와 machine-readable contracts를 함께 제공합니다. 현재 구현은 contract validation부터 layout proxy, inspections, CAD source adapter, proceed package까지 이어지는 one-command kernel-neutral contract pipeline runner를 포함합니다. Detail handoff는 별도 proceed approval artifact가 있을 때만 생성됩니다. Final-stage standard/catalog parts can record explicit source-lock evidence from step.parts, manufacturer URLs, datasheets, project files, or user-provided files without catalog crawling. Contract documents keep `schema_version: 0.8.0` for contract compatibility.
+Zen CAD 1.0.0은 Markdown skills와 machine-readable contracts를 함께 제공합니다. 현재 구현은 contract validation부터 layout proxy, inspections, CAD source adapter, proceed package까지 이어지는 one-command kernel-neutral contract pipeline runner를 포함합니다. Detail handoff는 별도 proceed approval artifact가 있을 때만 생성됩니다. Final-stage standard/catalog parts can record explicit source-lock evidence from step.parts, manufacturer URLs, datasheets, project files, or user-provided files without catalog crawling. When a source-lock artifact includes a STEP/STP geometry reference, the build123d source adapter imports that geometry with `import_step()` and replaces the matching layout proxy primitives. Contract documents keep `schema_version: 0.8.0` for contract compatibility.
 
 Zen CAD가 하는 일:
 
@@ -91,7 +91,7 @@ Visual evidence는 리뷰에 유용하지만 충분하지 않습니다. geometry
 | [`tools/validate_contract.py`](tools/validate_contract.py) | schema surface, interface registry, optional contract package를 검사하는 dependency-free validator. |
 | [`tools/generate_layout_proxy.py`](tools/generate_layout_proxy.py) | validated contract package에서 kernel-neutral layout proxy scene과 inspection report skeleton을 생성합니다. |
 | [`tools/inspect_layout_proxy.py`](tools/inspect_layout_proxy.py) | layout proxy scene이 spec/layout contract의 locked facts, parts, relationships, interface datums를 보존하는지 검사합니다. |
-| [`tools/export_cad_source.py`](tools/export_cad_source.py) | layout proxy scene을 build123d-style CAD source와 source manifest로 변환합니다. |
+| [`tools/export_cad_source.py`](tools/export_cad_source.py) | layout proxy scene을 build123d-style CAD source와 source manifest로 변환하고, importable source-lock STEP/STP가 있으면 proxy를 실제 sourced CAD로 대체합니다. |
 | [`tools/inspect_cad_source.py`](tools/inspect_cad_source.py) | exported CAD source가 scene/manifest의 primitives, locked facts, inspection targets를 보존하는지 검사합니다. |
 | [`tools/package_proceed_gate.py`](tools/package_proceed_gate.py) | artifacts와 inspection reports를 사용자 proceed review용 package로 묶습니다. |
 | [`tools/package_review_bundle.py`](tools/package_review_bundle.py) | proceed gate artifacts를 machine-readable review bundle로 묶고, visual evidence가 completion evidence가 아님을 명시합니다. |
@@ -111,10 +111,10 @@ python3 tools/package_review_bundle.py --proceed-gate <run-dir>/proceed_gate.jso
 python3 tools/approve_proceed_gate.py --proceed-gate <run-dir>/proceed_gate.json --out <approval.json>
 python3 tools/run_contract_pipeline.py --package <contract-package> --out <detail-run-dir> --target-harness text-to-cad --approval <approval.json>
 python3 tools/package_text_to_cad_bundle.py --handoff <detail-run-dir>/detail_handoff.json --out <text-to-cad-bundle-dir>
-python3 tools/generate_source_lock_evidence.py --package <contract-package> --part-id <part-id> --name <source-name> --step-parts-url <url> --out <source-lock.json>
+python3 tools/generate_source_lock_evidence.py --package <contract-package> --part-id <part-id> --name <source-name> --step-parts-url <url> --step-source-url <step-url> --out <source-lock.json>
 ```
 
-The runner validates the package, generates the kernel-neutral layout proxy scene, inspects scene carry-through, exports CAD source intent, inspects source carry-through, and packages proceed review. `package_review_bundle.py` can turn the proceed package into a viewer-oriented review bundle, while making clear that screenshots and viewer links are review aids, not completion evidence. After the user approves the layout, `approve_proceed_gate.py` records that decision, and the runner can create the detail handoff packet with `--approval`. For CAD Skills/text-to-cad, `package_text_to_cad_bundle.py` packages that approved handoff into a downstream prompt bundle without creating CAD source, STEP/STP geometry, snapshots, or viewer links. Use `generate_source_lock_evidence.py` when a standard/catalog/proxy part needs explicit final-stage source evidence; it records locators but does not fetch catalogs or claim ratings/certification. Use individual phase tools when diagnosing a failed stage or integrating a custom harness.
+The runner validates the package, generates the kernel-neutral layout proxy scene, inspects scene carry-through, exports CAD source intent, inspects source carry-through, and packages proceed review. During CAD source export, `source_locked` parts with STEP/STP geometry references are carried into the generated build123d source as sourced CAD imports and matching proxy primitives are removed. `package_review_bundle.py` can turn the proceed package into a viewer-oriented review bundle, while making clear that screenshots and viewer links are review aids, not completion evidence. After the user approves the layout, `approve_proceed_gate.py` records that decision, and the runner can create the detail handoff packet with `--approval`. For CAD Skills/text-to-cad, `package_text_to_cad_bundle.py` packages that approved handoff into a downstream prompt bundle without creating CAD source, STEP/STP geometry, snapshots, or viewer links. Use `generate_source_lock_evidence.py` when a standard/catalog/proxy part needs explicit final-stage source evidence; it records locators but does not fetch catalogs or claim ratings/certification. Use individual phase tools when diagnosing a failed stage or integrating a custom harness.
 
 ## Recommended Prompt
 
