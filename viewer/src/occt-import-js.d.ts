@@ -1,7 +1,14 @@
 declare module 'occt-import-js' {
+  export interface OcctBrepFace {
+    first: number;
+    last: number;
+    color?: [number, number, number] | null;
+  }
+
   export interface OcctImportMesh {
     name?: string;
     color?: [number, number, number];
+    brep_faces?: OcctBrepFace[];
     attributes: {
       position: { array: number[] };
       normal?: { array: number[] };
