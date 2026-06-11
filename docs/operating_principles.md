@@ -4,6 +4,7 @@
 - Spec the assembly contract before generating CAD.
 - Name parameters, artifact targets, inspection checks, and repair rules before handoff.
 - Use low-detail layout proxies for first-pass positioning.
+- Treat layout proxies as precise interface scaffolds, not visual placeholders.
 - Preserve interface primitives, datums, axes, center distances, and drivetrain relationships before surface fidelity.
 - Use interface signatures when layout needs standard component facts but full supplier geometry is unavailable.
 - Use specialist subagents for bounded CAD subtasks when the harness supports delegation.
@@ -18,10 +19,13 @@
 - Generate kernel-neutral layout proxy scenes before adding CAD-kernel-specific exporters.
 - Inspect layout proxy scenes against locked facts before treating them as ready for CAD export.
 - Export CAD source through an adapter, then inspect source-level carry-through before user proceed review.
+- Replace proxies with source/detail CAD only through interface-frame mapping and post-replacement locked-fact inspection.
+- Generate custom detail CAD from protected interface zones plus user shape intent; locked facts stay hard, shape intent stays soft.
 - When the target is build123d and dependencies are available, execute generated source into a STEP artifact and record export/import/bbox/volume checks before proceed review.
 - Use `cad_feature_plan` for native holes, bores, repeated patterns, rectangular top chamfers, simplified gears, and supported cylinder edge-round approximations when prose alone is too ambiguous.
 - Package local viewer links for generated STEP artifacts when a viewer is available, but keep them below geometry checks in evidentiary strength.
 - Package proceed gates before asking for approval.
 - Generate detail-upgrade handoffs only from an explicit proceed approval artifact.
 - Treat proceed approval as a lock on layout facts.
+- Return to the proceed gate if replacement or constrained detail generation requires changing an approved frame, axis, pattern, clearance, or relationship.
 - Do not claim engineering certification from CAD geometry alone.

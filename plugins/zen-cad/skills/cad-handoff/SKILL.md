@@ -1,7 +1,7 @@
 ---
 name: cad-handoff
-description: Convert a CAD-native spec into a concise downstream brief for a CAD-generation harness. Use for Codex, text-to-cad/$cad, build123d, CadQuery, FreeCAD, or other generators, especially when preserving layout locked facts, parameter contracts, feature plans, inspection plans, and repair loops through CAD generation and detail modeling.
-version: 1.0.2
+description: Convert a CAD-native spec into a concise downstream brief for a CAD-generation harness. Use for Codex, text-to-cad/$cad, build123d, CadQuery, FreeCAD, or other generators, especially when preserving layout locked facts, interface frames, replacement plans, detail shape plans, parameter contracts, feature plans, inspection plans, and repair loops through CAD generation and detail modeling.
+version: 1.1.0
 ---
 
 # CAD Handoff
@@ -20,6 +20,8 @@ Use it when:
 - a layout proxy should be generated from locked facts;
 - a generated build123d source file should be executed into a primary STEP artifact;
 - a detail model should preserve an approved layout;
+- source-locked STEP/STP or detail CAD should replace proxy geometry through interface-frame mapping;
+- custom detail CAD should be generated from locked facts and user shape intent;
 - downstream generation needs explicit source, STEP/STP, snapshot, viewer, or secondary export targets;
 - inspection or repair expectations must be carried into the generator prompt;
 - visual inspection and engineering-rule repair expectations must be preserved through generation;
@@ -39,9 +41,11 @@ Use it when:
 9. State visual inspection requirements for fastening, clearance, floating body, interference, mesh/alignment, and engineering plausibility issues.
 10. State source-of-truth, generated files, repair attempts, and claims that must not be made.
 11. State the repair loop and when the generator must stop and return to layout review.
-12. For `build123d` targets, run `tools/generate_cad_artifact.py` or the runner's build123d generation step before proceed review.
-13. For generated STEP artifacts, include `tools/package_viewer_link.py` output or the runner's `viewer_link.html` in proceed review when a local viewer is available.
-14. For an approved `text-to-cad` handoff packet, package the prompt bundle with `tools/package_text_to_cad_bundle.py`.
+12. For replacement work, include interface frames, source frames, frame mapping, transform plan, and post-replacement locked-fact checks.
+13. For constrained custom detail work, include protected zones, shape intent, manufacturing assumptions, and detail-shape inspection checks.
+14. For `build123d` targets, run `tools/generate_cad_artifact.py` or the runner's build123d generation step before proceed review.
+15. For generated STEP artifacts, include `tools/package_viewer_link.py` output or the runner's `viewer_link.html` in proceed review when a local viewer is available.
+16. For an approved `text-to-cad` handoff packet, package the prompt bundle with `tools/package_text_to_cad_bundle.py`.
 
 ## Handoff Skeleton
 
@@ -55,6 +59,9 @@ Subagent dispatch plan:
 Parameter contract:
 Artifact targets:
 Feature plan:
+Interface frames:
+Replacement plan:
+Detail shape plan:
 Allowed simplifications:
 Required outputs:
 Required checks:
@@ -79,6 +86,8 @@ Claims not made:
 - Do not close a generated assembly review while visible fastening, clearance, floating body, interference, or mesh/alignment concerns remain unclassified.
 - Do not validate generated CAD by git diff, file size, or generated-file churn.
 - Do not let the downstream generator change approved layout facts during detail.
+- Do not let replacement geometry move locked interface frames; move the source/detail geometry into the approved layout instead.
+- Do not let shape intent override protected zones or clearance envelopes.
 - Do not claim final readiness unless the downstream tool actually produced the required outputs.
 - Do not treat Zen CAD's first-pass STEP export as supplier-verified or manufacturing-ready geometry.
 - Do not generate CAD, STEP/STP, snapshots, or viewer links while packaging a text-to-cad prompt bundle.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Constrained Detail CAD"
+  short_description: "Generate custom CAD from locked facts and shape intent."
+  default_prompt: "Use $constrained-detail-cad to generate a custom detail CAD plan from locked layout facts and user shape intent. Protect interface frames and clearances, write a detail_shape_plan, generate only inside the feasible space, and inspect locked facts after export."
