@@ -15,3 +15,10 @@ the CAD-native contract first, then continue through layout proxy, source-lock
 evidence, feature-aware build123d STEP artifacts when requested/available,
 local viewer-link packaging, proceed gate, and downstream handoff when
 requested.
+
+When CAD generation, visual review, or repair is requested, write a Subagent
+Dispatch Plan before editing geometry. Spawn bounded specialist subagents when
+the harness supports them. If subagents are unavailable, state the fallback and
+run the same roles sequentially in this order: layout, interface, parameter,
+motion, CAD generation, visual review, engineering review, CAD review, then
+repair.

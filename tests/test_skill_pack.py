@@ -69,6 +69,9 @@ class SkillPackTest(unittest.TestCase):
             "motion-specialist",
             "cad-generator",
             "cad-reviewer",
+            "visual-reviewer",
+            "engineering-reviewer",
+            "Subagent Dispatch Plan",
             "If subagents are unavailable, perform the same roles as sequential local passes.",
             "references/specialist-subagents.md",
         ]:
@@ -78,6 +81,7 @@ class SkillPackTest(unittest.TestCase):
         self.assertTrue(reference.exists())
         reference_text = reference.read_text(encoding="utf-8")
         self.assertIn("Spawn subagents only when the harness supports them", reference_text)
+        self.assertIn("Subagent status: unavailable; using sequential fallback roles", reference_text)
         self.assertIn("Lead Reconciliation", reference_text)
 
     def test_cad_spec_instructs_generation_quality_loop(self) -> None:
@@ -91,6 +95,7 @@ class SkillPackTest(unittest.TestCase):
             "references/parameter-contract.md",
             "references/export-targets.md",
             "references/inspection-and-repair.md",
+            "references/visual-inspection-and-repair.md",
         ]:
             self.assertIn(phrase, text)
 
@@ -98,17 +103,38 @@ class SkillPackTest(unittest.TestCase):
             "skills/cad-spec/references/parameter-contract.md",
             "skills/cad-spec/references/export-targets.md",
             "skills/cad-spec/references/inspection-and-repair.md",
+            "skills/cad-spec/references/visual-inspection-and-repair.md",
         ]:
             self.assertTrue((ROOT / rel).exists(), rel)
 
         handoff = (ROOT / "skills/cad-handoff/SKILL.md").read_text(encoding="utf-8")
         for phrase in [
+            "Subagent dispatch plan:",
             "Parameter contract:",
             "Artifact targets:",
             "Required checks:",
+            "Visual/engineering review:",
             "Repair loop:",
         ]:
             self.assertIn(phrase, handoff)
+
+    def test_subagent_dispatch_survives_generation_handoff(self) -> None:
+        cad_spec = (ROOT / "skills/cad-spec/SKILL.md").read_text(encoding="utf-8")
+        specialist = (ROOT / "skills/cad-spec/references/specialist-subagents.md").read_text(encoding="utf-8")
+        handoff = (ROOT / "skills/cad-handoff/SKILL.md").read_text(encoding="utf-8")
+        harness = (ROOT / "skills/cad-handoff/references/harness-briefs.md").read_text(encoding="utf-8")
+        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        openai = (ROOT / "skills/cad-spec/agents/openai.yaml").read_text(encoding="utf-8")
+        combined = "\n".join([cad_spec, specialist, handoff, harness, agents, openai])
+        for phrase in [
+            "Subagent Dispatch Plan",
+            "Subagent status: unavailable; using sequential fallback roles",
+            "layout, interface, parameter, motion, CAD generation, visual review, engineering review, CAD review, then repair",
+            "Do not drop the Subagent Dispatch Plan",
+            "visual inspection",
+            "engineering review",
+        ]:
+            self.assertIn(phrase, combined)
 
     def test_machine_readable_schema_surface(self) -> None:
         expected = [
@@ -233,14 +259,27 @@ class SkillPackTest(unittest.TestCase):
 
     def test_visual_review_and_explicit_target_rules(self) -> None:
         inspection = (ROOT / "skills/cad-spec/references/inspection-and-repair.md").read_text(encoding="utf-8")
+        visual = (ROOT / "skills/cad-spec/references/visual-inspection-and-repair.md").read_text(encoding="utf-8")
         export_targets = (ROOT / "skills/cad-spec/references/export-targets.md").read_text(encoding="utf-8")
         principles = (ROOT / "docs/operating_principles.md").read_text(encoding="utf-8")
         for phrase in [
             "stronger evidence than screenshots or viewer links",
             "skipped with a reason",
             "Do not validate CAD by git diff, file size, screenshot, or viewer link alone.",
+            "convert each concern into a measurable check",
         ]:
-            self.assertIn(phrase, f"{inspection}\n{principles}")
+            self.assertIn(phrase, f"{inspection}\n{visual}\n{principles}")
+        for phrase in [
+            "floating_unconstrained_body",
+            "unintended_interference",
+            "insufficient_clearance",
+            "missing_fastener_engagement",
+            "coaxiality_or_plane_misalignment",
+            "mesh_or_transmission_error",
+            "unsupported_or_implausible_load_path",
+            "Visual-To-Measurable Repair Loop",
+        ]:
+            self.assertIn(phrase, visual)
         for phrase in [
             "explicit file paths",
             "Do not request directory-wide generation",
@@ -279,7 +318,7 @@ class SkillPackTest(unittest.TestCase):
         plugin_root = ROOT / "plugins" / "zen-cad"
         plugin = json.loads((plugin_root / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
         self.assertEqual("zen-cad", plugin["name"])
-        self.assertEqual("1.0.1", plugin["version"])
+        self.assertEqual("1.0.2", plugin["version"])
         self.assertEqual("./skills/", plugin["skills"])
         self.assertEqual("Zen CAD", plugin["interface"]["displayName"])
 

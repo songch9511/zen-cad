@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 1.0.2 - 2026-06-11
+
+- Add visual inspection and repair guidance for generated CAD review, including floating bodies, interference, clearance, fastening, alignment, mesh/contact, and support-path checks.
+- Update `cad-spec` and `cad-handoff` workflows so agents ask for a Subagent Dispatch Plan when subagents are available, while using an explicit sequential fallback when they are not.
+- Keep subagent orchestration as skill guidance only; do not add runtime/tool exposure that physically forces subagent spawning.
+- Clean up the README around scope, usage, command flow, benchmarks, and the visual review boundary.
+
 ## 1.0.1 - 2026-06-10
 
 - Add `tools/generate_cad_artifact.py` to execute generated build123d source, export a primary STEP artifact, re-import it, and record export/import/bbox/volume checks.

@@ -7,6 +7,8 @@
 - Preserve interface primitives, datums, axes, center distances, and drivetrain relationships before surface fidelity.
 - Use interface signatures when layout needs standard component facts but full supplier geometry is unavailable.
 - Use specialist subagents for bounded CAD subtasks when the harness supports delegation.
+- For generated CAD, create a Subagent Dispatch Plan before editing geometry; if subagents are unavailable, state the sequential fallback explicitly.
+- Use visual review to find likely fastening, clearance, floating body, interference, mesh/alignment, and engineering plausibility problems, then convert each concern into a measurable check.
 - Repair generated CAD by changing the smallest responsible source-level cause, then rerun the failed checks.
 - Do not validate CAD by git diff, file size, screenshot, or viewer link alone.
 - Use built-in interface registry facts for layout when available; record misses and use documented envelopes instead of broad catalog crawling.

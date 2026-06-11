@@ -1,7 +1,7 @@
 ---
 name: cad-spec
-description: Write CAD-native mechanical specs from natural-language design requests and orchestrate CAD work through specialist subagents when available. Use for assembly-first layout specs, parameter contracts, artifact targets, inspection plans, interface definitions, coordinate frames, datums, motion/drivetrain relationships, proxy fidelity boundaries, repair loops, proceed gates, subagent delegation, and downstream CAD handoffs.
-version: 1.0.1
+description: Write CAD-native mechanical specs from natural-language design requests and orchestrate CAD work through specialist subagents when available. Use for assembly-first layout specs, parameter contracts, artifact targets, inspection plans, interface definitions, coordinate frames, datums, motion/drivetrain relationships, visual inspection and repair loops, proxy fidelity boundaries, proceed gates, subagent delegation, and downstream CAD handoffs.
+version: 1.0.2
 ---
 
 # CAD Spec
@@ -24,7 +24,7 @@ Use `cad-spec` when the user asks for:
 - a proceed/review checkpoint before detail modeling;
 - a parameterized CAD brief with named dimensions, derived relationships, and validation targets;
 - artifact targets for source, STEP/STP, snapshots, viewer links, or secondary exports;
-- specialist subagents for layout, interfaces, motion, CAD generation, or review;
+- specialist subagents for layout, interfaces, motion, CAD generation, visual inspection, engineering review, or repair;
 - local build123d STEP generation or a downstream handoff to `$cad`, text-to-cad, CadQuery, FreeCAD, or another CAD generator.
 - native feature-aware generation for holes, bores, bolt-circle patterns, repeated hole patterns, rectangular top chamfers, simplified gear teeth, or supported cylinder edge-round approximations.
 
@@ -61,10 +61,12 @@ Ask one focused question only when missing information makes the layout impossib
 10. Define proxy fidelity boundaries: what may be simplified and what must remain dimensionally meaningful.
 11. Define locked layout facts and a proceed gate so the user can approve positioning before detail modeling.
 12. Define an inspection plan and repair loop for generated CAD.
-13. If CAD generation or review is requested, spawn specialist subagents where the harness supports delegation.
-14. If the active target is build123d and generation is requested, run the build123d source/export/inspection path before proceed review.
-15. If native build123d generation needs detail features, encode them in `cad_spec.extensions.cad_feature_plan` instead of burying them in prose.
-16. Write a downstream CAD handoff targeted to the active harness when external generation or detail upgrade is needed.
+13. If CAD generation or review is requested, write a Subagent Dispatch Plan before generating geometry, then spawn specialist subagents where the harness supports delegation.
+14. Define a visual inspection and engineering repair plan for generated CAD: required views, issue taxonomy, measurable checks, and repair stop conditions.
+15. If the active target is build123d and generation is requested, run the build123d source/export/inspection path before proceed review.
+16. If a viewer is available, capture review evidence and inspect it for fastening, clearance, floating body, interference, mesh/alignment, and engineering plausibility issues.
+17. If native build123d generation needs detail features, encode them in `cad_spec.extensions.cad_feature_plan` instead of burying them in prose.
+18. Write a downstream CAD handoff targeted to the active harness when external generation or detail upgrade is needed.
 
 ## Machine-Readable Contracts
 
@@ -88,7 +90,9 @@ Use `registry/interfaces/index.json` for built-in layout-ready interface signatu
 
 ## Specialist Subagents
 
-Use subagents for complex assemblies, moving mechanisms, or any task where independent layout/interface/motion/review work can run in parallel. Keep the lead agent responsible for the final spec and for reconciling conflicts.
+Use subagents for complex assemblies, moving mechanisms, generated CAD review, visual inspection, engineering plausibility checks, or any task where independent layout/interface/motion/review work can run in parallel. Keep the lead agent responsible for the final spec and for reconciling conflicts.
+
+When the user asks for CAD generation, generated artifact review, or repair, the lead must create a **Subagent Dispatch Plan** before generating or revising geometry. The plan must name each bounded role, input artifacts, expected output, and stop condition. If the active harness exposes subagents, spawn the listed roles. If subagents are unavailable, explicitly state `Subagent status: unavailable; using sequential fallback roles` and run the same roles sequentially before finalizing.
 
 Default specialist roles:
 
@@ -98,6 +102,8 @@ Default specialist roles:
 - `motion-specialist`: joints, travel, transmission ratios, gear/belt/screw relationships, motion limits, and keep-outs.
 - `cad-generator`: low-detail layout proxy or detail CAD from the approved spec, preserving locked facts.
 - `cad-reviewer`: compare generated CAD against parameters, locked facts, inspection plan, proceed gate, allowed simplifications, and stated assumptions.
+- `visual-reviewer`: inspect viewer snapshots/multi-view evidence for floating bodies, unintended intersections, missing fasteners, insufficient clearances, misaligned axes/planes, and visibly implausible load paths.
+- `engineering-reviewer`: convert visual concerns into measurable checks for fastening engagement, shaft/bore fit, bearing support, belt or gear mesh, wall thickness, support, clearance, and assembly feasibility.
 
 Spawn only bounded tasks. Give each subagent the minimum relevant spec sections, expected output, and stop conditions. Do not ask subagents to browse broadly for parts, invent final ratings, or rewrite the whole spec. If subagents are unavailable, perform the same roles as sequential local passes.
 
@@ -120,6 +126,7 @@ Every useful spec should include:
 ## Locked Layout Facts
 ## Inspection Plan
 ## Repair Loop
+## Visual Inspection And Engineering Review
 ## Assumptions And Open Questions
 ## Proceed Gate
 ## Downstream CAD Handoff
@@ -136,6 +143,7 @@ Omit a section only when it is truly out of scope, and say why.
 - Do not claim a proxy is final geometry.
 - Do not hand off CAD generation without named parameters and validation targets for critical dimensions.
 - Do not treat screenshots or viewer links as substitutes for geometry facts, measurements, frames, or mate checks.
+- Do not close proceed review on generated assemblies until floating bodies, unintended interference, fastening/clearance concerns, and visible mesh/alignment concerns are either checked, repaired, or recorded as skipped with a concrete reason.
 - Do not allow detail modeling to change locked layout facts without returning to the proceed gate.
 - Do not present CAD validation, viewer screenshots, or generated geometry as engineering certification.
 - Do not claim selector-based topology fillets/chamfers unless the active build123d/OCP runtime actually ran those operations; use the inspection report limitations when approximations are used.
@@ -153,6 +161,7 @@ Load these files only when the trigger applies:
 - `references/motion-and-drivetrain.md` — belts, pulleys, gears, screws, sliders, rotary axes, limits, and transmission relationships.
 - `references/proxy-fidelity.md` — what layout proxies may simplify and what they must preserve.
 - `references/inspection-and-repair.md` — generated CAD checks, snapshot/viewer expectations, failure classes, and repair loops.
+- `references/visual-inspection-and-repair.md` — multi-view visual review, issue taxonomy, engineering plausibility checks, and visual-to-measurable repair loops.
 - `references/proceed-gate.md` — user approval, locked facts, and detail-stage drift rules.
 - `references/specialist-subagents.md` — when and how to delegate CAD work to specialist subagents.
 - `references/downstream-cad-handoff.md` — active harness, `$cad`, text-to-cad, and generic CAD generator handoffs.

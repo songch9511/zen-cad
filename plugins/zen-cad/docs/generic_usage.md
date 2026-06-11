@@ -1,6 +1,6 @@
 # Generic Usage
 
-Zen CAD 1.0 can be used in any agentic environment that can read Markdown and hand work to a CAD-generation toolchain. The product version is 1.0.1, while contract documents continue to use `schema_version: 0.8.0` for compatibility.
+Zen CAD 1.0 can be used in any agentic environment that can read Markdown and hand work to a CAD-generation toolchain. The product version is 1.0.2, while contract documents continue to use `schema_version: 0.8.0` for compatibility.
 
 Start with:
 
@@ -23,6 +23,8 @@ If the user asks to continue into CAD generation, keep `cad-spec` as the lead wo
 - repair-loop review;
 - generated CAD review against locked facts.
 
+For generated CAD review, ask the lead agent to create a Subagent Dispatch Plan before editing geometry. The minimum useful review roles are `visual-reviewer`, `engineering-reviewer`, and `cad-reviewer`. If the active harness cannot spawn subagents, the lead should state the fallback and run those roles sequentially instead of silently doing everything in the lead session.
+
 Use `skills/cad-handoff/SKILL.md` when the active generator needs a concise task brief. If the active target is build123d and local dependencies are available, Zen CAD can generate a first-pass STEP artifact itself before the proceed review. Contract packages can include `cad_spec.extensions.cad_feature_plan` when native generation should preserve holes, bores, repeated hole patterns, rectangular top chamfers, simplified gear teeth, or supported cylinder edge-round approximations.
 
 Use `schemas/` when a harness needs machine-readable contracts, and use `registry/interfaces/` when a layout proxy needs known component interface facts without catalog crawling. For final-stage standard/catalog part sourcing, use `schemas/source_lock_evidence.schema.json` and `tools/generate_source_lock_evidence.py` to record explicit step.parts, manufacturer, datasheet, project-file, or user-provided evidence separately from layout interface signatures. Use `tools/download_step_part.py` when a step.parts match should be downloaded, sha256-verified, and written as local source-lock evidence. When that evidence includes a STEP/STP geometry reference, `tools/export_cad_source.py` imports the sourced part into generated build123d source and removes the matching proxy primitives.
@@ -34,6 +36,8 @@ python3 tools/run_contract_pipeline.py --package <path> --out <dir> --target-har
 ```
 
 The runner verifies the built-in schema and registry surface, validates the package, creates a kernel-neutral `layout_proxy.scene.json`, inspects scene carry-through, exports CAD source intent, imports source-locked STEP/STP parts when geometry references exist, inspects source carry-through, executes generated build123d source into a primary STEP artifact when the target is `build123d`, packages a local viewer link, optionally captures a viewer PNG snapshot, packages proceed review, and writes a machine-readable `review_bundle.json`.
+
+Visual review should look for floating bodies, unintended interference, insufficient clearance, missing fastener engagement, shaft/bore or bearing misalignment, belt/gear mesh errors, and implausible support or load paths. Treat those findings as repair leads: add or name a measurable check, repair the smallest source-level cause, regenerate, and recapture the relevant view.
 
 To make the viewer link auto-load in CAD-Visualizer, run the viewer on `http://localhost:5173` and give the runner the Vite public directory:
 

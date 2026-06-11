@@ -482,7 +482,7 @@ def expected_feature_plan_bbox(feature_plan: dict[str, Any]) -> dict[str, list[f
     for part in feature_plan.get("parts", []):
         if not isinstance(part, dict):
             continue
-        size = feature_part_size(part)
+        size = feature_part_transformed_size(part)
         if size is None:
             continue
         position = placement_position(part.get("placement", {}))
@@ -512,6 +512,16 @@ def feature_part_size(part: dict[str, Any]) -> list[float] | None:
     return None
 
 
+def feature_part_transformed_size(part: dict[str, Any]) -> list[float] | None:
+    size = feature_part_size(part)
+    if size is None:
+        return None
+    rotation = placement_rotation(part.get("placement", {}))
+    if rotation == [0.0, 0.0, 0.0]:
+        return size
+    return rotated_axis_aligned_size(size, rotation)
+
+
 def placement_position(placement: Any) -> list[float]:
     if isinstance(placement, dict):
         raw = placement.get("position", [0.0, 0.0, 0.0])
@@ -523,6 +533,40 @@ def placement_position(placement: Any) -> list[float]:
         values = [float(item) for item in raw[:3]]
         return values + [0.0] * (3 - len(values))
     return [0.0, 0.0, 0.0]
+
+
+def placement_rotation(placement: Any) -> list[float]:
+    if isinstance(placement, dict):
+        raw = placement.get("rotation", [0.0, 0.0, 0.0])
+    else:
+        raw = [0.0, 0.0, 0.0]
+    if isinstance(raw, dict):
+        return [float(raw.get(axis, 0.0)) for axis in ("x", "y", "z")]
+    if isinstance(raw, (list, tuple)):
+        values = [float(item) for item in raw[:3]]
+        return values + [0.0] * (3 - len(values))
+    return [0.0, 0.0, 0.0]
+
+
+def rotated_axis_aligned_size(size: list[float], rotation_deg: list[float]) -> list[float]:
+    import math
+
+    rx, ry, rz = [math.radians(value) for value in rotation_deg]
+    cx, sx = math.cos(rx), math.sin(rx)
+    cy, sy = math.cos(ry), math.sin(ry)
+    cz, sz = math.cos(rz), math.sin(rz)
+
+    # Match the generated source's Euler-style placement closely enough for
+    # feature-plan bbox inspection: R = Rz * Ry * Rx, then use abs(R) * size.
+    matrix = [
+        [cz * cy, cz * sy * sx - sz * cx, cz * sy * cx + sz * sx],
+        [sz * cy, sz * sy * sx + cz * cx, sz * sy * cx - cz * sx],
+        [-sy, cy * sx, cy * cx],
+    ]
+    return [
+        sum(abs(matrix[row][col]) * size[col] for col in range(3))
+        for row in range(3)
+    ]
 
 
 def feature_number(mapping: Any, *names: str, default: float = 0.0) -> float:

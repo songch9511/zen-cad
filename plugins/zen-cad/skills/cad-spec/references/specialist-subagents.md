@@ -6,6 +6,8 @@ Read this when the user asks to continue from spec into CAD work, or when the as
 
 Spawn subagents only when the harness supports them and the subtask is bounded. The lead agent keeps ownership of the CAD spec, locked facts, and final user-facing answer.
 
+For generated CAD or repair tasks, the lead must create a Subagent Dispatch Plan before editing geometry. If subagents are available, spawn the planned roles. If they are not available, state `Subagent status: unavailable; using sequential fallback roles` and run the same roles sequentially in this order: layout, interface, parameter, motion, CAD generation, visual review, engineering review, CAD review, then repair.
+
 Good subagent tasks:
 
 - independent enough to run without blocking the lead;
@@ -82,6 +84,24 @@ Ask for:
 - targeted measurements, frame checks, mate checks, or diffs where supported;
 - snapshot or viewer review when available;
 - failed/skipped checks with reasons and smallest repair step.
+
+### Visual Reviewer
+
+Ask for:
+
+- multi-view snapshot review using isometric, orthographic, close-up, xray, section, or isolated views when available;
+- floating body, unintended interference, clearance, fastening, mesh/alignment, and implausible load-path findings;
+- issue ids, suspected part ids, view/artifact references, and visual evidence;
+- a measurable check that should be added or rerun for each visual concern.
+
+### Engineering Reviewer
+
+Ask for:
+
+- fastener engagement, boss depth, shaft/bore fit, bearing coaxiality, pulley/gear pitch plane, gear center distance, belt centerline, wall thickness, support, and assembly access concerns;
+- engineering-rule checks that can be evaluated from source parameters, STEP facts, or targeted measurements;
+- repair candidates that change the smallest source-level parameter, datum, placement, feature, or mate;
+- stop conditions when a repair would change locked layout facts.
 
 ### CAD Reviewer
 

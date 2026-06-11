@@ -4,7 +4,7 @@ Read this when CAD generation, review, or detail upgrade is requested.
 
 ## Principle
 
-Generated CAD should be checked against the spec, not against visual plausibility alone. Programmatic facts, dimensions, planes, frames, mating deltas, and labels are stronger evidence than screenshots or viewer links. Visual snapshots are useful review aids and should be converted into geometry checks before becoming claims.
+Generated CAD should be checked against the spec, not against visual plausibility alone. Programmatic facts, dimensions, planes, frames, mating deltas, and labels are stronger evidence than screenshots or viewer links. Visual snapshots are useful review aids and should be converted into geometry checks before becoming claims. Use `visual-inspection-and-repair.md` when the review needs multi-view snapshots, visible fit checks, or engineering plausibility repair.
 
 ## Inspection Plan
 
@@ -17,6 +17,7 @@ Before handoff, state what the downstream generator or reviewer should check:
 - part-local frames and world placements preserve locked layout facts;
 - motion poses, travel limits, gear or belt relationships, and keep-outs are plausible;
 - visual snapshot or viewer review is included when the active tool supports it, or skipped with a reason.
+- visual concerns for fastening, clearance, floating bodies, interference, mesh/alignment, and engineering plausibility are converted into measurable checks or explicit skipped risks.
 
 ## Inspection Hierarchy
 
@@ -53,6 +54,8 @@ Locked layout facts cannot be changed inside the repair loop. If a repair requir
 - selector or label fragility after a topology change;
 - positioning mismatch, inverted axis, wrong local datum, or stale transform;
 - visual concern that needs a measurement or frame check;
+- floating or unconstrained body that needs a contact, mate, fastening path, or locked relationship check;
+- fastening, clearance, shaft/bore, bearing, belt, gear, or support concern that needs an engineering-rule check;
 - missing viewer, snapshot, or export capability in the active harness.
 
 ## Review Report
@@ -64,4 +67,5 @@ Ask the downstream agent to return:
 - inspection checks actually run;
 - failed or skipped checks with reasons;
 - snapshot or viewer link when supported;
+- visual findings, measurable checks added, and before/after evidence for repair passes;
 - whether the model is ready for proceed review, detail upgrade, or another repair pass.
