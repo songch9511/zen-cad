@@ -1,0 +1,76 @@
+{
+  "claims_made": [
+    "geometry_reference_url",
+    "review_reference",
+    "source_identity"
+  ],
+  "claims_not_made": [
+    "No rating, load capacity, torque capacity, or safety factor is claimed.",
+    "No certification, compliance, price, inventory, or availability is claimed.",
+    "No generated STEP geometry is certified by this evidence artifact alone.",
+    "Downloaded STEP geometry is used for CAD layout/detail geometry but does not certify fastener grade, rating, or certification."
+  ],
+  "evidence_sources": [
+    {
+      "artifact_kind": "catalog_page",
+      "locator": "https://www.step.parts/parts/iso4762_socket_head_cap_screw_m3x10",
+      "notes": "step.parts evidence recorded from user-provided locator.",
+      "observed_at": "2026-06-10",
+      "retrieval_status": "provided_url_not_fetched",
+      "source_type": "step_parts",
+      "trusted_for": [
+        "source_identity",
+        "review_only"
+      ]
+    },
+    {
+      "artifact_kind": "step",
+      "locator": "https://media.githubusercontent.com/media/earthtojake/step.parts/c8616cd125a52ec820cf548440c3842f17f82486/catalog/step/iso4762_socket_head_cap_screw_m3x10.step",
+      "notes": "STEP/STP source URL recorded; not downloaded by this tool.",
+      "observed_at": "2026-06-10",
+      "retrieval_status": "provided_url_not_fetched",
+      "source_type": "other",
+      "trusted_for": [
+        "geometry_reference"
+      ]
+    },
+    {
+      "artifact_kind": "step",
+      "locator": "work/compact_belt_drive_module/sourced_parts/step_parts/iso4762_socket_head_cap_screw_m3x10.step",
+      "notes": "User-provided file path recorded; file content was not inspected by this tool.",
+      "observed_at": "2026-06-10",
+      "retrieval_status": "provided_file_not_inspected",
+      "source_type": "user_provided",
+      "trusted_for": [
+        "geometry_reference"
+      ]
+    }
+  ],
+  "extensions": {
+    "generator": "tools/generate_source_lock_evidence.py",
+    "package": "work/compact_belt_drive_module/package"
+  },
+  "id": "compact_belt_drive_module.motor_fasteners_m3.source_lock",
+  "interface_signature_refs": [
+    "fastener.m3_clearance.layout"
+  ],
+  "interface_signature_role": "layout_reference_only",
+  "kind": "source_lock_evidence",
+  "lock_status": "source_locked",
+  "part_id": "motor_fasteners_m3",
+  "part_role": "standard_part",
+  "required_before_final": [
+    "Import the locked source geometry in the downstream CAD harness.",
+    "Run geometry checks for required datums, axes, interfaces, and clearances.",
+    "Stop if source geometry changes an approved locked layout fact.",
+    "Confirm actual motor screw length, head clearance, washer/counterbore needs, and thread engagement before final engineering release."
+  ],
+  "schema_version": "0.8.0",
+  "source_identity": {
+    "display_name": "step.parts ISO 4762 socket head cap screw, M3 x 10 STEP",
+    "identity_basis": "step_parts",
+    "manufacturer_name": "",
+    "model": "iso4762_socket_head_cap_screw_m3x10",
+    "product_url": "https://www.step.parts/parts/iso4762_socket_head_cap_screw_m3x10"
+  }
+}

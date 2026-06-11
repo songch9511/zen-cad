@@ -1,0 +1,106 @@
+{
+  "artifact": {
+    "kind": "layout_proxy_scene",
+    "path": "work/flat_planetary_gear_assembly/review/layout/layout_proxy.scene.json"
+  },
+  "checks": [
+    {
+      "check_id": "scene_source_spec_matches",
+      "check_type": "label",
+      "evidence": "scene.source_spec_id='flat_planetary_gear_assembly'; cad_spec.id='flat_planetary_gear_assembly'",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_maturity_layout_proxy",
+      "check_type": "label",
+      "evidence": "scene.maturity_target='layout_proxy'",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_parts_have_primitives",
+      "check_type": "label",
+      "evidence": "missing primitive coverage for parts: none",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_locked_facts_carried",
+      "check_type": "label",
+      "evidence": "missing locked facts: none",
+      "locked_fact_refs": [
+        "gear_axes_parallel_locked",
+        "involute_teeth_locked",
+        "module_locked_ring_mesh_locked",
+        "no_tooth_overlap_locked",
+        "planet_radius_locked",
+        "premium_detail_non_mesh_locked",
+        "separate_bodies_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_inspection_targets_carried",
+      "check_type": "label",
+      "evidence": "missing inspection targets: none",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_relationships_carried",
+      "check_type": "label",
+      "evidence": "missing relationships: none",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_primitives_layout_only",
+      "check_type": "label",
+      "evidence": "non-layout-only primitives: none",
+      "locked_fact_refs": [],
+      "status": "passed"
+    }
+  ],
+  "extensions": {
+    "inspector": "tools/inspect_layout_proxy.py"
+  },
+  "id": "flat_planetary_gear_assembly.layout_proxy_locked_facts_report",
+  "kind": "inspection_report",
+  "limitations": [
+    "Inspection covers kernel-neutral scene contract only.",
+    "Downstream CAD geometry checks are still required before proceed review.",
+    "Scene carries skipped geometry checks that require a CAD harness."
+  ],
+  "proceed_recommendation": "ready_for_layout_generation",
+  "repair_attempts": [],
+  "schema_version": "0.8.0",
+  "skipped_checks": [
+    {
+      "check_id": "check_planet_radius",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_ring_sun_coaxial",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_viewer_link",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_no_tooth_overlap",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_module_locked_ring_mesh",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_involute_ring_mesh",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    }
+  ],
+  "spec_id": "flat_planetary_gear_assembly",
+  "status": "partial"
+}

@@ -1,0 +1,128 @@
+{
+  "artifact": {
+    "kind": "step",
+    "path": "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.step"
+  },
+  "checks": [
+    {
+      "check_id": "step_file_nonempty_supplemental",
+      "check_type": "step",
+      "evidence": "bytes=10226306",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "assembly_valid_supplemental",
+      "check_type": "step",
+      "evidence": "build123d assembly is_valid=True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "step_bbox_matches_plan_supplemental",
+      "check_type": "bbox",
+      "evidence": "bbox_size=[144.0, 144.0, 11.0]",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "planet_pitch_relation_supplemental",
+      "check_type": "distance",
+      "evidence": "pitch radii: sun 24 + planet 18 = 42; ring 60 - planet 18 = 42",
+      "locked_fact_refs": [
+        "planet_radius_locked",
+        "module_locked_ring_mesh_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "tooth_count_relation_supplemental",
+      "check_type": "gear_mesh",
+      "evidence": "Nr=60 = Ns 24 + 2*Np 18; (Ns+Nr)/3 = 28 integer",
+      "locked_fact_refs": [
+        "module_locked_ring_mesh_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "involute_source_runtime_supplemental",
+      "check_type": "source",
+      "evidence": "source uses bd_warehouse.gear.SpurGear for sun/planet and negative internal ring cutter",
+      "locked_fact_refs": [
+        "involute_teeth_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "premium_detailing_source_supplemental",
+      "check_type": "source",
+      "evidence": "source includes non-mesh premium detailing helpers: hub bosses, ring lips, pin caps, cutter root fillet",
+      "locked_fact_refs": [
+        "involute_teeth_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "premium_detailing_plan_supplemental",
+      "check_type": "source",
+      "evidence": "root_fillet=0.1; sun/planet hub bosses; ring outer lips; 6 ring mount holes; carrier edge fillet and 6 lightening holes; pin filleted stems and caps",
+      "locked_fact_refs": [
+        "module_locked_ring_mesh_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "intermesh_phase_alignment_supplemental",
+      "check_type": "mate",
+      "evidence": "sun rotation=0 deg; planet rotations=theta-10 deg; ring slot phase=-3 deg; tested phase gives zero Boolean common volume",
+      "locked_fact_refs": [
+        "involute_teeth_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "no_tooth_overlap_boolean_common_supplemental",
+      "check_type": "distance",
+      "evidence": "common_volumes=[('sun_gear', 'planet_gear_1', 0.0), ('planet_gear_1', 'ring_gear', 0.0), ('sun_gear', 'planet_gear_2', 0.0), ('planet_gear_2', 'ring_gear', 0.0), ('sun_gear', 'planet_gear_3', 0.0), ('planet_gear_3', 'ring_gear', 0.0)]; max_common_volume=0.0",
+      "locked_fact_refs": [
+        "no_tooth_overlap_locked",
+        "module_locked_ring_mesh_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "ring_internal_negative_cutter_supplemental",
+      "check_type": "gear_mesh",
+      "evidence": "internal ring made by subtracting 60T involute cutter; cutter scale xy=1.01; effective ring tooth tip radius=58.378; slot root radius=62.822",
+      "locked_fact_refs": [
+        "module_locked_ring_mesh_locked"
+      ],
+      "status": "passed"
+    }
+  ],
+  "extensions": {
+    "bd_warehouse_required": true,
+    "generator": "custom supplemental premium detail mesh inspection",
+    "source": "/Users/daniel/Library/CloudStorage/GoogleDrive-songch9511@gmail.com/My Drive/4. Archive/CAD/zen-cad/work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.py"
+  },
+  "id": "flat_planetary_gear_assembly.step_geometry_supplemental_report",
+  "kind": "inspection_report",
+  "limitations": [
+    "Static Boolean checks do not certify load capacity, efficiency, noise, lubrication, or manufacturability.",
+    "Some cylindrical edge rounds are torus-based build123d approximations rather than selector-derived topology fillets.",
+    "Ring tooth-space backlash is represented by a 1.01x XY scaled cutter in the review proxy."
+  ],
+  "proceed_recommendation": "ready_for_proceed_review",
+  "repair_attempts": [
+    "Added non-mesh premium detailing after preserving and rechecking module-locked involute mesh geometry."
+  ],
+  "schema_version": "0.8.0",
+  "skipped_checks": [
+    {
+      "check_id": "load_torque_backlash_dynamic_validation",
+      "reason": "Out of scope for static review STEP; backlash is represented by the 1.01x ring cutter clearance only."
+    }
+  ],
+  "spec_id": "flat_planetary_gear_assembly",
+  "status": "passed"
+}

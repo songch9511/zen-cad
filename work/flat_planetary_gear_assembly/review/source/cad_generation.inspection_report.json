@@ -1,0 +1,172 @@
+{
+  "artifact": {
+    "kind": "step",
+    "path": "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.step"
+  },
+  "checks": [
+    {
+      "check_id": "source_has_gen_step",
+      "check_type": "source",
+      "evidence": "source contains callable gen_step()",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_plan_carried",
+      "check_type": "source",
+      "evidence": "manifest feature parts=9; source feature parts=9",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_parts_declared",
+      "check_type": "source",
+      "evidence": "feature parts=['carrier', 'pin_1', 'pin_2', 'pin_3', 'planet_gear_1', 'planet_gear_2', 'planet_gear_3', 'ring_gear', 'sun_gear']",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_types_supported",
+      "check_type": "source",
+      "evidence": "feature types=['bolt_circle_pattern', 'central_bore', 'edge_fillet', 'internal_tooth_pattern', 'radial_tooth_pattern']; unsupported=[]",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_holes_declared",
+      "check_type": "source",
+      "evidence": "hole/bore feature declarations=1",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_patterns_declared",
+      "check_type": "source",
+      "evidence": "pattern feature declarations=3",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_fillets_declared",
+      "check_type": "source",
+      "evidence": "fillet feature declarations=1; generated source uses a torus-based edge-round approximation for supported cylinders",
+      "locked_fact_refs": [],
+      "status": "partial"
+    },
+    {
+      "check_id": "gen_step_executes",
+      "check_type": "source",
+      "evidence": "gen_step() returned Compound",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "gen_step_returns_shape",
+      "check_type": "source",
+      "evidence": "returned object has bounding_box=True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "step_export_succeeds",
+      "check_type": "step",
+      "evidence": "export_step returned True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "step_file_exists",
+      "check_type": "step",
+      "evidence": "STEP path: work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.step",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "step_file_nonempty",
+      "check_type": "step",
+      "evidence": "STEP file size: 10226306 bytes",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "step_import_succeeds",
+      "check_type": "step",
+      "evidence": "import_step returned Compound",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "step_shape_valid",
+      "check_type": "step",
+      "evidence": "is_valid=True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "step_bbox_nonzero",
+      "check_type": "bbox",
+      "evidence": "bbox={'min': [-72.0, -72.0, -6.0], 'max': [72.0, 72.0, 5.0], 'size': [144.0, 144.0, 11.0]}",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "step_volume_positive",
+      "check_type": "volume",
+      "evidence": "volume=77301.79753822398",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_bbox_matches_plan",
+      "check_type": "bbox",
+      "evidence": "actual_size=[144.0, 144.0, 11.0]; expected_size=[144.0, 144.0, 11.0]; deltas=[0.0, 0.0, 0.0]; tolerances=[1.44, 1.44, 0.25]",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_dimensions_positive",
+      "check_type": "source",
+      "evidence": "all numeric dimensions, diameters, counts, radii, and placements are positive/finite where required",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_pattern_counts_valid",
+      "check_type": "source",
+      "evidence": "patterns=[{'part_id': 'ring_gear', 'type': 'bolt_circle_pattern', 'expected': 6, 'actual': 6}, {'part_id': 'carrier', 'type': 'bolt_circle_pattern', 'expected': 3, 'actual': 3}, {'part_id': 'carrier', 'type': 'bolt_circle_pattern', 'expected': 6, 'actual': 6}]",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_placement_radii_consistent",
+      "check_type": "distance",
+      "evidence": "radii=[42.0, 42.0, 42.0, 42.0, 41.9999, 41.9999]; max_delta=0.00010000000000331966",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_feature_cut_volume_below_uncut_estimate",
+      "check_type": "volume",
+      "evidence": "actual_volume=77301.79753822398; approximate_uncut_volume=85772.12295641952",
+      "locked_fact_refs": [],
+      "status": "passed"
+    }
+  ],
+  "extensions": {
+    "generator": "tools/generate_cad_artifact.py",
+    "manifest": "work/flat_planetary_gear_assembly/review/source/cad_source_manifest.json",
+    "source": "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.py"
+  },
+  "id": "flat_planetary_gear_assembly.layout_proxy_scene.build123d_manifest.cad_generation_report",
+  "kind": "inspection_report",
+  "limitations": [
+    "Generated STEP is a layout/detail candidate from generated build123d source, not engineering certification.",
+    "Fillet features are generated with a cylinder/torus approximation because this local build123d/OCP runtime cannot reliably enumerate edges for selector-based filleting."
+  ],
+  "proceed_recommendation": "ready_for_proceed_review",
+  "repair_attempts": [],
+  "schema_version": "0.8.0",
+  "skipped_checks": [],
+  "spec_id": "flat_planetary_gear_assembly.layout_proxy_scene",
+  "status": "partial"
+}

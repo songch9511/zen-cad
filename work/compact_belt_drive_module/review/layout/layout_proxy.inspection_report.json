@@ -1,0 +1,82 @@
+{
+  "artifact": {
+    "kind": "layout_proxy_scene",
+    "path": "work/compact_belt_drive_module/review/layout/layout_proxy.scene.json"
+  },
+  "checks": [
+    {
+      "check_id": "scene_primitives_present",
+      "check_type": "label",
+      "evidence": "15 layout proxy primitives generated.",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_locked_facts_carried",
+      "check_type": "label",
+      "evidence": "11 locked layout facts carried into scene.",
+      "locked_fact_refs": [
+        "root_frame_locked",
+        "shaft_axes_parallel_z_locked",
+        "pulley_center_distance_locked",
+        "motor_axis_position_locked",
+        "output_axis_position_locked",
+        "belt_midplane_locked",
+        "motor_mount_pattern_locked",
+        "bearing_interface_locked",
+        "output_shaft_interface_locked",
+        "gt2_interface_locked",
+        "fastener_clearance_locked"
+      ],
+      "status": "passed"
+    }
+  ],
+  "extensions": {
+    "generator": "tools/generate_layout_proxy.py"
+  },
+  "id": "compact_belt_drive_module.layout_proxy_scene_report",
+  "kind": "inspection_report",
+  "limitations": [
+    "This is a kernel-neutral layout proxy scene, not generated CAD geometry.",
+    "Downstream CAD generation and geometry inspection are still required before proceed review."
+  ],
+  "proceed_recommendation": "ready_for_layout_generation",
+  "repair_attempts": [],
+  "schema_version": "0.8.0",
+  "skipped_checks": [
+    {
+      "check_id": "check_root_frame",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_motor_axis",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_output_bearing_axis",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_center_distance",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_belt_midplane",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_motor_mount_pattern",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_608_bearing_interface",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_gt2_belt_interface",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    }
+  ],
+  "spec_id": "compact_belt_drive_module",
+  "status": "partial"
+}

@@ -1,0 +1,73 @@
+{
+  "artifacts": [
+    {
+      "kind": "layout_proxy_scene",
+      "path": "work/compact_belt_drive_module/review/layout/layout_proxy.scene.json"
+    },
+    {
+      "kind": "source",
+      "path": "work/compact_belt_drive_module/review/source/layout_proxy_build123d.py"
+    }
+  ],
+  "evidence_policy": [
+    "Viewer targets are review evidence only.",
+    "Geometry measurements, kernel checks, and source-level carry-through remain the stronger completion evidence.",
+    "Screenshots or browser previews must not be used as final engineering certification."
+  ],
+  "extensions": {
+    "packager": "tools/package_review_bundle.py",
+    "proceed_gate": "work/compact_belt_drive_module/review/proceed_gate.json"
+  },
+  "id": "compact_belt_drive_module.review_bundle",
+  "kind": "review_bundle",
+  "limitations": [
+    "Downstream CAD geometry checks are still required before proceed review.",
+    "Inspection covers kernel-neutral scene contract only.",
+    "Inspection verifies source-level carry-through, not generated STEP geometry.",
+    "Run downstream CAD generation and geometry inspection before final proceed approval.",
+    "Scene carries skipped geometry checks that require a CAD harness."
+  ],
+  "locked_layout_facts": [
+    "root_frame_locked",
+    "shaft_axes_parallel_z_locked",
+    "pulley_center_distance_locked",
+    "motor_axis_position_locked",
+    "output_axis_position_locked",
+    "belt_midplane_locked",
+    "motor_mount_pattern_locked",
+    "bearing_interface_locked",
+    "output_shaft_interface_locked",
+    "gt2_interface_locked",
+    "fastener_clearance_locked"
+  ],
+  "next_actions": [
+    "Open viewer targets to inspect layout readability and obvious placement drift.",
+    "Approve proceed only if locked layout facts and skipped-check limitations are acceptable.",
+    "Run downstream CAD generation and geometry inspection before final readiness claims."
+  ],
+  "reports": [
+    {
+      "kind": "inspection_report",
+      "path": "work/compact_belt_drive_module/review/layout/locked_facts.inspection_report.json"
+    },
+    {
+      "kind": "inspection_report",
+      "path": "work/compact_belt_drive_module/review/source/source.inspection_report.json"
+    }
+  ],
+  "schema_version": "0.8.0",
+  "spec_id": "compact_belt_drive_module",
+  "status": "ready_for_viewer_review",
+  "viewer_targets": [
+    {
+      "evidence_role": "review_only",
+      "path": "work/compact_belt_drive_module/review/layout/layout_proxy.scene.json",
+      "viewer_hint": "Open as layout context if the active viewer supports Zen CAD scene JSON."
+    },
+    {
+      "evidence_role": "review_only",
+      "path": "work/compact_belt_drive_module/review/source/layout_proxy_build123d.py",
+      "viewer_hint": "Use as source-of-truth context for downstream CAD generation, not as visual evidence."
+    }
+  ]
+}

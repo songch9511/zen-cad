@@ -1,0 +1,107 @@
+{
+  "artifact": {
+    "kind": "source",
+    "path": "work/compact_belt_drive_module/review/source/layout_proxy_build123d.py"
+  },
+  "checks": [
+    {
+      "check_id": "manifest_scene_id_matches",
+      "check_type": "label",
+      "evidence": "manifest.source_scene_id='compact_belt_drive_module.layout_proxy_scene'; scene.id='compact_belt_drive_module.layout_proxy_scene'",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_scene_id_matches",
+      "check_type": "label",
+      "evidence": "source ZEN_CAD_SCENE_ID='compact_belt_drive_module.layout_proxy_scene'; scene.id='compact_belt_drive_module.layout_proxy_scene'",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "manifest_primitives_cover_scene",
+      "check_type": "label",
+      "evidence": "manifest primitives=15; scene primitives=15",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_primitives_cover_scene",
+      "check_type": "label",
+      "evidence": "source proxy primitives=11; expected proxy primitives after sourced STEP replacement=11",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_source_layout_facts_carried",
+      "check_type": "label",
+      "evidence": "source layout facts=11; scene layout facts=11",
+      "locked_fact_refs": [
+        "root_frame_locked",
+        "shaft_axes_parallel_z_locked",
+        "pulley_center_distance_locked",
+        "motor_axis_position_locked",
+        "output_axis_position_locked",
+        "belt_midplane_locked",
+        "motor_mount_pattern_locked",
+        "bearing_interface_locked",
+        "output_shaft_interface_locked",
+        "gt2_interface_locked",
+        "fastener_clearance_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_inspection_targets_carried",
+      "check_type": "label",
+      "evidence": "source inspection targets=9; scene inspection targets=9",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_has_gen_step",
+      "check_type": "label",
+      "evidence": "source contains gen_step function",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_sourced_parts_cover_manifest",
+      "check_type": "label",
+      "evidence": "source sourced parts=3; manifest sourced parts=3",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_imports_sourced_steps",
+      "check_type": "label",
+      "evidence": "source imports STEP/STP geometry with build123d.import_step",
+      "locked_fact_refs": [],
+      "status": "passed"
+    }
+  ],
+  "extensions": {
+    "inspector": "tools/inspect_cad_source.py"
+  },
+  "id": "compact_belt_drive_module.layout_proxy_scene.build123d_manifest.source_inspection_report",
+  "kind": "inspection_report",
+  "limitations": [
+    "Inspection verifies source-level carry-through, not generated STEP geometry.",
+    "Run downstream CAD generation and geometry inspection before final proceed approval."
+  ],
+  "proceed_recommendation": "ready_for_proceed_review",
+  "repair_attempts": [],
+  "schema_version": "0.8.0",
+  "skipped_checks": [
+    {
+      "check_id": "step_geometry_export",
+      "reason": "Source-level adapter inspection only; STEP generation requires downstream CAD runtime."
+    },
+    {
+      "check_id": "geometry_measurements",
+      "reason": "No CAD kernel geometry was generated in this adapter stage."
+    }
+  ],
+  "spec_id": "compact_belt_drive_module",
+  "status": "partial"
+}

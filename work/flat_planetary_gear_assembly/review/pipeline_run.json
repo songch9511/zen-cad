@@ -1,0 +1,117 @@
+{
+  "artifacts": {
+    "cad_generation_report": "work/flat_planetary_gear_assembly/review/source/cad_generation.inspection_report.json",
+    "generated_step": "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.step",
+    "layout_report": "work/flat_planetary_gear_assembly/review/layout/locked_facts.inspection_report.json",
+    "layout_snapshot": "work/flat_planetary_gear_assembly/review/layout_snapshot.png",
+    "layout_snapshot_report": "work/flat_planetary_gear_assembly/review/layout_snapshot.inspection_report.json",
+    "proceed_gate": "work/flat_planetary_gear_assembly/review/proceed_gate.json",
+    "review_bundle": "work/flat_planetary_gear_assembly/review/review_bundle.json",
+    "scene": "work/flat_planetary_gear_assembly/review/layout/layout_proxy.scene.json",
+    "source": "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.py",
+    "source_manifest": "work/flat_planetary_gear_assembly/review/source/cad_source_manifest.json",
+    "source_report": "work/flat_planetary_gear_assembly/review/source/source.inspection_report.json",
+    "step_geometry_supplemental_report": "work/flat_planetary_gear_assembly/review/source/step_geometry_supplemental.inspection_report.json",
+    "viewer_link": "work/flat_planetary_gear_assembly/review/viewer_link.html",
+    "viewer_snapshot": "work/flat_planetary_gear_assembly/review/viewer_snapshot.png",
+    "viewer_snapshot_report": "work/flat_planetary_gear_assembly/review/viewer_snapshot.inspection_report.json"
+  },
+  "contract_package": "work/flat_planetary_gear_assembly/package",
+  "extensions": {
+    "gear_runtime": "bd_warehouse.gear.SpurGear",
+    "premium_detail_pass": "root fillets, hub bosses, ring lips/mount holes, carrier lightening holes, pin caps",
+    "runner": "tools/run_contract_pipeline.py"
+  },
+  "id": "flat_planetary_gear_assembly.pipeline_run",
+  "kind": "pipeline_run",
+  "schema_version": "0.8.0",
+  "status": "ready_for_user_review",
+  "steps": [
+    {
+      "issues": [],
+      "note": "Applied module-locked planetary relations: Nr=Ns+2Np, center distances 24+18=42 and 60-18=42, and three-planet spacing integer condition.",
+      "outputs": [],
+      "status": "passed",
+      "step_id": "research_planetary_relationships"
+    },
+    {
+      "issues": [],
+      "note": "Layout scene regenerated with involute_teeth_locked and module_locked_ring_mesh_locked facts.",
+      "outputs": [
+        "work/flat_planetary_gear_assembly/review/layout/layout_proxy.scene.json",
+        "work/flat_planetary_gear_assembly/review/layout/locked_facts.inspection_report.json"
+      ],
+      "status": "passed",
+      "step_id": "generate_layout_proxy"
+    },
+    {
+      "issues": [],
+      "note": "Source uses bd_warehouse SpurGear for sun/planet gears and a scaled negative involute cutter for the internal ring gear.",
+      "outputs": [
+        "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.py",
+        "work/flat_planetary_gear_assembly/review/source/cad_source_manifest.json"
+      ],
+      "status": "passed",
+      "step_id": "export_and_patch_build123d_source"
+    },
+    {
+      "issues": [],
+      "note": "STEP generated and re-imported successfully; bbox matches plan.",
+      "outputs": [
+        "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.step",
+        "work/flat_planetary_gear_assembly/review/source/cad_generation.inspection_report.json"
+      ],
+      "status": "passed",
+      "step_id": "generate_cad_artifact"
+    },
+    {
+      "issues": [],
+      "note": "All six sun/planet and planet/ring mesh pairs have zero Boolean common volume.",
+      "outputs": [
+        "work/flat_planetary_gear_assembly/review/source/step_geometry_supplemental.inspection_report.json"
+      ],
+      "status": "passed",
+      "step_id": "inspect_step_geometry_supplemental"
+    },
+    {
+      "issues": [],
+      "note": "Layout schematic and local CAD viewer snapshot updated for the involute internal-ring model.",
+      "outputs": [
+        "work/flat_planetary_gear_assembly/review/layout_snapshot.png",
+        "work/flat_planetary_gear_assembly/review/viewer_snapshot.png"
+      ],
+      "status": "passed",
+      "step_id": "capture_snapshots"
+    },
+    {
+      "issues": [],
+      "note": "Added non-mesh premium detailing: 0.1 mm tooth root fillets, sun/planet hub bosses, ring lips and 6 mount holes, carrier edge fillet and 6 lightening holes, filleted pin caps. Mesh Boolean common volumes remained zero.",
+      "outputs": [
+        "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.step",
+        "work/flat_planetary_gear_assembly/review/source/step_geometry_supplemental.inspection_report.json",
+        "work/flat_planetary_gear_assembly/review/viewer_snapshot.png",
+        "work/flat_planetary_gear_assembly/review/layout_snapshot.png"
+      ],
+      "status": "passed",
+      "step_id": "premium_detail_pass"
+    },
+    {
+      "issues": [],
+      "note": "Proceed gate and review bundle regenerated after premium detail pass.",
+      "outputs": [
+        "work/flat_planetary_gear_assembly/review/proceed_gate.json",
+        "work/flat_planetary_gear_assembly/review/review_bundle.json"
+      ],
+      "status": "passed",
+      "step_id": "package_proceed_gate"
+    },
+    {
+      "issues": [],
+      "note": "Detail handoff remains gated until user review accepts the premium-detail involute internal-ring review model.",
+      "outputs": [],
+      "status": "skipped",
+      "step_id": "detail_handoff"
+    }
+  ],
+  "target_harness": "build123d"
+}

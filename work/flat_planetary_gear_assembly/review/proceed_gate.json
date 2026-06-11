@@ -1,0 +1,110 @@
+{
+  "artifacts": [
+    {
+      "kind": "layout_proxy_scene",
+      "path": "work/flat_planetary_gear_assembly/review/layout/layout_proxy.scene.json"
+    },
+    {
+      "kind": "source",
+      "path": "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.py"
+    },
+    {
+      "kind": "step",
+      "path": "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.step"
+    },
+    {
+      "kind": "viewer",
+      "path": "work/flat_planetary_gear_assembly/review/viewer_link.html"
+    },
+    {
+      "kind": "snapshot",
+      "path": "work/flat_planetary_gear_assembly/review/viewer_snapshot.png"
+    },
+    {
+      "kind": "snapshot",
+      "path": "work/flat_planetary_gear_assembly/review/layout_snapshot.png"
+    }
+  ],
+  "check_summary": {
+    "failed": 0,
+    "partial": 4,
+    "passed": 56,
+    "skipped": 9
+  },
+  "decision_options": [
+    "proceed",
+    "revise_layout",
+    "detail_upgrade"
+  ],
+  "extensions": {
+    "packager": "tools/package_proceed_gate.py",
+    "source_lock_summary": {
+      "final_blockers": [],
+      "proxy_only": 0,
+      "source_locked": 0,
+      "total": 0,
+      "unresolved": 0
+    }
+  },
+  "id": "flat_planetary_gear_assembly.proceed_gate",
+  "kind": "proceed_gate_package",
+  "limitations": [
+    "Downstream CAD geometry checks are still required before proceed review.",
+    "Fillet features are generated with a cylinder/torus approximation because this local build123d/OCP runtime cannot reliably enumerate edges for selector-based filleting.",
+    "Generated STEP is a layout/detail candidate from generated build123d source, not engineering certification.",
+    "Inspection covers kernel-neutral scene contract only.",
+    "Inspection verifies source-level carry-through, not generated STEP geometry.",
+    "Layout snapshot is schematic visual evidence; STEP geometry and Boolean reports are authoritative.",
+    "Ring tooth-space backlash is represented by a 1.01x XY scaled cutter in the review proxy.",
+    "Run downstream CAD generation and geometry inspection before final proceed approval.",
+    "Scene carries skipped geometry checks that require a CAD harness.",
+    "Some cylindrical edge rounds are torus-based build123d approximations rather than selector-derived topology fillets.",
+    "Static Boolean checks do not certify load capacity, efficiency, noise, lubrication, or manufacturability.",
+    "Viewer snapshots are review evidence only and do not replace geometry checks."
+  ],
+  "locked_layout_facts": [
+    "separate_bodies_locked",
+    "planet_radius_locked",
+    "gear_axes_parallel_locked",
+    "involute_teeth_locked",
+    "no_tooth_overlap_locked",
+    "module_locked_ring_mesh_locked",
+    "premium_detail_non_mesh_locked"
+  ],
+  "recommended_next_step": "Review layout contract and choose proceed, revise_layout, or detail_upgrade.",
+  "reports": [
+    {
+      "path": "work/flat_planetary_gear_assembly/review/layout/locked_facts.inspection_report.json",
+      "proceed_recommendation": "ready_for_layout_generation",
+      "status": "partial"
+    },
+    {
+      "path": "work/flat_planetary_gear_assembly/review/source/source.inspection_report.json",
+      "proceed_recommendation": "ready_for_proceed_review",
+      "status": "partial"
+    },
+    {
+      "path": "work/flat_planetary_gear_assembly/review/source/cad_generation.inspection_report.json",
+      "proceed_recommendation": "ready_for_proceed_review",
+      "status": "partial"
+    },
+    {
+      "path": "work/flat_planetary_gear_assembly/review/source/step_geometry_supplemental.inspection_report.json",
+      "proceed_recommendation": "ready_for_proceed_review",
+      "status": "passed"
+    },
+    {
+      "path": "work/flat_planetary_gear_assembly/review/viewer_snapshot.inspection_report.json",
+      "proceed_recommendation": "ready_for_proceed_review",
+      "status": "passed"
+    },
+    {
+      "path": "work/flat_planetary_gear_assembly/review/layout_snapshot.inspection_report.json",
+      "proceed_recommendation": "ready_for_proceed_review",
+      "status": "passed"
+    }
+  ],
+  "schema_version": "0.8.0",
+  "spec_id": "flat_planetary_gear_assembly",
+  "status": "ready_for_user_review"
+}

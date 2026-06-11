@@ -1,0 +1,41 @@
+{
+  "artifact": {
+    "kind": "snapshot",
+    "path": "work/flat_planetary_gear_assembly/review/layout_snapshot.png"
+  },
+  "checks": [
+    {
+      "check_id": "layout_snapshot_file_written",
+      "check_type": "snapshot",
+      "evidence": "snapshot=work/flat_planetary_gear_assembly/review/layout_snapshot.png; bytes=272439",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "layout_snapshot_mentions_premium_involute_ring_mesh",
+      "check_type": "label",
+      "evidence": "snapshot identifies premium involute planetary mesh, 24/18/60 tooth counts, R42 planet circle, root fillets, hubs, ring holes/lips, carrier holes, and zero Boolean common volume",
+      "locked_fact_refs": [
+        "module_locked_ring_mesh_locked",
+        "no_tooth_overlap_locked"
+      ],
+      "status": "passed"
+    }
+  ],
+  "extensions": {
+    "generator": "matplotlib premium pitch mesh schematic"
+  },
+  "id": "flat_planetary_gear_assembly.layout_snapshot_report",
+  "kind": "inspection_report",
+  "limitations": [
+    "Layout snapshot is schematic visual evidence; STEP geometry and Boolean reports are authoritative."
+  ],
+  "proceed_recommendation": "ready_for_proceed_review",
+  "repair_attempts": [
+    "Regenerated schematic after premium detailing pass."
+  ],
+  "schema_version": "0.8.0",
+  "skipped_checks": [],
+  "spec_id": "flat_planetary_gear_assembly",
+  "status": "passed"
+}

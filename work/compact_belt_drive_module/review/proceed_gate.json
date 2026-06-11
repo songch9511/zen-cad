@@ -1,0 +1,71 @@
+{
+  "artifacts": [
+    {
+      "kind": "layout_proxy_scene",
+      "path": "work/compact_belt_drive_module/review/layout/layout_proxy.scene.json"
+    },
+    {
+      "kind": "source",
+      "path": "work/compact_belt_drive_module/review/source/layout_proxy_build123d.py"
+    }
+  ],
+  "check_summary": {
+    "failed": 0,
+    "partial": 2,
+    "passed": 34,
+    "skipped": 10
+  },
+  "decision_options": [
+    "proceed",
+    "revise_layout",
+    "detail_upgrade"
+  ],
+  "extensions": {
+    "packager": "tools/package_proceed_gate.py",
+    "source_lock_summary": {
+      "final_blockers": [],
+      "proxy_only": 0,
+      "source_locked": 7,
+      "total": 7,
+      "unresolved": 0
+    }
+  },
+  "id": "compact_belt_drive_module.proceed_gate",
+  "kind": "proceed_gate_package",
+  "limitations": [
+    "Downstream CAD geometry checks are still required before proceed review.",
+    "Inspection covers kernel-neutral scene contract only.",
+    "Inspection verifies source-level carry-through, not generated STEP geometry.",
+    "Run downstream CAD generation and geometry inspection before final proceed approval.",
+    "Scene carries skipped geometry checks that require a CAD harness."
+  ],
+  "locked_layout_facts": [
+    "root_frame_locked",
+    "shaft_axes_parallel_z_locked",
+    "pulley_center_distance_locked",
+    "motor_axis_position_locked",
+    "output_axis_position_locked",
+    "belt_midplane_locked",
+    "motor_mount_pattern_locked",
+    "bearing_interface_locked",
+    "output_shaft_interface_locked",
+    "gt2_interface_locked",
+    "fastener_clearance_locked"
+  ],
+  "recommended_next_step": "Review layout contract and choose proceed, revise_layout, or detail_upgrade.",
+  "reports": [
+    {
+      "path": "work/compact_belt_drive_module/review/layout/locked_facts.inspection_report.json",
+      "proceed_recommendation": "ready_for_layout_generation",
+      "status": "partial"
+    },
+    {
+      "path": "work/compact_belt_drive_module/review/source/source.inspection_report.json",
+      "proceed_recommendation": "ready_for_proceed_review",
+      "status": "partial"
+    }
+  ],
+  "schema_version": "0.8.0",
+  "spec_id": "compact_belt_drive_module",
+  "status": "ready_for_user_review"
+}

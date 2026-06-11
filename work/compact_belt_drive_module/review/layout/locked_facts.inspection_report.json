@@ -1,0 +1,244 @@
+{
+  "artifact": {
+    "kind": "layout_proxy_scene",
+    "path": "work/compact_belt_drive_module/review/layout/layout_proxy.scene.json"
+  },
+  "checks": [
+    {
+      "check_id": "scene_source_spec_matches",
+      "check_type": "label",
+      "evidence": "scene.source_spec_id='compact_belt_drive_module'; cad_spec.id='compact_belt_drive_module'",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_maturity_layout_proxy",
+      "check_type": "label",
+      "evidence": "scene.maturity_target='layout_proxy'",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_parts_have_primitives",
+      "check_type": "label",
+      "evidence": "missing primitive coverage for parts: none",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_locked_facts_carried",
+      "check_type": "label",
+      "evidence": "missing locked facts: none",
+      "locked_fact_refs": [
+        "bearing_interface_locked",
+        "belt_midplane_locked",
+        "fastener_clearance_locked",
+        "gt2_interface_locked",
+        "motor_axis_position_locked",
+        "motor_mount_pattern_locked",
+        "output_axis_position_locked",
+        "output_shaft_interface_locked",
+        "pulley_center_distance_locked",
+        "root_frame_locked",
+        "shaft_axes_parallel_z_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_inspection_targets_carried",
+      "check_type": "label",
+      "evidence": "missing inspection targets: none",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_relationships_carried",
+      "check_type": "label",
+      "evidence": "missing relationships: none",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "scene_primitives_layout_only",
+      "check_type": "label",
+      "evidence": "non-layout-only primitives: none",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "nema17_motor.motor.nema_17.layout.proxy_primitives",
+      "check_type": "label",
+      "evidence": "primitive derived_from includes motor.nema_17.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "nema17_motor.motor.nema_17.layout.datums",
+      "check_type": "label",
+      "evidence": "datum derived_from includes motor.nema_17.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "motor_pulley_20t_5mm.belt.gt2_6mm.layout.proxy_primitives",
+      "check_type": "label",
+      "evidence": "primitive derived_from includes belt.gt2_6mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "motor_pulley_20t_5mm.belt.gt2_6mm.layout.datums",
+      "check_type": "label",
+      "evidence": "datum derived_from includes belt.gt2_6mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "output_shaft_8mm.shaft_bore.8mm.layout.proxy_primitives",
+      "check_type": "label",
+      "evidence": "primitive derived_from includes shaft_bore.8mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "output_shaft_8mm.shaft_bore.8mm.layout.datums",
+      "check_type": "label",
+      "evidence": "datum derived_from includes shaft_bore.8mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "output_pulley_20t_8mm.belt.gt2_6mm.layout.proxy_primitives",
+      "check_type": "label",
+      "evidence": "primitive derived_from includes belt.gt2_6mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "output_pulley_20t_8mm.belt.gt2_6mm.layout.datums",
+      "check_type": "label",
+      "evidence": "datum derived_from includes belt.gt2_6mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "output_pulley_20t_8mm.shaft_bore.8mm.layout.proxy_primitives",
+      "check_type": "label",
+      "evidence": "primitive derived_from includes shaft_bore.8mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "output_pulley_20t_8mm.shaft_bore.8mm.layout.datums",
+      "check_type": "label",
+      "evidence": "datum derived_from includes shaft_bore.8mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "bearing_608.bearing.608.layout.proxy_primitives",
+      "check_type": "label",
+      "evidence": "primitive derived_from includes bearing.608.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "bearing_608.bearing.608.layout.datums",
+      "check_type": "label",
+      "evidence": "datum derived_from includes bearing.608.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "gt2_belt_loop.belt.gt2_6mm.layout.proxy_primitives",
+      "check_type": "label",
+      "evidence": "primitive derived_from includes belt.gt2_6mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "gt2_belt_loop.belt.gt2_6mm.layout.datums",
+      "check_type": "label",
+      "evidence": "datum derived_from includes belt.gt2_6mm.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "motor_fasteners_m3.fastener.m3_clearance.layout.proxy_primitives",
+      "check_type": "label",
+      "evidence": "primitive derived_from includes fastener.m3_clearance.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "motor_fasteners_m3.fastener.m3_clearance.layout.datums",
+      "check_type": "label",
+      "evidence": "datum derived_from includes fastener.m3_clearance.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "bearing_support_fasteners_m3.fastener.m3_clearance.layout.proxy_primitives",
+      "check_type": "label",
+      "evidence": "primitive derived_from includes fastener.m3_clearance.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "bearing_support_fasteners_m3.fastener.m3_clearance.layout.datums",
+      "check_type": "label",
+      "evidence": "datum derived_from includes fastener.m3_clearance.layout: True",
+      "locked_fact_refs": [],
+      "status": "passed"
+    }
+  ],
+  "extensions": {
+    "inspector": "tools/inspect_layout_proxy.py"
+  },
+  "id": "compact_belt_drive_module.layout_proxy_locked_facts_report",
+  "kind": "inspection_report",
+  "limitations": [
+    "Inspection covers kernel-neutral scene contract only.",
+    "Downstream CAD geometry checks are still required before proceed review.",
+    "Scene carries skipped geometry checks that require a CAD harness."
+  ],
+  "proceed_recommendation": "ready_for_layout_generation",
+  "repair_attempts": [],
+  "schema_version": "0.8.0",
+  "skipped_checks": [
+    {
+      "check_id": "check_root_frame",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_motor_axis",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_output_bearing_axis",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_center_distance",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_belt_midplane",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_motor_mount_pattern",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_608_bearing_interface",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_gt2_belt_interface",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    }
+  ],
+  "spec_id": "compact_belt_drive_module",
+  "status": "partial"
+}

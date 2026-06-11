@@ -1,0 +1,103 @@
+{
+  "artifact": {
+    "kind": "source",
+    "path": "work/flat_planetary_gear_assembly/review/source/layout_proxy_build123d.py"
+  },
+  "checks": [
+    {
+      "check_id": "manifest_scene_id_matches",
+      "check_type": "label",
+      "evidence": "manifest.source_scene_id='flat_planetary_gear_assembly.layout_proxy_scene'; scene.id='flat_planetary_gear_assembly.layout_proxy_scene'",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_scene_id_matches",
+      "check_type": "label",
+      "evidence": "source ZEN_CAD_SCENE_ID='flat_planetary_gear_assembly.layout_proxy_scene'; scene.id='flat_planetary_gear_assembly.layout_proxy_scene'",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "manifest_primitives_cover_scene",
+      "check_type": "label",
+      "evidence": "manifest primitives=9; scene primitives=9",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_primitives_cover_scene",
+      "check_type": "label",
+      "evidence": "source proxy primitives=0; expected proxy primitives after sourced STEP replacement=0",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "cad_source_layout_facts_carried",
+      "check_type": "label",
+      "evidence": "source layout facts=7; scene layout facts=7",
+      "locked_fact_refs": [
+        "separate_bodies_locked",
+        "planet_radius_locked",
+        "gear_axes_parallel_locked",
+        "involute_teeth_locked",
+        "no_tooth_overlap_locked",
+        "module_locked_ring_mesh_locked",
+        "premium_detail_non_mesh_locked"
+      ],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_inspection_targets_carried",
+      "check_type": "label",
+      "evidence": "source inspection targets=9; scene inspection targets=9",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_has_gen_step",
+      "check_type": "label",
+      "evidence": "source contains gen_step function",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_feature_plan_covers_manifest",
+      "check_type": "label",
+      "evidence": "source feature parts=9; manifest feature parts=9",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "source_feature_runtime_present",
+      "check_type": "label",
+      "evidence": "source contains feature-plan runtime",
+      "locked_fact_refs": [],
+      "status": "passed"
+    }
+  ],
+  "extensions": {
+    "inspector": "tools/inspect_cad_source.py"
+  },
+  "id": "flat_planetary_gear_assembly.layout_proxy_scene.build123d_manifest.source_inspection_report",
+  "kind": "inspection_report",
+  "limitations": [
+    "Inspection verifies source-level carry-through, not generated STEP geometry.",
+    "Run downstream CAD generation and geometry inspection before final proceed approval."
+  ],
+  "proceed_recommendation": "ready_for_proceed_review",
+  "repair_attempts": [],
+  "schema_version": "0.8.0",
+  "skipped_checks": [
+    {
+      "check_id": "step_geometry_export",
+      "reason": "Source-level adapter inspection only; STEP generation requires downstream CAD runtime."
+    },
+    {
+      "check_id": "geometry_measurements",
+      "reason": "No CAD kernel geometry was generated in this adapter stage."
+    }
+  ],
+  "spec_id": "flat_planetary_gear_assembly",
+  "status": "partial"
+}

@@ -1,0 +1,94 @@
+{
+  "expected_primary_artifact": "work/compact_belt_drive_module/review/source/layout_proxy_build123d.step",
+  "extensions": {
+    "exporter": "tools/export_cad_source.py",
+    "note": "Source-level export imports source-locked STEP/STP parts when geometry references are present; final STEP generation still requires a downstream build123d runtime."
+  },
+  "generated_files": [
+    "work/compact_belt_drive_module/review/source/layout_proxy_build123d.py",
+    "work/compact_belt_drive_module/review/source/cad_source_manifest.json"
+  ],
+  "id": "compact_belt_drive_module.layout_proxy_scene.build123d_manifest",
+  "inspection_targets": [
+    "check_root_frame",
+    "check_motor_axis",
+    "check_output_bearing_axis",
+    "check_center_distance",
+    "check_belt_midplane",
+    "check_motor_mount_pattern",
+    "check_608_bearing_interface",
+    "check_gt2_belt_interface",
+    "check_source_locks"
+  ],
+  "kind": "cad_source_manifest",
+  "locked_layout_facts": [
+    "root_frame_locked",
+    "shaft_axes_parallel_z_locked",
+    "pulley_center_distance_locked",
+    "motor_axis_position_locked",
+    "output_axis_position_locked",
+    "belt_midplane_locked",
+    "motor_mount_pattern_locked",
+    "bearing_interface_locked",
+    "output_shaft_interface_locked",
+    "gt2_interface_locked",
+    "fastener_clearance_locked"
+  ],
+  "primitives": [
+    "base_plate.proxy_envelope",
+    "nema17_motor.motor_body",
+    "nema17_motor.shaft_axis",
+    "motor_pulley_20t_5mm.belt_mid_plane",
+    "output_shaft_8mm.shaft_or_bore",
+    "output_shaft_8mm.shaft_axis",
+    "output_pulley_20t_8mm.belt_mid_plane",
+    "output_pulley_20t_8mm.shaft_or_bore",
+    "output_pulley_20t_8mm.shaft_axis",
+    "bearing_608.bearing_envelope",
+    "bearing_608.bearing_axis",
+    "bearing_support_block.proxy_envelope",
+    "gt2_belt_loop.belt_mid_plane",
+    "motor_fasteners_m3.fastener_pattern",
+    "bearing_support_fasteners_m3.fastener_pattern"
+  ],
+  "schema_version": "0.8.0",
+  "source_of_truth": {
+    "package": "work/compact_belt_drive_module/package",
+    "scene": "work/compact_belt_drive_module/review/layout/layout_proxy.scene.json"
+  },
+  "source_path": "work/compact_belt_drive_module/review/source/layout_proxy_build123d.py",
+  "source_scene_id": "compact_belt_drive_module.layout_proxy_scene",
+  "sourced_parts": [
+    {
+      "artifact_kind": "step",
+      "import_strategy": "build123d.import_step",
+      "label": "step.parts 608ZZ ball bearing STEP",
+      "locator": "https://media.githubusercontent.com/media/earthtojake/step.parts/c8616cd125a52ec820cf548440c3842f17f82486/catalog/step/bearing_608zz.step",
+      "part_id": "bearing_608",
+      "placement_policy": "replace matching layout proxy primitives; imported at source STEP origin until downstream alignment applies locked facts",
+      "source_lock_id": "compact_belt_drive_module.bearing_608.source_lock",
+      "source_type": "other"
+    },
+    {
+      "artifact_kind": "step",
+      "import_strategy": "build123d.import_step",
+      "label": "step.parts ISO 4762 socket head cap screw, M3 x 12 STEP",
+      "locator": "https://media.githubusercontent.com/media/earthtojake/step.parts/c8616cd125a52ec820cf548440c3842f17f82486/catalog/step/iso4762_socket_head_cap_screw_m3x12.step",
+      "part_id": "bearing_support_fasteners_m3",
+      "placement_policy": "replace matching layout proxy primitives; imported at source STEP origin until downstream alignment applies locked facts",
+      "source_lock_id": "compact_belt_drive_module.bearing_support_fasteners_m3.source_lock",
+      "source_type": "other"
+    },
+    {
+      "artifact_kind": "step",
+      "import_strategy": "build123d.import_step",
+      "label": "step.parts ISO 4762 socket head cap screw, M3 x 10 STEP",
+      "locator": "https://media.githubusercontent.com/media/earthtojake/step.parts/c8616cd125a52ec820cf548440c3842f17f82486/catalog/step/iso4762_socket_head_cap_screw_m3x10.step",
+      "part_id": "motor_fasteners_m3",
+      "placement_policy": "replace matching layout proxy primitives; imported at source STEP origin until downstream alignment applies locked facts",
+      "source_lock_id": "compact_belt_drive_module.motor_fasteners_m3.source_lock",
+      "source_type": "other"
+    }
+  ],
+  "target_harness": "build123d"
+}

@@ -1,0 +1,231 @@
+{
+  "datums": [],
+  "extensions": {
+    "generator": "tools/generate_layout_proxy.py"
+  },
+  "id": "flat_planetary_gear_assembly.layout_proxy_scene",
+  "inspection_targets": [
+    "check_separate_bodies",
+    "check_planet_radius",
+    "check_ring_sun_coaxial",
+    "check_involute_teeth",
+    "check_viewer_link",
+    "check_no_tooth_overlap",
+    "check_module_locked_ring_mesh",
+    "check_involute_ring_mesh",
+    "check_premium_detailing"
+  ],
+  "kind": "layout_proxy_scene",
+  "locked_layout_facts": [
+    "separate_bodies_locked",
+    "planet_radius_locked",
+    "gear_axes_parallel_locked",
+    "involute_teeth_locked",
+    "no_tooth_overlap_locked",
+    "module_locked_ring_mesh_locked",
+    "premium_detail_non_mesh_locked"
+  ],
+  "maturity_target": "layout_proxy",
+  "primitives": [
+    {
+      "derived_from": [
+        "layout_contract"
+      ],
+      "dimensions": {
+        "policy": "feature-plan driven spur gear with simplified radial teeth"
+      },
+      "fidelity": "layout_only",
+      "frame": "origin at sun gear axis; +Z through gear thickness",
+      "id": "sun_gear.proxy_envelope",
+      "notes": "No interface signature was attached; downstream CAD must use the spec envelope.",
+      "part_id": "sun_gear",
+      "type": "envelope"
+    },
+    {
+      "derived_from": [
+        "layout_contract"
+      ],
+      "dimensions": {
+        "policy": "feature-plan driven planet gear"
+      },
+      "fidelity": "layout_only",
+      "frame": "axis at 42 mm radius, 0 degrees",
+      "id": "planet_gear_1.proxy_envelope",
+      "notes": "No interface signature was attached; downstream CAD must use the spec envelope.",
+      "part_id": "planet_gear_1",
+      "type": "envelope"
+    },
+    {
+      "derived_from": [
+        "layout_contract"
+      ],
+      "dimensions": {
+        "policy": "feature-plan driven planet gear"
+      },
+      "fidelity": "layout_only",
+      "frame": "axis at 42 mm radius, 120 degrees",
+      "id": "planet_gear_2.proxy_envelope",
+      "notes": "No interface signature was attached; downstream CAD must use the spec envelope.",
+      "part_id": "planet_gear_2",
+      "type": "envelope"
+    },
+    {
+      "derived_from": [
+        "layout_contract"
+      ],
+      "dimensions": {
+        "policy": "feature-plan driven planet gear"
+      },
+      "fidelity": "layout_only",
+      "frame": "axis at 42 mm radius, 240 degrees",
+      "id": "planet_gear_3.proxy_envelope",
+      "notes": "No interface signature was attached; downstream CAD must use the spec envelope.",
+      "part_id": "planet_gear_3",
+      "type": "envelope"
+    },
+    {
+      "derived_from": [
+        "layout_contract"
+      ],
+      "dimensions": {
+        "policy": "feature-plan driven ring gear with internal tooth slots"
+      },
+      "fidelity": "layout_only",
+      "frame": "ring gear axis coaxial with sun axis",
+      "id": "ring_gear.proxy_envelope",
+      "notes": "No interface signature was attached; downstream CAD must use the spec envelope.",
+      "part_id": "ring_gear",
+      "type": "envelope"
+    },
+    {
+      "derived_from": [
+        "layout_contract"
+      ],
+      "dimensions": {
+        "policy": "feature-plan driven carrier disk with pin holes"
+      },
+      "fidelity": "layout_only",
+      "frame": "carrier disk below gear plane",
+      "id": "carrier.proxy_envelope",
+      "notes": "No interface signature was attached; downstream CAD must use the spec envelope.",
+      "part_id": "carrier",
+      "type": "envelope"
+    },
+    {
+      "derived_from": [
+        "layout_contract"
+      ],
+      "dimensions": {
+        "policy": "feature-plan driven pin cylinder"
+      },
+      "fidelity": "layout_only",
+      "frame": "pin axis at planet_gear_1 center",
+      "id": "pin_1.proxy_envelope",
+      "notes": "No interface signature was attached; downstream CAD must use the spec envelope.",
+      "part_id": "pin_1",
+      "type": "envelope"
+    },
+    {
+      "derived_from": [
+        "layout_contract"
+      ],
+      "dimensions": {
+        "policy": "feature-plan driven pin cylinder"
+      },
+      "fidelity": "layout_only",
+      "frame": "pin axis at planet_gear_2 center",
+      "id": "pin_2.proxy_envelope",
+      "notes": "No interface signature was attached; downstream CAD must use the spec envelope.",
+      "part_id": "pin_2",
+      "type": "envelope"
+    },
+    {
+      "derived_from": [
+        "layout_contract"
+      ],
+      "dimensions": {
+        "policy": "feature-plan driven pin cylinder"
+      },
+      "fidelity": "layout_only",
+      "frame": "pin axis at planet_gear_3 center",
+      "id": "pin_3.proxy_envelope",
+      "notes": "No interface signature was attached; downstream CAD must use the spec envelope.",
+      "part_id": "pin_3",
+      "type": "envelope"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "sun_ring_coaxial",
+      "locked": true,
+      "parts": [
+        "sun_gear",
+        "ring_gear"
+      ],
+      "statement": "Sun and ring axes share the root Z axis.",
+      "type": "coaxial"
+    },
+    {
+      "id": "carrier_pin_pattern",
+      "locked": true,
+      "parts": [
+        "carrier",
+        "pin_1",
+        "pin_2",
+        "pin_3"
+      ],
+      "statement": "Carrier locates three separate pins on the same 42 mm radius circle as the planets.",
+      "type": "centered_on"
+    },
+    {
+      "id": "gear_mesh_layout",
+      "locked": true,
+      "parts": [
+        "sun_gear",
+        "planet_gear_1",
+        "planet_gear_2",
+        "planet_gear_3",
+        "ring_gear"
+      ],
+      "statement": "Flat simplified gear mesh layout; all gear axes rotate about +Z, with trapezoidal tooth blocks/slots for visual and interface review only.",
+      "type": "rotates_about"
+    }
+  ],
+  "root_frame": {
+    "axes": "XY gear plane; +Z through all gear, carrier, and pin axes",
+    "origin": "sun gear axis at world origin"
+  },
+  "schema_version": "0.8.0",
+  "skipped_checks": [
+    {
+      "check_id": "check_planet_radius",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_ring_sun_coaxial",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_viewer_link",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_no_tooth_overlap",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_module_locked_ring_mesh",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    },
+    {
+      "check_id": "check_involute_ring_mesh",
+      "reason": "Kernel-neutral layout proxy scene generated; downstream CAD geometry inspection still required."
+    }
+  ],
+  "source_of_truth": {
+    "package": "work/flat_planetary_gear_assembly/package",
+    "spec": "work/flat_planetary_gear_assembly/package/cad_spec.json"
+  },
+  "source_spec_id": "flat_planetary_gear_assembly",
+  "units": "mm"
+}

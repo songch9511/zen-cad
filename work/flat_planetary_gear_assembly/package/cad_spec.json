@@ -1,0 +1,1165 @@
+{
+  "artifact_targets": {
+    "primary_artifact": "layout_proxy_build123d.step",
+    "review_artifacts": [
+      "cad_generation.inspection_report.json",
+      "viewer_link.html",
+      "viewer_snapshot.png",
+      "proceed_gate.json"
+    ],
+    "secondary_artifacts": [],
+    "source_intent": "build123d"
+  },
+  "coordinate_system": {
+    "base_plane": "XY",
+    "notes": "Origin at the sun gear axis; XY is the flat gear plane; +Z runs through gear, carrier, and pin thickness.",
+    "root_frame": "sun_axis",
+    "up_axis": "+Z"
+  },
+  "downstream_handoff": {
+    "artifact_targets": [
+      "layout_proxy.scene.json",
+      "layout_proxy_build123d.py",
+      "layout_proxy_build123d.step",
+      "viewer_link.html",
+      "viewer_snapshot.png",
+      "proceed_gate.json"
+    ],
+    "extensions": {
+      "source_spec_markdown": "../spec.md"
+    },
+    "id": "flat_planetary_gear_assembly.layout_handoff",
+    "kind": "handoff_packet",
+    "locked_facts": [
+      "separate_bodies_locked",
+      "planet_radius_locked",
+      "gear_axes_parallel_locked",
+      "involute_teeth_locked",
+      "no_tooth_overlap_locked",
+      "module_locked_ring_mesh_locked",
+      "premium_detail_non_mesh_locked"
+    ],
+    "notes": "Feature-aware build123d source uses bd_warehouse involute sun/planet gears, a scaled negative involute cutter for the internal ring gear, and non-mesh premium detailing such as root fillets, hub bosses, ring mount holes, carrier lightening holes, and pin caps.",
+    "parameter_contract": [
+      "planet_radius",
+      "planet_count",
+      "gear_thickness",
+      "sun_tooth_count",
+      "planet_tooth_count",
+      "ring_tooth_count",
+      "sun_bore_diameter",
+      "planet_pin_diameter",
+      "gear_module",
+      "sun_pitch_radius",
+      "planet_pitch_radius",
+      "ring_pitch_radius",
+      "ring_inner_tip_diameter",
+      "ring_outer_diameter",
+      "mesh_clearance",
+      "sun_tooth_tip_radius",
+      "planet_tooth_tip_radius",
+      "ring_inner_clearance_radius",
+      "sun_root_radius",
+      "planet_root_radius",
+      "ring_tooth_tip_radius",
+      "ring_slot_root_radius"
+    ],
+    "repair_loop": "Use the smallest source/parameter/datum change, regenerate affected artifacts, rerun failed checks, and return to proceed gate if any locked fact must change.",
+    "required_checks": [
+      "check_separate_bodies",
+      "check_planet_radius",
+      "check_ring_sun_coaxial",
+      "check_involute_teeth",
+      "check_viewer_link",
+      "check_no_tooth_overlap",
+      "check_module_locked_ring_mesh",
+      "check_involute_ring_mesh",
+      "check_premium_detailing"
+    ],
+    "schema_version": "0.8.0",
+    "spec_id": "flat_planetary_gear_assembly",
+    "stop_conditions": [
+      "Stop if locked 42 mm planet radius, +Z gear axes, or separate body structure must change.",
+      "Stop if trapezoidal tooth simplification is replaced by smooth cylinders before user review.",
+      "Stop if detail modeling would merge the carrier, pins, planets, ring, or sun into a single logical body.",
+      "Stop if simplified tooth bodies overlap or the no-overlap clearance envelope cannot be preserved.",
+      "Stop if detail modeling removes tooth intermesh phasing or creates tooth solid overlap."
+    ],
+    "target_harness": "build123d",
+    "target_maturity": "detail_cad"
+  },
+  "extensions": {
+    "architecture": "Flat planetary gear layout with separate sun, planet, ring, carrier, and pin bodies.",
+    "cad_feature_plan": {
+      "aesthetic_detail_plan": {
+        "carrier": {
+          "edge_fillet_mm": 0.25,
+          "lightening_holes": {
+            "count": 6,
+            "diameter_mm": 8.0,
+            "radius_mm": 30.0
+          }
+        },
+        "gear_root_fillet_mm": 0.1,
+        "hub_bosses": {
+          "planet": {
+            "diameter_mm": 11.5,
+            "fillet_mm": 0.25,
+            "height_mm": 1.0
+          },
+          "sun": {
+            "diameter_mm": 18.0,
+            "fillet_mm": 0.35,
+            "height_mm": 1.2
+          }
+        },
+        "intent": "Reduce flat toy-like appearance while preserving locked involute mesh geometry.",
+        "mesh_boundary_policy": "Do not alter pitch radii, tooth counts, planet centers, ring cutter phase, or ring cutter scale.",
+        "pins": {
+          "cap_center_z_mm": 4.3,
+          "cap_diameter_mm": 8.0,
+          "cap_fillet_mm": 0.25,
+          "cap_height_mm": 1.4,
+          "stem_edge_fillet_mm": 0.25
+        },
+        "ring_mount_holes": {
+          "count": 6,
+          "diameter_mm": 3.4,
+          "radius_mm": 68.0
+        },
+        "ring_outer_lips": {
+          "bottom_z_mm": -3.4,
+          "height_mm": 0.8,
+          "inner_diameter_mm": 134.0,
+          "outer_diameter_mm": 144.0,
+          "top_z_mm": 3.4
+        },
+        "validation": "Supplemental Boolean mesh checks must remain zero for all six mesh pairs."
+      },
+      "generator": "zen_cad_feature_plan_v4_involute_premium_detail",
+      "intermesh_policy": {
+        "boolean_overlap_required_max_volume_mm3": 0.0,
+        "center_distance_mm": 42.0,
+        "external_addendum_mm": 1.8,
+        "external_dedendum_mm": 2.2,
+        "internal_ring_negative_cutter": "60T involute SpurGear subtracted from ring blank to create internal tooth spaces",
+        "minimum_mesh_clearance_policy": "backlash is created by 1.01x XY scaling of the internal ring tooth-space cutter; static Boolean overlap must be zero for all six mesh pairs",
+        "module_mm": 2.0,
+        "pitch_radii_mm": {
+          "planet": 18.0,
+          "ring": 60.0,
+          "sun": 24.0
+        },
+        "planet_phase_rule": "planet rotations are theta_deg - 10 deg; tested phases give zero Boolean common volume for sun/planet and planet/ring pairs",
+        "planet_ring_clearance_cases_mm": {
+          "boolean_common_volume_mm3": 0.0
+        },
+        "planet_root_radius_mm": 15.8,
+        "planet_tip_radius_mm": 19.8,
+        "planet_tooth_count": 18,
+        "pressure_angle_deg": 14.5,
+        "ring_cutter_scale_xy": 1.01,
+        "ring_slot_phase_deg": -3.0,
+        "ring_slot_root_effective_radius_mm": 62.822,
+        "ring_tooth_count": 60,
+        "ring_tooth_tip_effective_radius_mm": 58.378,
+        "sun_phase_deg": 0.0,
+        "sun_planet_clearance_cases_mm": {
+          "boolean_common_volume_mm3": 0.0
+        },
+        "sun_root_radius_mm": 21.8,
+        "sun_tip_radius_mm": 25.8,
+        "sun_tooth_count": 24,
+        "tooth_count_relation": "ring = sun + 2*planet = 60; (sun + ring) / 3 = 28 integer for equal planet spacing",
+        "type": "bd_warehouse_involute_internal_ring_proxy"
+      },
+      "parts": [
+        {
+          "base": "gear",
+          "dimensions": {
+            "addendum": 1.8,
+            "dedendum": 2.2,
+            "module": 2.0,
+            "outer_diameter": 51.6,
+            "pitch_diameter": 48.0,
+            "pressure_angle": 14.5,
+            "root_diameter": 43.6,
+            "root_fillet": 0.1,
+            "thickness": 6,
+            "tooth_count": 24
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 8,
+              "type": "central_bore"
+            }
+          ],
+          "metadata": {
+            "tooth_profile": "bd_warehouse_involute_spur"
+          },
+          "part_id": "sun_gear",
+          "placement": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.0
+            ]
+          }
+        },
+        {
+          "base": "gear",
+          "dimensions": {
+            "addendum": 1.8,
+            "dedendum": 2.2,
+            "module": 2.0,
+            "outer_diameter": 39.6,
+            "pitch_diameter": 36.0,
+            "pressure_angle": 14.5,
+            "root_diameter": 31.6,
+            "root_fillet": 0.1,
+            "thickness": 6,
+            "tooth_count": 18
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 5,
+              "type": "central_bore"
+            }
+          ],
+          "metadata": {
+            "tooth_profile": "bd_warehouse_involute_spur"
+          },
+          "part_id": "planet_gear_1",
+          "placement": {
+            "position": [
+              42.0,
+              0.0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -10.0
+            ]
+          }
+        },
+        {
+          "base": "gear",
+          "dimensions": {
+            "addendum": 1.8,
+            "dedendum": 2.2,
+            "module": 2.0,
+            "outer_diameter": 39.6,
+            "pitch_diameter": 36.0,
+            "pressure_angle": 14.5,
+            "root_diameter": 31.6,
+            "root_fillet": 0.1,
+            "thickness": 6,
+            "tooth_count": 18
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 5,
+              "type": "central_bore"
+            }
+          ],
+          "metadata": {
+            "tooth_profile": "bd_warehouse_involute_spur"
+          },
+          "part_id": "planet_gear_2",
+          "placement": {
+            "position": [
+              -21.0,
+              36.3731,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              110.0
+            ]
+          }
+        },
+        {
+          "base": "gear",
+          "dimensions": {
+            "addendum": 1.8,
+            "dedendum": 2.2,
+            "module": 2.0,
+            "outer_diameter": 39.6,
+            "pitch_diameter": 36.0,
+            "pressure_angle": 14.5,
+            "root_diameter": 31.6,
+            "root_fillet": 0.1,
+            "thickness": 6,
+            "tooth_count": 18
+          },
+          "features": [
+            {
+              "axis": "z",
+              "diameter": 5,
+              "type": "central_bore"
+            }
+          ],
+          "metadata": {
+            "tooth_profile": "bd_warehouse_involute_spur"
+          },
+          "part_id": "planet_gear_3",
+          "placement": {
+            "position": [
+              -21.0,
+              -36.3731,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              230.0
+            ]
+          }
+        },
+        {
+          "base": "internal_ring_gear",
+          "dimensions": {
+            "addendum": 1.8,
+            "dedendum": 2.2,
+            "inner_diameter": 116.756,
+            "module": 2.0,
+            "outer_diameter": 144,
+            "pitch_diameter": 120.0,
+            "pressure_angle": 14.5,
+            "ring_cutter_addendum": 2.2,
+            "ring_cutter_dedendum": 2.2,
+            "ring_cutter_root_fillet": 0.1,
+            "ring_cutter_scale_xy": 1.01,
+            "slot_phase_deg": -3.0,
+            "slot_root_diameter": 125.644,
+            "thickness": 6,
+            "tooth_count": 60,
+            "tooth_depth": 4.444
+          },
+          "features": [
+            {
+              "axis": "z",
+              "count": 6,
+              "diameter": 3.4,
+              "purpose": "ring_mount_holes",
+              "radius": 68.0,
+              "type": "bolt_circle_pattern"
+            }
+          ],
+          "metadata": {
+            "tooth_profile": "negative_involute_internal_ring"
+          },
+          "part_id": "ring_gear"
+        },
+        {
+          "base": "cylinder",
+          "dimensions": {
+            "addendum": 1.8,
+            "dedendum": 2.2,
+            "diameter": 104,
+            "height": 2,
+            "pressure_angle": 14.5
+          },
+          "features": [
+            {
+              "edges": "outside_circular_edges",
+              "radius": 0.25,
+              "type": "edge_fillet"
+            },
+            {
+              "axis": "z",
+              "diameter": 12,
+              "type": "central_bore"
+            },
+            {
+              "axis": "z",
+              "count": 3,
+              "diameter": 5,
+              "radius": 42.0,
+              "type": "bolt_circle_pattern"
+            },
+            {
+              "axis": "z",
+              "count": 6,
+              "diameter": 8.0,
+              "purpose": "carrier_lightening_holes",
+              "radius": 30.0,
+              "start_angle": 30.0,
+              "type": "bolt_circle_pattern"
+            }
+          ],
+          "metadata": {
+            "tooth_profile": "none"
+          },
+          "part_id": "carrier",
+          "placement": {
+            "position": [
+              0,
+              0,
+              -5
+            ]
+          }
+        },
+        {
+          "base": "cylinder",
+          "dimensions": {
+            "addendum": 1.8,
+            "dedendum": 2.2,
+            "diameter": 5,
+            "height": 10,
+            "pressure_angle": 14.5
+          },
+          "features": [
+            {
+              "edges": "outside_circular_edges",
+              "radius": 0.25,
+              "type": "edge_fillet"
+            }
+          ],
+          "metadata": {
+            "tooth_profile": "none"
+          },
+          "part_id": "pin_1",
+          "placement": {
+            "position": [
+              42,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "base": "cylinder",
+          "dimensions": {
+            "addendum": 1.8,
+            "dedendum": 2.2,
+            "diameter": 5,
+            "height": 10,
+            "pressure_angle": 14.5
+          },
+          "features": [
+            {
+              "edges": "outside_circular_edges",
+              "radius": 0.25,
+              "type": "edge_fillet"
+            }
+          ],
+          "metadata": {
+            "tooth_profile": "none"
+          },
+          "part_id": "pin_2",
+          "placement": {
+            "position": [
+              -21,
+              36.373,
+              0
+            ]
+          }
+        },
+        {
+          "base": "cylinder",
+          "dimensions": {
+            "addendum": 1.8,
+            "dedendum": 2.2,
+            "diameter": 5,
+            "height": 10,
+            "pressure_angle": 14.5
+          },
+          "features": [
+            {
+              "edges": "outside_circular_edges",
+              "radius": 0.25,
+              "type": "edge_fillet"
+            }
+          ],
+          "metadata": {
+            "tooth_profile": "none"
+          },
+          "part_id": "pin_3",
+          "placement": {
+            "position": [
+              -21,
+              -36.373,
+              0
+            ]
+          }
+        }
+      ],
+      "tooth_profile": {
+        "note": "Sun and planets are bd_warehouse involute SpurGear solids. Ring is an internal gear made by subtracting a scaled 60T involute SpurGear cutter from an annular blank.",
+        "pressure_angle_deg": 14.5,
+        "ring_cutter_scale_xy": 1.01,
+        "type": "bd_warehouse_involute_spur"
+      }
+    },
+    "layout_note": "Intermeshing no-overlap proxy: planet teeth align into sun/ring slots with zero boolean overlap and 0.05 mm tightest planet-ring clearance.",
+    "source_spec_markdown": "../spec.md"
+  },
+  "id": "flat_planetary_gear_assembly",
+  "inspection_plan": [
+    {
+      "check_id": "check_separate_bodies",
+      "check_type": "label",
+      "expected": "Generated STEP contains separate sun, three planet, ring, carrier, and three pin bodies.",
+      "locked_fact_refs": [
+        "separate_bodies_locked"
+      ],
+      "target": "planetary_stage"
+    },
+    {
+      "check_id": "check_planet_radius",
+      "check_type": "distance",
+      "expected": "Three planet/pin axes remain on R42 mm; simplified pitch references stay sun 24 mm, planet 18 mm, ring 60 mm.",
+      "locked_fact_refs": [
+        "planet_radius_locked"
+      ],
+      "target": "planet_gear_axes"
+    },
+    {
+      "check_id": "check_ring_sun_coaxial",
+      "check_type": "axis",
+      "expected": "Ring gear and sun gear axes are coaxial.",
+      "locked_fact_refs": [
+        "gear_axes_parallel_locked"
+      ],
+      "target": "ring_gear.axis"
+    },
+    {
+      "check_id": "check_involute_teeth",
+      "check_type": "label",
+      "expected": "Generated source and STEP use bd_warehouse involute sun/planet gears and a negative involute internal ring gear cutter.",
+      "locked_fact_refs": [
+        "involute_teeth_locked",
+        "module_locked_ring_mesh_locked"
+      ],
+      "target": "gear_tooth_patterns"
+    },
+    {
+      "check_id": "check_viewer_link",
+      "check_type": "viewer",
+      "expected": "Proceed gate includes a local CAD Viewer link artifact.",
+      "locked_fact_refs": [
+        "separate_bodies_locked"
+      ],
+      "target": "viewer_link.html"
+    },
+    {
+      "check_id": "check_no_tooth_overlap",
+      "check_type": "distance",
+      "expected": "Sun/planet and planet/ring involute mesh pairs have zero Boolean common volume in the static review pose.",
+      "locked_fact_refs": [
+        "no_tooth_overlap_locked",
+        "planet_radius_locked",
+        "module_locked_ring_mesh_locked"
+      ],
+      "target": "sun/planet/ring intermeshing tooth envelopes"
+    },
+    {
+      "check_id": "check_module_locked_ring_mesh",
+      "check_type": "distance",
+      "expected": "Pitch radii satisfy sun 24 + planet 18 = 42 and ring 60 - planet 18 = 42; ring internal tooth tip radius is 58.2 mm and slot root radius is 62.2 mm; planet tooth tips enter ring slots with 0.4 mm radial clearance.",
+      "locked_fact_refs": [
+        "planet_radius_locked",
+        "module_locked_ring_mesh_locked",
+        "no_tooth_overlap_locked"
+      ],
+      "target": "sun/planet/ring pitch and ring internal mesh envelopes"
+    },
+    {
+      "check_id": "check_involute_ring_mesh",
+      "check_type": "distance",
+      "expected": "Pitch radii satisfy 24+18=42 and 60-18=42; ring is produced by subtracting a scaled 60T involute cutter and all planet/ring Boolean common volumes are zero.",
+      "locked_fact_refs": [
+        "module_locked_ring_mesh_locked",
+        "involute_teeth_locked"
+      ],
+      "target": "sun/planet/ring pitch and internal involute mesh"
+    },
+    {
+      "check_id": "check_premium_detailing",
+      "check_type": "source",
+      "expected": "Source/STEP include root fillets, hub bosses, ring outer lips, ring mount holes, carrier lightening holes, and pin cap/fillet details without changing locked gear mesh facts.",
+      "locked_fact_refs": [
+        "involute_teeth_locked",
+        "module_locked_ring_mesh_locked",
+        "no_tooth_overlap_locked",
+        "premium_detail_non_mesh_locked"
+      ],
+      "target": "non-mesh aesthetic detail features"
+    }
+  ],
+  "interface_signatures": [],
+  "kind": "cad_spec",
+  "layout_contract": {
+    "extensions": {
+      "gear_plane": "XY",
+      "intermesh_policy": {
+        "boolean_overlap_required_max_volume_mm3": 0.0,
+        "center_distance_mm": 42.0,
+        "external_addendum_mm": 1.8,
+        "external_dedendum_mm": 2.2,
+        "internal_ring_negative_cutter": "60T involute SpurGear subtracted from ring blank to create internal tooth spaces",
+        "minimum_mesh_clearance_policy": "backlash is created by 1.01x XY scaling of the internal ring tooth-space cutter; static Boolean overlap must be zero for all six mesh pairs",
+        "module_mm": 2.0,
+        "pitch_radii_mm": {
+          "planet": 18.0,
+          "ring": 60.0,
+          "sun": 24.0
+        },
+        "planet_phase_rule": "planet rotations are theta_deg - 10 deg; tested phases give zero Boolean common volume for sun/planet and planet/ring pairs",
+        "planet_ring_clearance_cases_mm": {
+          "boolean_common_volume_mm3": 0.0
+        },
+        "planet_root_radius_mm": 15.8,
+        "planet_tip_radius_mm": 19.8,
+        "planet_tooth_count": 18,
+        "pressure_angle_deg": 14.5,
+        "ring_cutter_scale_xy": 1.01,
+        "ring_slot_phase_deg": -3.0,
+        "ring_slot_root_effective_radius_mm": 62.822,
+        "ring_tooth_count": 60,
+        "ring_tooth_tip_effective_radius_mm": 58.378,
+        "sun_phase_deg": 0.0,
+        "sun_planet_clearance_cases_mm": {
+          "boolean_common_volume_mm3": 0.0
+        },
+        "sun_root_radius_mm": 21.8,
+        "sun_tip_radius_mm": 25.8,
+        "sun_tooth_count": 24,
+        "tooth_count_relation": "ring = sun + 2*planet = 60; (sun + ring) / 3 = 28 integer for equal planet spacing",
+        "type": "bd_warehouse_involute_internal_ring_proxy"
+      },
+      "mesh_pitch_radii_mm": {
+        "planet": 18.0,
+        "ring": 60.0,
+        "sun": 24.0
+      },
+      "module_mm": 2.0,
+      "planet_angles_deg": [
+        0,
+        120,
+        240
+      ],
+      "planet_radius_mm": 42.0,
+      "source_spec_markdown": "../spec.md"
+    },
+    "id": "flat_planetary_gear_assembly_layout",
+    "inspection_targets": [
+      {
+        "check_type": "distance",
+        "expected": "Planet gear axes lie on a 42 mm radius circle.",
+        "target": "planet_gear_axes",
+        "target_id": "check_planet_radius"
+      },
+      {
+        "check_type": "distance",
+        "expected": "Module-locked planetary relations and internal ring mesh envelope are preserved.",
+        "target": "sun/planet/ring pitch and ring internal mesh envelopes",
+        "target_id": "check_module_locked_ring_mesh"
+      },
+      {
+        "check_type": "distance",
+        "expected": "Module-locked involute ring mesh is preserved.",
+        "target": "involute internal ring mesh",
+        "target_id": "check_involute_ring_mesh"
+      },
+      {
+        "check_type": "source",
+        "expected": "Premium detail features are present and do not alter locked mesh facts.",
+        "target": "premium non-mesh detail features",
+        "target_id": "check_premium_detailing"
+      }
+    ],
+    "kind": "layout_contract",
+    "locked_facts": [
+      "separate_bodies_locked",
+      "planet_radius_locked",
+      "gear_axes_parallel_locked",
+      "involute_teeth_locked",
+      "no_tooth_overlap_locked",
+      "module_locked_ring_mesh_locked",
+      "premium_detail_non_mesh_locked"
+    ],
+    "parts": [
+      {
+        "local_frame": "origin at sun gear axis; +Z through gear thickness",
+        "part_id": "sun_gear",
+        "proxy_policy": "feature-plan driven spur gear with simplified radial teeth",
+        "role": "driver"
+      },
+      {
+        "local_frame": "axis at 42 mm radius, 0 degrees",
+        "part_id": "planet_gear_1",
+        "proxy_policy": "feature-plan driven planet gear",
+        "role": "driven"
+      },
+      {
+        "local_frame": "axis at 42 mm radius, 120 degrees",
+        "part_id": "planet_gear_2",
+        "proxy_policy": "feature-plan driven planet gear",
+        "role": "driven"
+      },
+      {
+        "local_frame": "axis at 42 mm radius, 240 degrees",
+        "part_id": "planet_gear_3",
+        "proxy_policy": "feature-plan driven planet gear",
+        "role": "driven"
+      },
+      {
+        "local_frame": "ring gear axis coaxial with sun axis",
+        "part_id": "ring_gear",
+        "proxy_policy": "feature-plan driven ring gear with internal tooth slots",
+        "role": "structure"
+      },
+      {
+        "local_frame": "carrier disk below gear plane",
+        "part_id": "carrier",
+        "proxy_policy": "feature-plan driven carrier disk with pin holes",
+        "role": "locator"
+      },
+      {
+        "local_frame": "pin axis at planet_gear_1 center",
+        "part_id": "pin_1",
+        "proxy_policy": "feature-plan driven pin cylinder",
+        "role": "fastener"
+      },
+      {
+        "local_frame": "pin axis at planet_gear_2 center",
+        "part_id": "pin_2",
+        "proxy_policy": "feature-plan driven pin cylinder",
+        "role": "fastener"
+      },
+      {
+        "local_frame": "pin axis at planet_gear_3 center",
+        "part_id": "pin_3",
+        "proxy_policy": "feature-plan driven pin cylinder",
+        "role": "fastener"
+      }
+    ],
+    "relationships": {
+      "connections": [
+        {
+          "locked": true,
+          "parts": [
+            "sun_gear",
+            "ring_gear"
+          ],
+          "relationship_id": "sun_ring_coaxial",
+          "statement": "Sun and ring axes share the root Z axis.",
+          "type": "coaxial"
+        },
+        {
+          "locked": true,
+          "parts": [
+            "carrier",
+            "pin_1",
+            "pin_2",
+            "pin_3"
+          ],
+          "relationship_id": "carrier_pin_pattern",
+          "statement": "Carrier locates three separate pins on the same 42 mm radius circle as the planets.",
+          "type": "centered_on"
+        }
+      ],
+      "contacts": [],
+      "motion": [
+        {
+          "locked": true,
+          "parts": [
+            "sun_gear",
+            "planet_gear_1",
+            "planet_gear_2",
+            "planet_gear_3",
+            "ring_gear"
+          ],
+          "relationship_id": "gear_mesh_layout",
+          "statement": "Flat simplified gear mesh layout; all gear axes rotate about +Z, with trapezoidal tooth blocks/slots for visual and interface review only.",
+          "type": "rotates_about"
+        }
+      ]
+    },
+    "root_component": "sun_gear",
+    "root_frame": {
+      "axes": "XY gear plane; +Z through all gear, carrier, and pin axes",
+      "origin": "sun gear axis at world origin"
+    },
+    "schema_version": "0.8.0"
+  },
+  "locked_layout_facts": [
+    {
+      "fact_id": "separate_bodies_locked",
+      "must_preserve": true,
+      "statement": "Sun, three planets, ring, carrier, and three pins remain separate logical CAD bodies in the exported assembly.",
+      "type": "interface"
+    },
+    {
+      "fact_id": "planet_radius_locked",
+      "must_preserve": true,
+      "statement": "The three planet gear axes are on a 42 mm radius circle around the sun axis, consistent with derived pitch radii sun 24 mm, planet 18 mm, and ring 60 mm.",
+      "type": "center_distance"
+    },
+    {
+      "fact_id": "gear_axes_parallel_locked",
+      "must_preserve": true,
+      "statement": "Sun, planet, ring, carrier, and pin axes are parallel to +Z.",
+      "type": "axis"
+    },
+    {
+      "fact_id": "involute_teeth_locked",
+      "must_preserve": true,
+      "statement": "Sun and planet gears use bd_warehouse involute SpurGear geometry; ring gear uses a matching negative involute cutter to form internal tooth spaces.",
+      "type": "gear_mesh"
+    },
+    {
+      "fact_id": "no_tooth_overlap_locked",
+      "must_preserve": true,
+      "statement": "Involute sun/planet and planet/ring mesh pairs must have zero Boolean common volume in the static review pose.",
+      "type": "clearance"
+    },
+    {
+      "fact_id": "module_locked_ring_mesh_locked",
+      "must_preserve": true,
+      "statement": "Sun, planet, and ring pitch radii remain 24/18/60 mm with module 2 mm; ring teeth are internal teeth whose tips are inside the ring pitch circle and whose slots accept planet tooth tips.",
+      "type": "gear_mesh"
+    },
+    {
+      "fact_id": "premium_detail_non_mesh_locked",
+      "must_preserve": true,
+      "statement": "Premium detail features such as hub bosses, ring lips, mount holes, carrier lightening holes, and pin caps remain outside locked gear mesh envelopes and must not change pitch radii, centers, or zero-overlap mesh checks.",
+      "type": "detail"
+    }
+  ],
+  "maturity_target": "detail_cad",
+  "parameter_contract": [
+    {
+      "drives": [
+        "planet_gear_1.position",
+        "planet_gear_2.position",
+        "planet_gear_3.position",
+        "pin_1.position",
+        "pin_2.position",
+        "pin_3.position",
+        "carrier.pin_pattern"
+      ],
+      "name": "planet_radius",
+      "source": "user",
+      "status": "locked",
+      "units": "mm",
+      "validation": [
+        "check_planet_radius"
+      ],
+      "value": 42.0
+    },
+    {
+      "drives": [
+        "planet_gear_instances",
+        "pin_instances",
+        "carrier.pin_pattern"
+      ],
+      "name": "planet_count",
+      "source": "user",
+      "status": "locked",
+      "units": "count",
+      "validation": [
+        "check_separate_bodies",
+        "check_planet_radius"
+      ],
+      "value": 3
+    },
+    {
+      "drives": [
+        "sun_gear.thickness",
+        "planet_gear.thickness",
+        "ring_gear.thickness"
+      ],
+      "name": "gear_thickness",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "mm",
+      "validation": [
+        "cad_feature_bbox_matches_plan"
+      ],
+      "value": 6
+    },
+    {
+      "drives": [
+        "sun_gear.trapezoidal_teeth"
+      ],
+      "name": "sun_tooth_count",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "count",
+      "validation": [
+        "check_simplified_teeth"
+      ],
+      "value": 24
+    },
+    {
+      "drives": [
+        "planet_gear_1.trapezoidal_teeth",
+        "planet_gear_2.trapezoidal_teeth",
+        "planet_gear_3.trapezoidal_teeth"
+      ],
+      "name": "planet_tooth_count",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "count",
+      "validation": [
+        "check_simplified_teeth"
+      ],
+      "value": 18
+    },
+    {
+      "drives": [
+        "ring_gear.internal_trapezoidal_slots"
+      ],
+      "name": "ring_tooth_count",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "count",
+      "validation": [
+        "check_simplified_teeth"
+      ],
+      "value": 60
+    },
+    {
+      "drives": [
+        "sun_gear.central_bore"
+      ],
+      "name": "sun_bore_diameter",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "mm",
+      "validation": [
+        "check_ring_sun_coaxial"
+      ],
+      "value": 8
+    },
+    {
+      "drives": [
+        "planet_gear.central_bore",
+        "pin_cylinders",
+        "carrier.pin_holes"
+      ],
+      "name": "planet_pin_diameter",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "mm",
+      "validation": [
+        "check_planet_radius"
+      ],
+      "value": 5
+    },
+    {
+      "drives": [
+        "sun_gear.pitch_reference",
+        "planet_gear.pitch_reference",
+        "ring_gear.pitch_reference"
+      ],
+      "name": "gear_module",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_planet_radius",
+        "check_ring_sun_coaxial"
+      ],
+      "value": 2.0
+    },
+    {
+      "drives": [
+        "sun_gear.pitch_reference"
+      ],
+      "name": "sun_pitch_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_planet_radius"
+      ],
+      "value": 24.0
+    },
+    {
+      "drives": [
+        "planet_gear.pitch_reference"
+      ],
+      "name": "planet_pitch_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_planet_radius"
+      ],
+      "value": 18.0
+    },
+    {
+      "drives": [
+        "ring_gear.pitch_reference"
+      ],
+      "name": "ring_pitch_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_planet_radius",
+        "check_ring_sun_coaxial"
+      ],
+      "value": 60.0
+    },
+    {
+      "drives": [
+        "ring_gear.internal_tooth_tip_reference"
+      ],
+      "name": "ring_inner_tip_diameter",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "cad_feature_bbox_matches_plan"
+      ],
+      "value": 116.756
+    },
+    {
+      "drives": [
+        "ring_gear.outer_envelope"
+      ],
+      "name": "ring_outer_diameter",
+      "source": "layout_assumption",
+      "status": "assumed",
+      "units": "mm",
+      "validation": [
+        "cad_feature_bbox_matches_plan"
+      ],
+      "value": 144.0
+    },
+    {
+      "drives": [
+        "planet_ring_mesh_line",
+        "sun_planet_mesh_line"
+      ],
+      "name": "mesh_clearance",
+      "source": "validated_boolean_clearance",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_no_tooth_overlap",
+        "check_involute_ring_mesh"
+      ],
+      "value": 0.0
+    },
+    {
+      "drives": [
+        "sun_gear.tooth_tip_envelope"
+      ],
+      "name": "sun_tooth_tip_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_no_tooth_overlap"
+      ],
+      "value": 25.8
+    },
+    {
+      "drives": [
+        "planet_gear.tooth_tip_envelope"
+      ],
+      "name": "planet_tooth_tip_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_no_tooth_overlap"
+      ],
+      "value": 19.8
+    },
+    {
+      "drives": [
+        "ring_gear.inner_clearance_envelope"
+      ],
+      "name": "ring_inner_clearance_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_no_tooth_overlap"
+      ],
+      "value": 58.378
+    },
+    {
+      "drives": [
+        "sun_gear.tooth_root_envelope"
+      ],
+      "name": "sun_root_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_no_tooth_overlap"
+      ],
+      "value": 21.8
+    },
+    {
+      "drives": [
+        "planet_gear.tooth_root_envelope"
+      ],
+      "name": "planet_root_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_no_tooth_overlap"
+      ],
+      "value": 15.8
+    },
+    {
+      "drives": [
+        "ring_gear.internal_tooth_tip_envelope"
+      ],
+      "name": "ring_tooth_tip_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_no_tooth_overlap"
+      ],
+      "value": 58.378
+    },
+    {
+      "drives": [
+        "ring_gear.internal_slot_root_envelope"
+      ],
+      "name": "ring_slot_root_radius",
+      "source": "derived_constraint",
+      "status": "derived",
+      "units": "mm",
+      "validation": [
+        "check_no_tooth_overlap"
+      ],
+      "value": 62.822
+    }
+  ],
+  "proceed_gate": {
+    "approved_next_maturity": "detail_cad",
+    "blocked_by": [],
+    "required_user_decision": "Review the STEP/viewer/snapshot for positioning, separate bodies, +Z axes, 42 mm planet circle, and simplified trapezoidal teeth; say proceed before further detail or involute tooth refinement."
+  },
+  "repair_loop": {
+    "locked_fact_change_policy": "Return to the benchmark contract before changing locked axes, body structure, or planet radius.",
+    "rerun_failed_checks": true,
+    "smallest_source_change": true
+  },
+  "schema_version": "0.8.0",
+  "title": "Flat Planetary Gear Assembly",
+  "units": "mm"
+}

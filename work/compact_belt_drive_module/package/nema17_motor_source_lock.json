@@ -1,0 +1,52 @@
+{
+  "claims_made": [
+    "review_reference",
+    "source_identity"
+  ],
+  "claims_not_made": [
+    "No rating, load capacity, torque capacity, or safety factor is claimed.",
+    "No certification, compliance, price, inventory, or availability is claimed.",
+    "No generated STEP geometry is certified by this evidence artifact alone."
+  ],
+  "evidence_sources": [
+    {
+      "artifact_kind": "catalog_page",
+      "locator": "https://www.pololu.com/product/1200",
+      "notes": "Manufacturer product URL recorded as source identity evidence.",
+      "observed_at": "2026-06-10",
+      "retrieval_status": "provided_url_not_fetched",
+      "source_type": "manufacturer",
+      "trusted_for": [
+        "source_identity",
+        "review_only"
+      ]
+    }
+  ],
+  "extensions": {
+    "generator": "tools/generate_source_lock_evidence.py",
+    "package": "work/compact_belt_drive_module/package"
+  },
+  "id": "compact_belt_drive_module.nema17_motor.source_lock",
+  "interface_signature_refs": [
+    "motor.nema_17.layout"
+  ],
+  "interface_signature_role": "layout_reference_only",
+  "kind": "source_lock_evidence",
+  "lock_status": "source_locked",
+  "part_id": "nema17_motor",
+  "part_role": "standard_part",
+  "required_before_final": [
+    "Import the locked source geometry in the downstream CAD harness.",
+    "Run geometry checks for required datums, axes, interfaces, and clearances.",
+    "Stop if source geometry changes an approved locked layout fact.",
+    "Confirm exact shaft length, shaft diameter, body length, pilot boss geometry, connector keep-out, and thermal/torque suitability before final CAD."
+  ],
+  "schema_version": "0.8.0",
+  "source_identity": {
+    "display_name": "Pololu NEMA 17 stepper motor, 42x48mm, 5mm shaft candidate",
+    "identity_basis": "manufacturer_url",
+    "manufacturer_name": "Pololu",
+    "model": "1200",
+    "product_url": "https://www.pololu.com/product/1200"
+  }
+}

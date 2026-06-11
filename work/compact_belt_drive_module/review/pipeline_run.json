@@ -1,0 +1,93 @@
+{
+  "artifacts": {
+    "layout_generation_report": "work/compact_belt_drive_module/review/layout/layout_proxy.inspection_report.json",
+    "layout_report": "work/compact_belt_drive_module/review/layout/locked_facts.inspection_report.json",
+    "proceed_gate": "work/compact_belt_drive_module/review/proceed_gate.json",
+    "review_bundle": "work/compact_belt_drive_module/review/review_bundle.json",
+    "scene": "work/compact_belt_drive_module/review/layout/layout_proxy.scene.json",
+    "source": "work/compact_belt_drive_module/review/source/layout_proxy_build123d.py",
+    "source_manifest": "work/compact_belt_drive_module/review/source/cad_source_manifest.json",
+    "source_report": "work/compact_belt_drive_module/review/source/source.inspection_report.json"
+  },
+  "contract_package": "work/compact_belt_drive_module/package",
+  "extensions": {
+    "runner": "tools/run_contract_pipeline.py"
+  },
+  "id": "compact_belt_drive_module.pipeline_run",
+  "kind": "pipeline_run",
+  "schema_version": "0.8.0",
+  "status": "ready_for_user_review",
+  "steps": [
+    {
+      "issues": [],
+      "note": "",
+      "outputs": [],
+      "status": "passed",
+      "step_id": "validate_contract"
+    },
+    {
+      "issues": [],
+      "note": "",
+      "outputs": [
+        "work/compact_belt_drive_module/review/layout/layout_proxy.scene.json",
+        "work/compact_belt_drive_module/review/layout/layout_proxy.inspection_report.json"
+      ],
+      "status": "passed",
+      "step_id": "generate_layout_proxy"
+    },
+    {
+      "issues": [],
+      "note": "",
+      "outputs": [
+        "work/compact_belt_drive_module/review/layout/locked_facts.inspection_report.json"
+      ],
+      "status": "passed",
+      "step_id": "inspect_layout_proxy"
+    },
+    {
+      "issues": [],
+      "note": "",
+      "outputs": [
+        "work/compact_belt_drive_module/review/source/layout_proxy_build123d.py",
+        "work/compact_belt_drive_module/review/source/cad_source_manifest.json"
+      ],
+      "status": "passed",
+      "step_id": "export_cad_source"
+    },
+    {
+      "issues": [],
+      "note": "",
+      "outputs": [
+        "work/compact_belt_drive_module/review/source/source.inspection_report.json"
+      ],
+      "status": "passed",
+      "step_id": "inspect_cad_source"
+    },
+    {
+      "issues": [],
+      "note": "",
+      "outputs": [
+        "work/compact_belt_drive_module/review/proceed_gate.json"
+      ],
+      "status": "passed",
+      "step_id": "package_proceed_gate"
+    },
+    {
+      "issues": [],
+      "note": "",
+      "outputs": [
+        "work/compact_belt_drive_module/review/review_bundle.json"
+      ],
+      "status": "passed",
+      "step_id": "package_review_bundle"
+    },
+    {
+      "issues": [],
+      "note": "Detail handoff requires an explicit proceed approval artifact.",
+      "outputs": [],
+      "status": "skipped",
+      "step_id": "detail_handoff"
+    }
+  ],
+  "target_harness": "unknown"
+}

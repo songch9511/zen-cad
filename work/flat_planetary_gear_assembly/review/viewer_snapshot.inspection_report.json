@@ -1,0 +1,55 @@
+{
+  "artifact": {
+    "kind": "snapshot",
+    "path": "/Users/daniel/Library/CloudStorage/GoogleDrive-songch9511@gmail.com/My Drive/4. Archive/CAD/zen-cad/work/flat_planetary_gear_assembly/review/viewer_snapshot.png"
+  },
+  "checks": [
+    {
+      "check_id": "viewer_url_opened",
+      "check_type": "viewer",
+      "evidence": "url=http://localhost:5173/?model=%2Fzen-cad-artifacts%2Flayout_proxy_build123d-703d2a079d.step&label=layout_proxy_build123d.step&realCanvas=1",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "viewer_model_loaded",
+      "check_type": "viewer",
+      "evidence": "Loaded layout_proxy_build123d.step \u00b7 STEP/STP \u00b7 83,179 vertices.",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "viewer_canvas_present",
+      "check_type": "viewer",
+      "evidence": "canvas_box=843x677",
+      "locked_fact_refs": [],
+      "status": "passed"
+    },
+    {
+      "check_id": "snapshot_file_written",
+      "check_type": "snapshot",
+      "evidence": "snapshot=/Users/daniel/Library/CloudStorage/GoogleDrive-songch9511@gmail.com/My Drive/4. Archive/CAD/zen-cad/work/flat_planetary_gear_assembly/review/viewer_snapshot.png; bytes=206664",
+      "locked_fact_refs": [],
+      "status": "passed"
+    }
+  ],
+  "extensions": {
+    "camera": "front",
+    "capturer": "tools/capture_viewer_snapshot.py",
+    "render_mode": "shaded + wire",
+    "status_line": "Loaded layout_proxy_build123d.step \u00b7 STEP/STP \u00b7 83,179 vertices.",
+    "viewer_root": "/Users/daniel/CAD-Visualizer",
+    "viewer_url": "http://localhost:5173/?model=%2Fzen-cad-artifacts%2Flayout_proxy_build123d-703d2a079d.step&label=layout_proxy_build123d.step&realCanvas=1"
+  },
+  "id": "viewer_snapshot.viewer_snapshot_report",
+  "kind": "inspection_report",
+  "limitations": [
+    "Viewer snapshots are review evidence only and do not replace geometry checks."
+  ],
+  "proceed_recommendation": "ready_for_proceed_review",
+  "repair_attempts": [],
+  "schema_version": "0.8.0",
+  "skipped_checks": [],
+  "spec_id": "viewer_snapshot",
+  "status": "passed"
+}

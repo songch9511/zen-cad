@@ -617,6 +617,8 @@ def approximate_base_volume(feature_plan: dict[str, Any]) -> float:
 
 def call_bool(obj: object, method_name: str) -> bool | None:
     method = getattr(obj, method_name, None)
+    if isinstance(method, bool):
+        return method
     if not callable(method):
         return None
     try:

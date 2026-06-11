@@ -1,0 +1,303 @@
+{
+  "extensions": {
+    "authoring_note": "Compact vertical-shaft belt-drive layout contract generated from user prompt.",
+    "belt_mid_plane_z_mm": 13.5,
+    "center_distance_mm": 70,
+    "source_spec_markdown": "../spec.md"
+  },
+  "id": "compact_belt_drive_module_layout",
+  "inspection_targets": [
+    {
+      "check_type": "frame",
+      "expected": "Root frame is base plate lower-face center, XY base plane, +Z up.",
+      "target": "base_plate_frame",
+      "target_id": "check_root_frame"
+    },
+    {
+      "check_type": "axis",
+      "expected": "Motor shaft axis exists and is +Z at X=-35 mm, Y=0 mm.",
+      "target": "nema17_motor.shaft_axis",
+      "target_id": "check_motor_axis"
+    },
+    {
+      "check_type": "axis",
+      "expected": "Output shaft axis, bearing bore axis, and output pulley bore axis are coaxial at X=35 mm, Y=0 mm.",
+      "target": "output_shaft_8mm.shaft_axis",
+      "target_id": "check_output_bearing_axis"
+    },
+    {
+      "check_type": "distance",
+      "expected": "Motor shaft axis and output shaft axis are 70 mm apart along +X.",
+      "target": "nema17_motor.shaft_axis to output_shaft_8mm.shaft_axis",
+      "target_id": "check_center_distance"
+    },
+    {
+      "check_type": "plane",
+      "expected": "Motor pulley pitch plane, output pulley pitch plane, and GT2 belt centerline share Z=13.5 mm.",
+      "target": "gt2_belt_loop.belt_mid_plane",
+      "target_id": "check_belt_midplane"
+    },
+    {
+      "check_type": "mate",
+      "expected": "Four M3 motor fastener axes form a 31 mm square centered on the motor shaft axis.",
+      "target": "motor_fasteners_m3.fastener_pattern",
+      "target_id": "check_motor_mount_pattern"
+    },
+    {
+      "check_type": "mate",
+      "expected": "608 bearing proxy preserves 8 mm bore, 22 mm OD, and 7 mm width.",
+      "target": "bearing_608.bearing_envelope",
+      "target_id": "check_608_bearing_interface"
+    },
+    {
+      "check_type": "mate",
+      "expected": "GT2 belt proxy preserves 2 mm pitch and 6 mm belt width.",
+      "target": "gt2_belt_loop.belt_mid_plane",
+      "target_id": "check_gt2_belt_interface"
+    }
+  ],
+  "kind": "layout_contract",
+  "locked_facts": [
+    "root_frame_locked",
+    "shaft_axes_parallel_z_locked",
+    "pulley_center_distance_locked",
+    "motor_axis_position_locked",
+    "output_axis_position_locked",
+    "belt_midplane_locked",
+    "motor_mount_pattern_locked",
+    "bearing_interface_locked",
+    "output_shaft_interface_locked",
+    "gt2_interface_locked",
+    "fastener_clearance_locked"
+  ],
+  "parts": [
+    {
+      "local_frame": "base_plate_frame: origin at base plate lower-face center; XY footprint, +Z through 6 mm plate thickness.",
+      "part_id": "base_plate",
+      "proxy_policy": "custom rectangular base plate envelope, 125 x 75 x 6 mm, with interface cut/axis markers only.",
+      "role": "structure"
+    },
+    {
+      "interface_signature_refs": [
+        "motor.nema_17.layout"
+      ],
+      "local_frame": "motor_frame: shaft axis +Z at X=-35 mm, Y=0 mm; front face flush to base_plate_bottom_plane; body extends -Z.",
+      "part_id": "nema17_motor",
+      "proxy_policy": "NEMA 17 box envelope with shaft axis and 31 mm mounting pattern; connector and exact length simplified.",
+      "role": "driver"
+    },
+    {
+      "interface_signature_refs": [
+        "belt.gt2_6mm.layout"
+      ],
+      "local_frame": "motor_pulley_frame: bore axis +Z coaxial with motor shaft, pitch plane XY at Z=13.5 mm, 20T pitch reference.",
+      "part_id": "motor_pulley_20t_5mm",
+      "proxy_policy": "smooth pulley pitch cylinder and belt pitch plane; teeth, flanges, hub, and set screws simplified.",
+      "role": "driven"
+    },
+    {
+      "interface_signature_refs": [
+        "shaft_bore.8mm.layout"
+      ],
+      "local_frame": "output_shaft_frame: shaft axis +Z at X=35 mm, Y=0 mm, crossing belt mid-plane at Z=13.5 mm.",
+      "part_id": "output_shaft_8mm",
+      "proxy_policy": "8 mm diameter shaft cylinder envelope; end retention, flats, and finish simplified.",
+      "role": "driven"
+    },
+    {
+      "interface_signature_refs": [
+        "belt.gt2_6mm.layout",
+        "shaft_bore.8mm.layout"
+      ],
+      "local_frame": "output_pulley_frame: bore axis +Z coaxial with output shaft, pitch plane XY at Z=13.5 mm, 20T pitch reference.",
+      "part_id": "output_pulley_20t_8mm",
+      "proxy_policy": "smooth pulley pitch cylinder and 8 mm bore axis; teeth, flanges, hub, and set screws simplified.",
+      "role": "driven"
+    },
+    {
+      "interface_signature_refs": [
+        "bearing.608.layout"
+      ],
+      "local_frame": "bearing_frame: bearing bore axis +Z coaxial with output shaft at X=35 mm, Y=0 mm; seated in support block.",
+      "part_id": "bearing_608",
+      "proxy_policy": "608 bearing cylindrical envelope preserving 8 mm bore, 22 mm OD, and 7 mm width.",
+      "role": "guide"
+    },
+    {
+      "local_frame": "support_block_frame: origin at output shaft axis on top face of base plate; bearing pocket axis +Z.",
+      "part_id": "bearing_support_block",
+      "proxy_policy": "custom support block envelope with 608 bearing seat and M3 fastener axes; fillets and retainer details simplified.",
+      "role": "structure"
+    },
+    {
+      "interface_signature_refs": [
+        "belt.gt2_6mm.layout"
+      ],
+      "local_frame": "belt_frame: belt centerline in XY plane at Z=13.5 mm, tangent to both pulley pitch circles.",
+      "part_id": "gt2_belt_loop",
+      "proxy_policy": "belt mid-plane and width envelope only; tooth shape and belt thickness simplified.",
+      "role": "driven"
+    },
+    {
+      "interface_signature_refs": [
+        "fastener.m3_clearance.layout"
+      ],
+      "local_frame": "motor_fastener_pattern_frame: four +Z axes on 31 mm square centered at X=-35 mm, Y=0 mm.",
+      "part_id": "motor_fasteners_m3",
+      "proxy_policy": "clearance axes and pattern only; screw heads and threads simplified.",
+      "role": "fastener"
+    },
+    {
+      "interface_signature_refs": [
+        "fastener.m3_clearance.layout"
+      ],
+      "local_frame": "support_fastener_pattern_frame: four +Z axes around bearing support block, centered at X=35 mm, Y=0 mm.",
+      "part_id": "bearing_support_fasteners_m3",
+      "proxy_policy": "clearance axes and pattern only; screw heads and threads simplified.",
+      "role": "fastener"
+    }
+  ],
+  "relationships": {
+    "connections": [
+      {
+        "locked": true,
+        "parts": [
+          "nema17_motor",
+          "base_plate",
+          "motor_fasteners_m3"
+        ],
+        "relationship_id": "motor_fastened_to_base",
+        "statement": "NEMA 17 motor is fixed to the base plate using four M3 fastener axes on a 31 mm square pattern centered on the motor shaft.",
+        "type": "fastened_by"
+      },
+      {
+        "locked": true,
+        "parts": [
+          "motor_pulley_20t_5mm",
+          "nema17_motor"
+        ],
+        "relationship_id": "motor_pulley_coaxial_with_motor",
+        "statement": "Motor pulley bore and pitch circle are coaxial with the NEMA 17 motor shaft axis.",
+        "type": "coaxial"
+      },
+      {
+        "locked": true,
+        "parts": [
+          "bearing_608",
+          "bearing_support_block"
+        ],
+        "relationship_id": "bearing_outer_race_seated",
+        "statement": "608 bearing outer race is centered in the support block bearing seat.",
+        "type": "centered_on"
+      },
+      {
+        "locked": true,
+        "parts": [
+          "output_shaft_8mm",
+          "bearing_608",
+          "output_pulley_20t_8mm"
+        ],
+        "relationship_id": "output_shaft_bearing_pulley_coaxial",
+        "statement": "Output shaft, 608 bearing bore, and output pulley bore share the same +Z axis.",
+        "type": "coaxial"
+      },
+      {
+        "locked": true,
+        "parts": [
+          "gt2_belt_loop",
+          "motor_pulley_20t_5mm",
+          "output_pulley_20t_8mm"
+        ],
+        "relationship_id": "belt_pitch_contact_pulleys",
+        "statement": "GT2 belt centerline is tangent to both pulley pitch circles in the shared belt mid-plane.",
+        "type": "pitch_contact"
+      },
+      {
+        "locked": true,
+        "parts": [
+          "bearing_support_block",
+          "base_plate",
+          "bearing_support_fasteners_m3"
+        ],
+        "relationship_id": "support_block_fastened_to_base",
+        "statement": "Bearing support block is fixed to the top of the base plate by M3 fastener axes outside the belt keep-out.",
+        "type": "fastened_by"
+      }
+    ],
+    "contacts": [
+      {
+        "locked": true,
+        "parts": [
+          "nema17_motor",
+          "base_plate"
+        ],
+        "relationship_id": "motor_face_flush_to_base_bottom",
+        "statement": "NEMA 17 front mounting face is flush to the base plate bottom datum plane.",
+        "type": "flush_plane"
+      },
+      {
+        "locked": true,
+        "parts": [
+          "bearing_support_block",
+          "base_plate"
+        ],
+        "relationship_id": "support_block_flush_to_base_top",
+        "statement": "Bearing support block bottom face is flush to the base plate top datum plane.",
+        "type": "flush_plane"
+      },
+      {
+        "locked": true,
+        "parts": [
+          "gt2_belt_loop",
+          "bearing_support_block",
+          "motor_fasteners_m3",
+          "bearing_support_fasteners_m3"
+        ],
+        "relationship_id": "belt_keep_out_clearance",
+        "statement": "Belt width envelope plus 2 mm lateral clearance remains clear of support and fastener head envelopes.",
+        "type": "keep_out"
+      }
+    ],
+    "motion": [
+      {
+        "locked": true,
+        "parts": [
+          "nema17_motor",
+          "motor_pulley_20t_5mm"
+        ],
+        "relationship_id": "motor_pulley_rotates_about_motor_axis",
+        "statement": "Motor pulley rotates about the NEMA 17 shaft axis with the motor rotor.",
+        "type": "rotates_about"
+      },
+      {
+        "locked": true,
+        "parts": [
+          "output_shaft_8mm",
+          "bearing_608",
+          "output_pulley_20t_8mm"
+        ],
+        "relationship_id": "output_shaft_rotates_in_bearing",
+        "statement": "Output shaft and output pulley rotate about the 608 bearing bore axis.",
+        "type": "rotates_about"
+      },
+      {
+        "locked": true,
+        "parts": [
+          "gt2_belt_loop",
+          "motor_pulley_20t_5mm",
+          "output_pulley_20t_8mm"
+        ],
+        "relationship_id": "belt_transmission_ratio_1_to_1",
+        "statement": "Equal 20T GT2 pulleys transmit motor rotation to output shaft at 1:1 ratio.",
+        "type": "pitch_contact"
+      }
+    ]
+  },
+  "root_component": "base_plate",
+  "root_frame": {
+      "axes": "+X motor-to-output shaft, +Y lateral span direction in the base plane, +Z up, shaft axis direction, and pulley/belt width direction",
+    "notes": "Vertical parallel-shaft architecture with motor below the base plate and pulleys above it.",
+    "origin": "base plate lower-face center"
+  },
+  "schema_version": "0.8.0"
+}
