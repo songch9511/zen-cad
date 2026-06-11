@@ -149,6 +149,11 @@ function meshFromOcctMesh(mesh: OcctImportMesh, index: number) {
   if (mesh.index?.array?.length) {
     geometry.setIndex(mesh.index.array);
   }
+  if (mesh.brep_faces?.length) {
+    geometry.userData.brepFaces = mesh.brep_faces
+      .filter((face) => Number.isFinite(face.first) && Number.isFinite(face.last) && face.last >= face.first)
+      .map((face) => ({ first: face.first, last: face.last }));
+  }
   geometry.computeVertexNormals();
   geometry.computeBoundingBox();
   geometry.computeBoundingSphere();

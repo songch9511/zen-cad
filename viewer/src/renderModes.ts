@@ -5,6 +5,19 @@ const materialCache = new WeakMap<THREE.Mesh, THREE.Material | THREE.Material[]>
 const overlayCache = new WeakMap<THREE.Mesh, { feature: THREE.LineSegments; wire: THREE.LineSegments }>();
 const pointsCache = new WeakMap<THREE.Mesh, THREE.Points>();
 
+interface BrepFaceRange {
+  first: number;
+  last: number;
+}
+
+type EdgeSegment = [number, number, number, number, number, number];
+
+interface FaceEdgeRecord {
+  count: number;
+  segment: EdgeSegment;
+  positionKey: string;
+}
+
 export function applyRenderMode(group: THREE.Group, mode: RenderMode) {
   group.traverse((child) => {
     if (!isMesh(child)) return;
@@ -109,9 +122,7 @@ function getOverlays(mesh: THREE.Mesh) {
   const cached = overlayCache.get(mesh);
   if (cached) return cached;
 
-  const positionOnlyGeometry = createPositionOnlyGeometry(mesh.geometry);
-  const featureEdges = new THREE.EdgesGeometry(positionOnlyGeometry, 24);
-  positionOnlyGeometry.dispose();
+  const featureEdges = createCadFeatureEdgesGeometry(mesh.geometry);
   const feature = new THREE.LineSegments(featureEdges, new THREE.LineBasicMaterial({
     color: '#111113',
     transparent: false,
@@ -139,6 +150,127 @@ function getOverlays(mesh: THREE.Mesh) {
   const overlays = { feature, wire };
   overlayCache.set(mesh, overlays);
   return overlays;
+}
+
+function createCadFeatureEdgesGeometry(source: THREE.BufferGeometry) {
+  const brepEdges = createBrepFaceBoundaryGeometry(source);
+  if (brepEdges) return brepEdges;
+
+  const positionOnlyGeometry = createPositionOnlyGeometry(source);
+  const featureEdges = new THREE.EdgesGeometry(positionOnlyGeometry, 24);
+  positionOnlyGeometry.dispose();
+  return featureEdges;
+}
+
+function createBrepFaceBoundaryGeometry(source: THREE.BufferGeometry) {
+  const brepFaces = getBrepFaces(source);
+  const position = source.getAttribute('position');
+  const index = source.getIndex();
+  const triangleCount = getTriangleCount(source);
+
+  if (brepFaces.length === 0 || !position || !index || triangleCount === 0) {
+    return null;
+  }
+
+  // STEP imports expose source BREP face ranges. Per-face perimeters preserve
+  // tangent fillet boundaries that angle-based mesh edges cannot detect.
+  const boundaryEdges = new Map<string, EdgeSegment>();
+
+  brepFaces.forEach((face) => {
+    const faceEdges = new Map<string, FaceEdgeRecord>();
+    const first = Math.max(0, Math.floor(face.first));
+    const last = Math.min(triangleCount - 1, Math.floor(face.last));
+
+    for (let triangle = first; triangle <= last; triangle += 1) {
+      const offset = triangle * 3;
+      const a = index.getX(offset);
+      const b = index.getX(offset + 1);
+      const c = index.getX(offset + 2);
+
+      addFacePerimeterEdge(faceEdges, position, a, b);
+      addFacePerimeterEdge(faceEdges, position, b, c);
+      addFacePerimeterEdge(faceEdges, position, c, a);
+    }
+
+    faceEdges.forEach((edge) => {
+      if (edge.count === 1 && !boundaryEdges.has(edge.positionKey)) {
+        boundaryEdges.set(edge.positionKey, edge.segment);
+      }
+    });
+  });
+
+  const linePositions: number[] = [];
+  boundaryEdges.forEach((segment) => linePositions.push(...segment));
+
+  if (linePositions.length === 0) {
+    return null;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+  return geometry;
+}
+
+function addFacePerimeterEdge(
+  edges: Map<string, FaceEdgeRecord>,
+  position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
+  a: number,
+  b: number,
+) {
+  if (a === b) return;
+
+  const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+  const existing = edges.get(key);
+  if (existing) {
+    existing.count += 1;
+    return;
+  }
+
+  const aPositionKey = positionKey(position, a);
+  const bPositionKey = positionKey(position, b);
+  if (aPositionKey === bPositionKey) return;
+
+  edges.set(key, {
+    count: 1,
+    segment: [
+      position.getX(a),
+      position.getY(a),
+      position.getZ(a),
+      position.getX(b),
+      position.getY(b),
+      position.getZ(b),
+    ],
+    positionKey: aPositionKey < bPositionKey
+      ? `${aPositionKey}|${bPositionKey}`
+      : `${bPositionKey}|${aPositionKey}`,
+  });
+}
+
+function getBrepFaces(source: THREE.BufferGeometry): BrepFaceRange[] {
+  const value = source.userData.brepFaces;
+  if (!Array.isArray(value)) return [];
+  return value.filter((face): face is BrepFaceRange => (
+    typeof face?.first === 'number'
+    && typeof face?.last === 'number'
+    && Number.isFinite(face.first)
+    && Number.isFinite(face.last)
+    && face.last >= face.first
+  ));
+}
+
+function getTriangleCount(source: THREE.BufferGeometry) {
+  const index = source.getIndex();
+  if (index) return Math.floor(index.count / 3);
+  const position = source.getAttribute('position');
+  return position ? Math.floor(position.count / 3) : 0;
+}
+
+function positionKey(position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, index: number, tolerance = 1e-5) {
+  return [
+    Math.round(position.getX(index) / tolerance),
+    Math.round(position.getY(index) / tolerance),
+    Math.round(position.getZ(index) / tolerance),
+  ].join(':');
 }
 
 function getPoints(mesh: THREE.Mesh) {
