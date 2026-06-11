@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+public/zen-cad-artifacts/*
+!public/zen-cad-artifacts/.gitkeep
+
+# Generated config artifacts (source of truth is vite.config.ts)
+vite.config.js
+vite.config.d.ts
+
+# OS / editor
+.DS_Store
+*.local
+
+# Internal worktrees & dev scratch (not part of the viewer)
+.pv-*/
+tmp-*
+producer_approach.md
+scripts/
+verification/
