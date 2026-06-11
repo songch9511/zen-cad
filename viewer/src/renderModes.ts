@@ -11,6 +11,7 @@ interface BrepFaceRange {
 }
 
 type EdgeSegment = [number, number, number, number, number, number];
+type EdgeSegmentMap = Map<string, EdgeSegment>;
 
 interface FaceEdgeRecord {
   count: number;
@@ -153,29 +154,37 @@ function getOverlays(mesh: THREE.Mesh) {
 }
 
 function createCadFeatureEdgesGeometry(source: THREE.BufferGeometry) {
-  const brepEdges = createBrepFaceBoundaryGeometry(source);
-  if (brepEdges) return brepEdges;
+  const edgeSegments: EdgeSegmentMap = new Map();
 
+  collectBrepFaceBoundarySegments(source, edgeSegments);
+  const angularEdges = createAngularFeatureEdgesGeometry(source);
+  collectLineGeometrySegments(angularEdges, edgeSegments);
+  angularEdges.dispose();
+
+  return createLineSegmentsGeometry(edgeSegments);
+}
+
+function createAngularFeatureEdgesGeometry(source: THREE.BufferGeometry) {
   const positionOnlyGeometry = createPositionOnlyGeometry(source);
   const featureEdges = new THREE.EdgesGeometry(positionOnlyGeometry, 24);
   positionOnlyGeometry.dispose();
   return featureEdges;
 }
 
-function createBrepFaceBoundaryGeometry(source: THREE.BufferGeometry) {
+function collectBrepFaceBoundarySegments(source: THREE.BufferGeometry, boundaryEdges: EdgeSegmentMap) {
   const brepFaces = getBrepFaces(source);
   const position = source.getAttribute('position');
   const index = source.getIndex();
   const triangleCount = getTriangleCount(source);
 
   if (brepFaces.length === 0 || !position || !index || triangleCount === 0) {
-    return null;
+    return;
   }
 
   // STEP imports expose source BREP face ranges. Per-face perimeters preserve
-  // tangent fillet boundaries that angle-based mesh edges cannot detect.
-  const boundaryEdges = new Map<string, EdgeSegment>();
-
+  // tangent fillet boundaries and CSG face splits that angle-based mesh edges
+  // cannot detect. We still merge angular feature edges afterwards for sharp
+  // boolean intersections that are not represented as BREP perimeter segments.
   brepFaces.forEach((face) => {
     const faceEdges = new Map<string, FaceEdgeRecord>();
     const first = Math.max(0, Math.floor(face.first));
@@ -193,22 +202,41 @@ function createBrepFaceBoundaryGeometry(source: THREE.BufferGeometry) {
     }
 
     faceEdges.forEach((edge) => {
-      if (edge.count === 1 && !boundaryEdges.has(edge.positionKey)) {
-        boundaryEdges.set(edge.positionKey, edge.segment);
+      if (edge.count === 1) {
+        addEdgeSegment(boundaryEdges, edge.segment);
       }
     });
   });
+}
 
-  const linePositions: number[] = [];
-  boundaryEdges.forEach((segment) => linePositions.push(...segment));
-
-  if (linePositions.length === 0) {
-    return null;
+function collectLineGeometrySegments(geometry: THREE.BufferGeometry, edgeSegments: EdgeSegmentMap) {
+  const position = geometry.getAttribute('position');
+  if (!position) return;
+  for (let offset = 0; offset + 1 < position.count; offset += 2) {
+    addEdgeSegment(edgeSegments, [
+      position.getX(offset),
+      position.getY(offset),
+      position.getZ(offset),
+      position.getX(offset + 1),
+      position.getY(offset + 1),
+      position.getZ(offset + 1),
+    ]);
   }
+}
+
+function createLineSegmentsGeometry(edgeSegments: EdgeSegmentMap) {
+  const linePositions: number[] = [];
+  edgeSegments.forEach((segment) => linePositions.push(...segment));
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
   return geometry;
+}
+
+function addEdgeSegment(edgeSegments: EdgeSegmentMap, segment: EdgeSegment) {
+  const key = edgeSegmentKey(segment);
+  if (!key || edgeSegments.has(key)) return;
+  edgeSegments.set(key, segment);
 }
 
 function addFacePerimeterEdge(
@@ -266,10 +294,21 @@ function getTriangleCount(source: THREE.BufferGeometry) {
 }
 
 function positionKey(position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, index: number, tolerance = 1e-5) {
+  return coordinateKey(position.getX(index), position.getY(index), position.getZ(index), tolerance);
+}
+
+function edgeSegmentKey(segment: EdgeSegment, tolerance = 1e-5) {
+  const aKey = coordinateKey(segment[0], segment[1], segment[2], tolerance);
+  const bKey = coordinateKey(segment[3], segment[4], segment[5], tolerance);
+  if (aKey === bKey) return null;
+  return aKey < bKey ? `${aKey}|${bKey}` : `${bKey}|${aKey}`;
+}
+
+function coordinateKey(x: number, y: number, z: number, tolerance = 1e-5) {
   return [
-    Math.round(position.getX(index) / tolerance),
-    Math.round(position.getY(index) / tolerance),
-    Math.round(position.getZ(index) / tolerance),
+    Math.round(x / tolerance),
+    Math.round(y / tolerance),
+    Math.round(z / tolerance),
   ].join(':');
 }
 
