@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/interface_frame.schema.json",
+  "title": "Zen CAD Interface Frame",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "part_id",
+    "role",
+    "frame",
+    "locked_fact_refs",
+    "tolerance",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "interface_frame" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "part_id": { "type": "string", "minLength": 1 },
+    "role": {
+      "type": "string",
+      "enum": [
+        "mounting_plane",
+        "bore_axis",
+        "shaft_axis",
+        "bolt_pattern",
+        "pitch_reference",
+        "clearance_envelope",
+        "motion_axis",
+        "datum_frame",
+        "custom"
+      ]
+    },
+    "frame": {
+      "type": "object",
+      "required": ["origin", "x_axis", "y_axis", "z_axis"],
+      "properties": {
+        "origin": { "$ref": "#/$defs/vector3" },
+        "x_axis": { "$ref": "#/$defs/vector3" },
+        "y_axis": { "$ref": "#/$defs/vector3" },
+        "z_axis": { "$ref": "#/$defs/vector3" }
+      },
+      "additionalProperties": false
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["value", "units", "status"],
+        "properties": {
+          "value": { "type": "number" },
+          "units": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["locked", "derived", "assumed", "measured"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "locked_fact_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tolerance": {
+      "type": "object",
+      "required": ["position_mm", "angle_deg"],
+      "properties": {
+        "position_mm": { "type": "number", "minimum": 0 },
+        "angle_deg": { "type": "number", "minimum": 0 },
+        "diameter_mm": { "type": "number", "minimum": 0 },
+        "clearance_mm": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "string",
+      "enum": ["layout_proxy", "source_step", "generated_detail", "manual_detail", "inspection"]
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "vector3": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3
+    }
+  }
+}

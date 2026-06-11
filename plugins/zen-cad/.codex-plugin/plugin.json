@@ -1,7 +1,7 @@
 {
   "name": "zen-cad",
-  "version": "1.0.2",
-  "description": "Assembly-first CAD contract skills packaged for Codex installs.",
+  "version": "1.1.0",
+  "description": "Assembly-first CAD contract, replacement, and constrained detail skills packaged for Codex installs.",
   "author": {
     "name": "songch9511",
     "url": "https://github.com/songch9511"
@@ -20,8 +20,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Zen CAD",
-    "shortDescription": "Assembly-first CAD contracts, source-lock evidence, and handoffs.",
-    "longDescription": "Zen CAD packages CAD-native assembly contract workflows for mechanical design agents. It produces layout contracts, source-lock evidence for standard parts, proceed gates, review bundles, and downstream CAD handoffs without pretending to replace CAD kernels or engineering certification.",
+    "shortDescription": "Assembly-first CAD contracts, source replacement, and constrained detail CAD.",
+    "longDescription": "Zen CAD packages CAD-native assembly contract workflows for mechanical design agents. It produces layout contracts, source-lock evidence for standard parts, replacement plans, constrained detail shape plans, proceed gates, review bundles, and downstream CAD handoffs without pretending to replace CAD kernels or engineering certification.",
     "developerName": "songch9511",
     "category": "Productivity",
     "capabilities": [
@@ -31,7 +31,8 @@
     "defaultPrompt": [
       "Create a CAD-native assembly contract for a compact belt-drive module.",
       "Create source-lock evidence for a sourced STEP part.",
-      "Package an approved handoff for CAD Skills/text-to-cad."
+      "Replace a layout proxy with a source-locked STEP while preserving locked facts.",
+      "Generate a constrained detail shape plan for a custom bracket."
     ],
     "brandColor": "#2F80ED"
   }

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-cad.dev/schemas/replacement_plan.schema.json",
+  "title": "Zen CAD Replacement Plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "source_scene_id",
+    "status",
+    "replacements",
+    "inspection_required",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.8.0" },
+    "kind": { "const": "replacement_plan" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "source_scene_id": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": [
+        "blocked_missing_proxy_frame",
+        "blocked_missing_source_frame",
+        "alignment_ready",
+        "inspection_required",
+        "failed",
+        "passed"
+      ]
+    },
+    "replacements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/replacement" }
+    },
+    "inspection_required": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "replacement": {
+      "type": "object",
+      "required": [
+        "part_id",
+        "mode",
+        "proxy_frame_id",
+        "source_frame_id",
+        "transform",
+        "locked_fact_refs",
+        "required_checks",
+        "status"
+      ],
+      "properties": {
+        "part_id": { "type": "string", "minLength": 1 },
+        "mode": {
+          "type": "string",
+          "enum": ["source_step", "generated_detail", "manual_detail"]
+        },
+        "source_lock_id": { "type": "string" },
+        "detail_shape_plan_id": { "type": "string" },
+        "proxy_frame_id": { "type": "string", "minLength": 1 },
+        "source_frame_id": { "type": "string", "minLength": 1 },
+        "transform": {
+          "type": "object",
+          "required": ["position", "rotation"],
+          "properties": {
+            "position": { "$ref": "#/$defs/vector3" },
+            "rotation": { "$ref": "#/$defs/vector3" },
+            "matrix4x4": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 16,
+              "maxItems": 16
+            }
+          },
+          "additionalProperties": false
+        },
+        "locked_fact_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "required_checks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "blocked", "transformed", "inspection_failed", "inspection_passed"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "vector3": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3
+    }
+  }
+}

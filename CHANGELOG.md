@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 1.1.0 - 2026-06-11
+
+- Add `cad-replacement` guidance for replacing layout proxies with source-locked STEP/STP or detail CAD while preserving interface frames, datums, axes, bolt patterns, clearances, and locked layout facts.
+- Add `constrained-detail-cad` guidance for generating custom detail CAD from locked facts plus user shape intent, protected zones, manufacturing assumptions, and post-generation inspection.
+- Add contract schemas for `interface_frame`, `replacement_plan`, and `detail_shape_plan` artifacts so agents can express replacement and custom generation work without relying on prose-only instructions.
+- Update the plugin and documentation to position layout proxies as precise interface scaffolds for source replacement and constrained detail generation, not merely rough visual placeholders.
+
 ## 1.0.2 - 2026-06-11
 
 - Add visual inspection and repair guidance for generated CAD review, including floating bodies, interference, clearance, fastening, alignment, mesh/contact, and support-path checks.

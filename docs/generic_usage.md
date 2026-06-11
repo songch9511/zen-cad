@@ -1,6 +1,6 @@
 # Generic Usage
 
-Zen CAD 1.0 can be used in any agentic environment that can read Markdown and hand work to a CAD-generation toolchain. The product version is 1.0.2, while contract documents continue to use `schema_version: 0.8.0` for compatibility.
+Zen CAD 1.1 can be used in any agentic environment that can read Markdown and hand work to a CAD-generation toolchain. The product version is 1.1.0, while contract documents continue to use `schema_version: 0.8.0` for compatibility.
 
 Start with:
 
@@ -19,6 +19,9 @@ If the user asks to continue into CAD generation, keep `cad-spec` as the lead wo
 - interface signature extraction;
 - motion and drivetrain relationship checks;
 - layout proxy generation;
+- interface-frame contract generation;
+- source/detail replacement planning;
+- constrained detail shape planning;
 - generated artifact inspection;
 - repair-loop review;
 - generated CAD review against locked facts.
@@ -27,7 +30,13 @@ For generated CAD review, ask the lead agent to create a Subagent Dispatch Plan 
 
 Use `skills/cad-handoff/SKILL.md` when the active generator needs a concise task brief. If the active target is build123d and local dependencies are available, Zen CAD can generate a first-pass STEP artifact itself before the proceed review. Contract packages can include `cad_spec.extensions.cad_feature_plan` when native generation should preserve holes, bores, repeated hole patterns, rectangular top chamfers, simplified gear teeth, or supported cylinder edge-round approximations.
 
+Use `skills/cad-replacement/SKILL.md` when a layout proxy should be replaced by source-locked STEP/STP, user-provided detail CAD, or a generated detail candidate. The replacement must map proxy interface frames to source/detail frames and inspect locked facts after transformation.
+
+Use `skills/constrained-detail-cad/SKILL.md` when a custom part should take on a user-requested shape while preserving locked facts. The detail shape plan should split protected interface zones from functional structure and freeform/style zones before CAD generation.
+
 Use `schemas/` when a harness needs machine-readable contracts, and use `registry/interfaces/` when a layout proxy needs known component interface facts without catalog crawling. For final-stage standard/catalog part sourcing, use `schemas/source_lock_evidence.schema.json` and `tools/generate_source_lock_evidence.py` to record explicit step.parts, manufacturer, datasheet, project-file, or user-provided evidence separately from layout interface signatures. Use `tools/download_step_part.py` when a step.parts match should be downloaded, sha256-verified, and written as local source-lock evidence. When that evidence includes a STEP/STP geometry reference, `tools/export_cad_source.py` imports the sourced part into generated build123d source and removes the matching proxy primitives.
+
+For 1.1 replacement/detail workflows, use `schemas/interface_frame.schema.json` for proxy/source/detail frame anchors, `schemas/replacement_plan.schema.json` for replacement transforms and required checks, and `schemas/detail_shape_plan.schema.json` for custom detail CAD intent, protected zones, and inspection gates.
 
 Run the contract pipeline runner after a contract package exists. Use `--target-harness build123d` when Zen CAD should execute the generated source and write a STEP artifact locally:
 
@@ -37,18 +46,22 @@ python3 tools/run_contract_pipeline.py --package <path> --out <dir> --target-har
 
 The runner verifies the built-in schema and registry surface, validates the package, creates a kernel-neutral `layout_proxy.scene.json`, inspects scene carry-through, exports CAD source intent, imports source-locked STEP/STP parts when geometry references exist, inspects source carry-through, executes generated build123d source into a primary STEP artifact when the target is `build123d`, packages a local viewer link, optionally captures a viewer PNG snapshot, packages proceed review, and writes a machine-readable `review_bundle.json`.
 
+Imported source geometry is not enough by itself. If source/detail geometry replaces a proxy, the proceed package should include replacement frame mapping and post-replacement inspection of axes, planes, bolt patterns, clearances, and relationships before claiming the locked layout survived.
+
 Visual review should look for floating bodies, unintended interference, insufficient clearance, missing fastener engagement, shaft/bore or bearing misalignment, belt/gear mesh errors, and implausible support or load paths. Treat those findings as repair leads: add or name a measurable check, repair the smallest source-level cause, regenerate, and recapture the relevant view.
 
-To make the viewer link auto-load in CAD-Visualizer, run the viewer on `http://localhost:5173` and give the runner the Vite public directory:
+To make the viewer link auto-load in the repo-local viewer, run the viewer on `http://localhost:5173`. When `viewer/public` exists, the runner uses it automatically:
 
 ```bash
-python3 tools/run_contract_pipeline.py --package <path> --out <dir> --target-harness build123d --viewer-base-url http://localhost:5173 --viewer-public-dir /Users/daniel/CAD-Visualizer/public
+(cd viewer && npm run dev:local)
+python3 tools/run_contract_pipeline.py --package <path> --out <dir> --target-harness build123d --viewer-base-url http://localhost:5173
 ```
 
-To also capture a review snapshot through CAD-Visualizer, pass the viewer project root:
+To also capture a review snapshot through the repo-local viewer, install viewer dependencies and enable capture:
 
 ```bash
-python3 tools/run_contract_pipeline.py --package <path> --out <dir> --target-harness build123d --viewer-base-url http://localhost:5173 --viewer-public-dir /Users/daniel/CAD-Visualizer/public --capture-viewer-snapshot --viewer-root /Users/daniel/CAD-Visualizer
+npm --prefix viewer install
+python3 tools/run_contract_pipeline.py --package <path> --out <dir> --target-harness build123d --viewer-base-url http://localhost:5173 --capture-viewer-snapshot
 ```
 
 The build123d generation phase can also be run directly:
@@ -100,6 +113,9 @@ The phase tools remain available for focused diagnosis:
 - `tools/generate_detail_handoff.py`;
 - `tools/package_text_to_cad_bundle.py`;
 - `tools/generate_source_lock_evidence.py`;
-- `tools/download_step_part.py`.
+- `tools/download_step_part.py`;
+- `schemas/interface_frame.schema.json`;
+- `schemas/replacement_plan.schema.json`;
+- `schemas/detail_shape_plan.schema.json`.
 
 These tools keep the contract layer explicit while adding a build123d generation path. They do not replace advanced topology inspection, source-locked supplier geometry alignment checks, manufacturing review, or engineering certification. Viewer links and snapshots are review aids only.

@@ -10,8 +10,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 EXPECTED_SKILLS = {
     "assembly-layout",
+    "cad-replacement",
     "cad-handoff",
     "cad-spec",
+    "constrained-detail-cad",
     "interface-signatures",
 }
 
@@ -69,6 +71,8 @@ class SkillPackTest(unittest.TestCase):
             "motion-specialist",
             "cad-generator",
             "cad-reviewer",
+            "replacement-specialist",
+            "detail-shape-specialist",
             "visual-reviewer",
             "engineering-reviewer",
             "Subagent Dispatch Plan",
@@ -150,6 +154,9 @@ class SkillPackTest(unittest.TestCase):
             "pipeline_run.schema.json",
             "source_lock_evidence.schema.json",
             "review_bundle.schema.json",
+            "interface_frame.schema.json",
+            "replacement_plan.schema.json",
+            "detail_shape_plan.schema.json",
         ]
         for name in expected:
             path = ROOT / "schemas" / name
@@ -296,6 +303,33 @@ class SkillPackTest(unittest.TestCase):
         ]:
             self.assertIn(phrase, text)
 
+    def test_replacement_and_constrained_detail_skills(self) -> None:
+        replacement = (ROOT / "skills/cad-replacement/SKILL.md").read_text(encoding="utf-8")
+        detail = (ROOT / "skills/constrained-detail-cad/SKILL.md").read_text(encoding="utf-8")
+        cad_spec = (ROOT / "skills/cad-spec/SKILL.md").read_text(encoding="utf-8")
+        handoff = (ROOT / "skills/cad-handoff/SKILL.md").read_text(encoding="utf-8")
+        combined = "\n".join([replacement, detail, cad_spec, handoff])
+        for phrase in [
+            "interface-frame mapping",
+            "replacement_plan",
+            "detail_shape_plan",
+            "protected interface zones",
+            "locked interface frames",
+            "post-replacement locked-fact checks",
+            "shape intent is soft",
+            "locked facts are hard constraints",
+        ]:
+            self.assertIn(phrase, combined)
+        for rel in [
+            "skills/cad-replacement/references/interface-frame-contract.md",
+            "skills/cad-replacement/references/replacement-plan.md",
+            "skills/constrained-detail-cad/references/detail-shape-plan.md",
+            "schemas/interface_frame.schema.json",
+            "schemas/replacement_plan.schema.json",
+            "schemas/detail_shape_plan.schema.json",
+        ]:
+            self.assertTrue((ROOT / rel).exists(), rel)
+
     def test_no_committed_example_specs(self) -> None:
         for path in tracked_files():
             lowered = str(path.relative_to(ROOT)).lower()
@@ -318,7 +352,7 @@ class SkillPackTest(unittest.TestCase):
         plugin_root = ROOT / "plugins" / "zen-cad"
         plugin = json.loads((plugin_root / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
         self.assertEqual("zen-cad", plugin["name"])
-        self.assertEqual("1.0.2", plugin["version"])
+        self.assertEqual("1.1.0", plugin["version"])
         self.assertEqual("./skills/", plugin["skills"])
         self.assertEqual("Zen CAD", plugin["interface"]["displayName"])
 
@@ -334,6 +368,9 @@ class SkillPackTest(unittest.TestCase):
             "tools/package_viewer_link.py",
             "tools/capture_viewer_snapshot.py",
             "schemas/cad_spec.schema.json",
+            "schemas/interface_frame.schema.json",
+            "schemas/replacement_plan.schema.json",
+            "schemas/detail_shape_plan.schema.json",
             "registry/interfaces/index.json",
         ]:
             self.assertTrue((plugin_root / rel).exists(), rel)

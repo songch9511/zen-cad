@@ -1,0 +1,4 @@
+interface:
+  display_name: "CAD Replacement"
+  short_description: "Replace proxies while preserving locked facts."
+  default_prompt: "Use $cad-replacement to replace layout proxy parts with source-locked STEP/STP or detail CAD. Build interface frames, create a replacement plan, compute frame-based transforms, and inspect post-replacement locked facts before proceed."

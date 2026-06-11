@@ -1,7 +1,7 @@
 ---
 name: cad-spec
-description: Write CAD-native mechanical specs from natural-language design requests and orchestrate CAD work through specialist subagents when available. Use for assembly-first layout specs, parameter contracts, artifact targets, inspection plans, interface definitions, coordinate frames, datums, motion/drivetrain relationships, visual inspection and repair loops, proxy fidelity boundaries, proceed gates, subagent delegation, and downstream CAD handoffs.
-version: 1.0.2
+description: Write CAD-native mechanical specs from natural-language design requests and orchestrate CAD work through specialist subagents when available. Use for assembly-first layout specs, parameter contracts, artifact targets, inspection plans, interface definitions, coordinate frames, datums, motion/drivetrain relationships, proxy fidelity boundaries, interface-frame contracts, source/detail replacement, constrained detail shape plans, visual inspection and repair loops, proceed gates, subagent delegation, and downstream CAD handoffs.
+version: 1.1.0
 ---
 
 # CAD Spec
@@ -27,6 +27,8 @@ Use `cad-spec` when the user asks for:
 - specialist subagents for layout, interfaces, motion, CAD generation, visual inspection, engineering review, or repair;
 - local build123d STEP generation or a downstream handoff to `$cad`, text-to-cad, CadQuery, FreeCAD, or another CAD generator.
 - native feature-aware generation for holes, bores, bolt-circle patterns, repeated hole patterns, rectangular top chamfers, simplified gear teeth, or supported cylinder edge-round approximations.
+- replacement of layout proxies with source-locked STEP/STP or detail CAD while preserving locked facts;
+- custom detail CAD generation from locked interface frames plus user shape intent.
 
 Do not use this skill for CAM, G-code, visual concept art, FEA, procurement-ready sourcing, or manufacturing certification unless the user first needs a CAD-native spec for those downstream tasks.
 
@@ -44,6 +46,8 @@ Use these defaults unless the user specifies otherwise:
 - Interface fidelity: high from the first pass; axes, bores, mounting faces, bolt patterns, pitch references, and clearances must be explicit.
 - Primary artifact intent: STEP/STP when the active CAD generator supports it.
 - Parameter policy: named parameters with units, source, locked status, driven features, and validation targets.
+- Replacement policy: proxies are interface scaffolds; source/detail CAD may replace them only through frame mapping and post-replacement inspection.
+- Custom detail policy: user shape intent is soft; locked interface frames, protected zones, and clearance rules are hard.
 
 Ask one focused question only when missing information makes the layout impossible, fit-critical, safety-critical, or compliance-bound. Otherwise proceed with named assumptions and mark them as not locked.
 
@@ -66,7 +70,9 @@ Ask one focused question only when missing information makes the layout impossib
 15. If the active target is build123d and generation is requested, run the build123d source/export/inspection path before proceed review.
 16. If a viewer is available, capture review evidence and inspect it for fastening, clearance, floating body, interference, mesh/alignment, and engineering plausibility issues.
 17. If native build123d generation needs detail features, encode them in `cad_spec.extensions.cad_feature_plan` instead of burying them in prose.
-18. Write a downstream CAD handoff targeted to the active harness when external generation or detail upgrade is needed.
+18. If sourced/detail replacement is requested, hand off to `cad-replacement` with proxy frames, source frames, source-lock evidence, and required post-replacement checks.
+19. If user-shaped custom detail CAD is requested, hand off to `constrained-detail-cad` with locked interfaces, protected zones, shape intent, and required inspection checks.
+20. Write a downstream CAD handoff targeted to the active harness when external generation or detail upgrade is needed.
 
 ## Machine-Readable Contracts
 
@@ -83,6 +89,9 @@ Do not ask users to write JSON or YAML. When a harness needs machine-readable ar
 - `schemas/proceed_approval.schema.json`
 - `schemas/pipeline_run.schema.json`
 - `schemas/source_lock_evidence.schema.json`
+- `schemas/interface_frame.schema.json`
+- `schemas/replacement_plan.schema.json`
+- `schemas/detail_shape_plan.schema.json`
 
 Use `source_lock_evidence` only for final-stage standard/catalog part sourcing. It records explicit step.parts, manufacturer, datasheet, project-file, or user-provided evidence without treating layout interface signatures as final proof.
 
@@ -101,6 +110,8 @@ Default specialist roles:
 - `parameter-specialist`: named parameters, defaults, derived values, allowed ranges, driven features, and validation targets.
 - `motion-specialist`: joints, travel, transmission ratios, gear/belt/screw relationships, motion limits, and keep-outs.
 - `cad-generator`: low-detail layout proxy or detail CAD from the approved spec, preserving locked facts.
+- `replacement-specialist`: source/detail replacement through interface-frame mapping, transform planning, and post-replacement locked-fact inspection.
+- `detail-shape-specialist`: custom detail shape planning with protected zones, user shape intent, manufacturing assumptions, and inspection gates.
 - `cad-reviewer`: compare generated CAD against parameters, locked facts, inspection plan, proceed gate, allowed simplifications, and stated assumptions.
 - `visual-reviewer`: inspect viewer snapshots/multi-view evidence for floating bodies, unintended intersections, missing fasteners, insufficient clearances, misaligned axes/planes, and visibly implausible load paths.
 - `engineering-reviewer`: convert visual concerns into measurable checks for fastening engagement, shaft/bore fit, bearing support, belt or gear mesh, wall thickness, support, clearance, and assembly feasibility.
@@ -121,8 +132,10 @@ Every useful spec should include:
 ## Parts And Roles
 ## Assembly Graph
 ## Interface Primitives
+## Interface Frame Contract
 ## Motion And Drivetrain
 ## Proxy Fidelity Policy
+## Replacement And Detail Shape Plan
 ## Locked Layout Facts
 ## Inspection Plan
 ## Repair Loop
@@ -145,6 +158,8 @@ Omit a section only when it is truly out of scope, and say why.
 - Do not treat screenshots or viewer links as substitutes for geometry facts, measurements, frames, or mate checks.
 - Do not close proceed review on generated assemblies until floating bodies, unintended interference, fastening/clearance concerns, and visible mesh/alignment concerns are either checked, repaired, or recorded as skipped with a concrete reason.
 - Do not allow detail modeling to change locked layout facts without returning to the proceed gate.
+- Do not replace a proxy with source/detail CAD unless proxy frames and source/detail frames are mapped and inspected.
+- Do not let user-requested shape style modify protected interface zones, clearances, mounting datums, bores, shafts, or bolt patterns.
 - Do not present CAD validation, viewer screenshots, or generated geometry as engineering certification.
 - Do not claim selector-based topology fillets/chamfers unless the active build123d/OCP runtime actually ran those operations; use the inspection report limitations when approximations are used.
 - Do not embed repository paths or harness workspace paths in the core spec unless the downstream handoff specifically requires them.

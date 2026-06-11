@@ -26,6 +26,9 @@ SCHEMA_FILES = {
     "pipeline_run.schema.json": "pipeline_run",
     "source_lock_evidence.schema.json": "source_lock_evidence",
     "review_bundle.schema.json": "review_bundle",
+    "interface_frame.schema.json": "interface_frame",
+    "replacement_plan.schema.json": "replacement_plan",
+    "detail_shape_plan.schema.json": "detail_shape_plan",
 }
 
 COMMON_SCHEMA_REQUIRED = {"schema_version", "kind", "extensions"}
@@ -245,6 +248,12 @@ class ContractValidator:
             self.validate_source_lock_evidence_document(path, document)
         for path, document in by_kind.get("review_bundle", []):
             self.validate_review_bundle_document(path, document)
+        for path, document in by_kind.get("interface_frame", []):
+            self.validate_interface_frame_document(path, document)
+        for path, document in by_kind.get("replacement_plan", []):
+            self.validate_replacement_plan_document(path, document)
+        for path, document in by_kind.get("detail_shape_plan", []):
+            self.validate_detail_shape_plan_document(path, document)
 
         return self.issues
 
@@ -556,6 +565,78 @@ class ContractValidator:
             if target.get("evidence_role") != "review_only":
                 self.error(path, "review_bundle viewer_targets must use review_only evidence_role")
 
+    def validate_interface_frame_document(self, path: Path, document: dict[str, Any]) -> None:
+        for field in ["part_id", "role", "frame", "locked_fact_refs", "tolerance"]:
+            if field not in document:
+                self.error(path, f"interface_frame missing {field}")
+        frame = document.get("frame")
+        if not isinstance(frame, dict):
+            self.error(path, "interface_frame.frame must be an object")
+        else:
+            for axis in ["origin", "x_axis", "y_axis", "z_axis"]:
+                if not is_vector3(frame.get(axis)):
+                    self.error(path, f"interface_frame.frame.{axis} must be a 3-number vector")
+        if not isinstance(document.get("locked_fact_refs"), list):
+            self.error(path, "interface_frame.locked_fact_refs must be a list")
+        tolerance = document.get("tolerance")
+        if not isinstance(tolerance, dict):
+            self.error(path, "interface_frame.tolerance must be an object")
+        else:
+            for field in ["position_mm", "angle_deg"]:
+                if not isinstance(tolerance.get(field), (int, float)) or tolerance[field] < 0:
+                    self.error(path, f"interface_frame.tolerance.{field} must be a non-negative number")
+
+    def validate_replacement_plan_document(self, path: Path, document: dict[str, Any]) -> None:
+        if not isinstance(document.get("source_scene_id"), str) or not document["source_scene_id"]:
+            self.error(path, "replacement_plan.source_scene_id must be a non-empty string")
+        replacements = document.get("replacements")
+        if not isinstance(replacements, list):
+            self.error(path, "replacement_plan.replacements must be a list")
+            replacements = []
+        if not nonempty_string_list(document.get("inspection_required")):
+            self.error(path, "replacement_plan.inspection_required must be a non-empty string list")
+        for index, replacement in enumerate(replacements):
+            if not isinstance(replacement, dict):
+                self.error(path, f"replacement_plan.replacements[{index}] must be an object")
+                continue
+            for field in ["part_id", "mode", "proxy_frame_id", "source_frame_id", "transform", "locked_fact_refs", "required_checks", "status"]:
+                if field not in replacement:
+                    self.error(path, f"replacement_plan.replacements[{index}] missing {field}")
+            transform = replacement.get("transform")
+            if isinstance(transform, dict):
+                if not is_vector3(transform.get("position")):
+                    self.error(path, f"replacement_plan.replacements[{index}].transform.position must be a 3-number vector")
+                if not is_vector3(transform.get("rotation")):
+                    self.error(path, f"replacement_plan.replacements[{index}].transform.rotation must be a 3-number vector")
+            else:
+                self.error(path, f"replacement_plan.replacements[{index}].transform must be an object")
+            if not isinstance(replacement.get("locked_fact_refs"), list):
+                self.error(path, f"replacement_plan.replacements[{index}].locked_fact_refs must be a list")
+            if not nonempty_string_list(replacement.get("required_checks")):
+                self.error(path, f"replacement_plan.replacements[{index}].required_checks must be a non-empty string list")
+
+    def validate_detail_shape_plan_document(self, path: Path, document: dict[str, Any]) -> None:
+        for field in ["source_spec_id", "part_id"]:
+            if not isinstance(document.get(field), str) or not document[field]:
+                self.error(path, f"detail_shape_plan.{field} must be a non-empty string")
+        if not nonempty_string_list(document.get("locked_interfaces")):
+            self.error(path, "detail_shape_plan.locked_interfaces must be a non-empty string list")
+        if not isinstance(document.get("protected_zones"), list):
+            self.error(path, "detail_shape_plan.protected_zones must be a list")
+        if not isinstance(document.get("feature_plan"), list):
+            self.error(path, "detail_shape_plan.feature_plan must be a list")
+        if not nonempty_string_list(document.get("inspection_required")):
+            self.error(path, "detail_shape_plan.inspection_required must be a non-empty string list")
+        intent = document.get("shape_intent")
+        if not isinstance(intent, dict):
+            self.error(path, "detail_shape_plan.shape_intent must be an object")
+        else:
+            for field in ["style", "manufacturing", "avoid"]:
+                if field not in intent:
+                    self.error(path, f"detail_shape_plan.shape_intent missing {field}")
+            if not isinstance(intent.get("wall_min_mm"), (int, float)) or intent["wall_min_mm"] < 0:
+                self.error(path, "detail_shape_plan.shape_intent.wall_min_mm must be a non-negative number")
+
 
 def walk_keys(value: Any) -> set[str]:
     if isinstance(value, dict):
@@ -569,6 +650,14 @@ def walk_keys(value: Any) -> set[str]:
             keys.update(walk_keys(child))
         return keys
     return set()
+
+
+def is_vector3(value: Any) -> bool:
+    return isinstance(value, list) and len(value) == 3 and all(isinstance(item, (int, float)) for item in value)
+
+
+def nonempty_string_list(value: Any) -> bool:
+    return isinstance(value, list) and bool(value) and all(isinstance(item, str) and item for item in value)
 
 
 def is_step_parts_host_or_asset(host: str, path: str) -> bool:
