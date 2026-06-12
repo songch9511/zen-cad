@@ -25,3 +25,8 @@ the harness supports them. If subagents are unavailable, state the fallback and
 run the same roles sequentially in this order: layout, interface, parameter,
 motion, CAD generation, visual review, engineering review, CAD review, then
 repair.
+
+When a change adds or changes user-facing commands, installation steps,
+workflow entrypoints, or supported runtime behavior, update `README.md` in the
+same change. Keep deeper docs in sync when they carry the operational details,
+but do not treat deeper docs as a substitute for a README update.
