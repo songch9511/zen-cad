@@ -77,6 +77,23 @@ generation과 review까지 이어갈 때는 다음 지시가 유용합니다.
 Create the CAD-native spec, generate the first-pass STEP if the local harness supports it, inspect the result visually and mechanically, repair source-level issues, and package the proceed gate. Use specialist subagents if available; otherwise run the same review roles sequentially.
 ```
 
+## CoBrA 사용법
+
+CoBrA workspace skill로 설치하려면 installer를 실행합니다.
+
+```bash
+python3 tools/install_cobra.py --with-cad-deps
+```
+
+설치 후 새 CoBrA chat을 시작하거나 skill picker를 새로고침한 뒤 `/zen-cad` 또는 `/cad-spec`로 시작합니다.
+
+```text
+/zen-cad create a NEMA17 mount plate
+/cad-spec create a GT2 belt driven linear slide
+```
+
+CAD 의존성 없이 spec/handoff만 사용하려면 `--with-cad-deps`를 빼고 실행합니다. 자세한 옵션은 [`docs/cobra_usage.md`](docs/cobra_usage.md)를 보세요.
+
 ## Command Flow
 
 전체 local build123d pipeline:

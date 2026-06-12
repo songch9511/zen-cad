@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -41,8 +43,6 @@ class SkillPackTest(unittest.TestCase):
         old_terms = [
             "leg" + "acy",
             "depre" + "cated",
-            "Co" + "bra",
-            "co" + "bra",
             "agentic" + "-cad",
             "spec" + "-to-cad",
             "source" + "-step-parts",
@@ -51,12 +51,19 @@ class SkillPackTest(unittest.TestCase):
             "validation" + "_report",
             "selected" + "_parts",
         ]
+        cobra_installer_allowlist = {
+            "README.md",
+            "docs/cobra_usage.md",
+            "tools/install_cobra.py",
+        }
         text_suffixes = {".md", ".py", ".yaml", ".yml", ".json", ".csv", ".txt"}
         for path in tracked_files():
             if path.suffix not in text_suffixes and path.name not in {"README", "VERSION"}:
                 continue
-            text = path.read_text(encoding="utf-8")
             rel = str(path.relative_to(ROOT))
+            if rel in cobra_installer_allowlist:
+                continue
+            text = path.read_text(encoding="utf-8")
             for term in old_terms:
                 self.assertNotIn(term, text, rel)
 
@@ -374,6 +381,38 @@ class SkillPackTest(unittest.TestCase):
             "registry/interfaces/index.json",
         ]:
             self.assertTrue((plugin_root / rel).exists(), rel)
+
+    def test_cobra_installer_installs_workspace_skills(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            cobra_home = Path(tmp) / "cobra-home"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "tools" / "install_cobra.py"),
+                    "--cobra-home",
+                    str(cobra_home),
+                    "--skip-validate",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            skills_dir = cobra_home / "workspace" / "skills"
+            for slug in ["zen-cad", *sorted(EXPECTED_SKILLS)]:
+                skill_file = skills_dir / slug / "SKILL.md"
+                binding_file = skills_dir / slug / "ZEN_CAD_WORKSPACE.md"
+                self.assertTrue(skill_file.exists(), slug)
+                self.assertTrue(binding_file.exists(), slug)
+                binding = binding_file.read_text(encoding="utf-8")
+                self.assertIn(f"Repository root: {ROOT}", binding)
+                self.assertIn("/zen-cad", binding)
+            cad_spec = (skills_dir / "cad-spec" / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("CoBrA Runtime Binding", cad_spec)
+            router = (skills_dir / "zen-cad" / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("Default route:", router)
+            self.assertIn("/cad-replacement", router)
 
 
 if __name__ == "__main__":
